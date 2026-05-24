@@ -161,6 +161,7 @@ export const taskSchema = z.object({
 export const inboundWebhookSchema = z.object({
   name: z.string().min(1, 'Inbound webhook name is required'),
   description: z.string().optional(),
+  secret: z.string().optional(),
 });
 
 export type AutomationInput = z.infer<typeof automationSchema>;

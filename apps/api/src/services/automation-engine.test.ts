@@ -90,6 +90,7 @@ describe('Automation Engine', () => {
     beforeEach(() => {
       mockPrisma.automationExecutionStep.create.mockResolvedValue(executionStep);
       mockPrisma.automationExecutionStep.update.mockResolvedValue(executionStep);
+      mockPrisma.automationExecutionStep.count.mockResolvedValue(0);
       mockPrisma.automationExecution.update.mockResolvedValue({});
     });
 
@@ -101,6 +102,20 @@ describe('Automation Engine', () => {
       expect(mockPrisma.automationExecution.update).toHaveBeenCalledWith({
         where: { id: 'exec_1' },
         data: expect.objectContaining({ status: 'failed' }),
+      });
+    });
+
+    it('should fail execution if max step count exceeded', async () => {
+      mockPrisma.automationExecutionStep.count.mockResolvedValue(100);
+
+      await processAutomationStep('exec_1', 'step_1', {});
+
+      expect(mockPrisma.automationExecution.update).toHaveBeenCalledWith({
+        where: { id: 'exec_1' },
+        data: expect.objectContaining({
+          status: 'failed',
+          errorMessage: expect.stringContaining('maximum step count'),
+        }),
       });
     });
 
@@ -270,6 +285,21 @@ describe('Automation Engine', () => {
         expect(mockPrisma.automationExecutionStep.update).toHaveBeenCalledWith({
           where: { id: 'exstep_1' },
           data: expect.objectContaining({ status: 'completed', output: { delayed: true, delayMs: 30000 } }),
+        });
+      });
+
+      it('should complete execution when delay step has no nextStepId', async () => {
+        const step = buildAutomationStep({
+          id: 'step_1', type: 'delay', config: { delayMs: 30000 }, nextStepId: null,
+        });
+        mockPrisma.automationStep.findUnique.mockResolvedValue(step);
+
+        await processAutomationStep('exec_1', 'step_1', { lead: { id: 'lead_1' } });
+
+        expect(mockAutomationQueue.add).not.toHaveBeenCalled();
+        expect(mockPrisma.automationExecution.update).toHaveBeenCalledWith({
+          where: { id: 'exec_1' },
+          data: expect.objectContaining({ status: 'completed' }),
         });
       });
     });

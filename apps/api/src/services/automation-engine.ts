@@ -3,6 +3,8 @@ import { automationQueue, sendQueue, webhookQueue } from '../queue/index.js';
 import { logger } from '../lib/logger.js';
 import { evaluateCondition } from './condition-evaluator.js';
 
+const MAX_STEPS_PER_EXECUTION = 100;
+
 export async function executeAutomation(
   automationId: string,
   triggerPayload: Record<string, unknown>,
@@ -45,6 +47,22 @@ export async function processAutomationStep(
   stepId: string,
   payload: Record<string, unknown>,
 ): Promise<void> {
+  // Guard against runaway executions (cycles or misconfigured chains)
+  const completedStepCount = await prisma.automationExecutionStep.count({
+    where: { executionId },
+  });
+  if (completedStepCount >= MAX_STEPS_PER_EXECUTION) {
+    await prisma.automationExecution.update({
+      where: { id: executionId },
+      data: {
+        status: 'failed',
+        errorMessage: `Execution exceeded maximum step count (${MAX_STEPS_PER_EXECUTION})`,
+        completedAt: new Date(),
+      },
+    });
+    return;
+  }
+
   const step = await prisma.automationStep.findUnique({ where: { id: stepId } });
   if (!step) {
     await prisma.automationExecution.update({
@@ -154,6 +172,20 @@ export async function processAutomationStep(
 
       case 'delay': {
         const delayMs = (config.delayMs as number) || 60000;
+
+        if (!nextStepId) {
+          // No next step after delay - complete the execution
+          await prisma.automationExecutionStep.update({
+            where: { id: executionStep.id },
+            data: { status: 'completed', output: { delayed: true, delayMs } as never, completedAt: new Date() },
+          });
+          await prisma.automationExecution.update({
+            where: { id: executionId },
+            data: { status: 'completed', completedAt: new Date() },
+          });
+          return;
+        }
+
         await automationQueue.add('process-step', {
           executionId,
           stepId: nextStepId,

@@ -168,20 +168,14 @@ describe('Automations API', () => {
   });
 
   describe('DELETE /api/automations/:id', () => {
-    it('should delete an automation with cascade', async () => {
-      mockPrisma.automationExecutionStep.deleteMany.mockResolvedValue({ count: 0 });
-      mockPrisma.automationExecution.deleteMany.mockResolvedValue({ count: 0 });
-      mockPrisma.automationStep.deleteMany.mockResolvedValue({ count: 2 });
+    it('should delete an automation (relies on CASCADE)', async () => {
       mockPrisma.automation.delete.mockResolvedValue(buildAutomation({ id: 'auto_1' }));
 
       const res = await request(createApp()).delete('/api/automations/auto_1');
 
       expect(res.status).toBe(200);
       expect(res.body.data.id).toBe('auto_1');
-      expect(mockPrisma.automationExecutionStep.deleteMany).toHaveBeenCalled();
-      expect(mockPrisma.automationExecution.deleteMany).toHaveBeenCalled();
-      expect(mockPrisma.automationStep.deleteMany).toHaveBeenCalled();
-      expect(mockPrisma.automation.delete).toHaveBeenCalled();
+      expect(mockPrisma.automation.delete).toHaveBeenCalledWith({ where: { id: 'auto_1' } });
     });
   });
 

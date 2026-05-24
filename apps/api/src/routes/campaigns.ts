@@ -74,7 +74,7 @@ router.post('/:id/activate', async (req: Request, res: Response, next: NextFunct
 
     await campaignQueue.add('execute-campaign', { campaignId: updated.id });
     res.json({ data: updated });
-    publishEvent('campaign.activated', 'campaign', updated.id, { campaign: updated });
+    publishEvent('campaign.activated', 'campaign', updated.id, { campaign: updated }).catch(() => {});
   } catch (err) { next(err); }
 });
 
@@ -85,7 +85,7 @@ router.post('/:id/pause', async (req: Request, res: Response, next: NextFunction
       data: { status: 'paused' },
     });
     res.json({ data });
-    publishEvent('campaign.paused', 'campaign', data.id, { campaign: data });
+    publishEvent('campaign.paused', 'campaign', data.id, { campaign: data }).catch(() => {});
   } catch (err) { next(err); }
 });
 
@@ -107,7 +107,7 @@ router.post('/:id/stop', async (req: Request, res: Response, next: NextFunction)
       data: { status: 'completed' },
     });
     res.json({ data });
-    publishEvent('campaign.completed', 'campaign', data.id, { campaign: data });
+    publishEvent('campaign.completed', 'campaign', data.id, { campaign: data }).catch(() => {});
   } catch (err) { next(err); }
 });
 

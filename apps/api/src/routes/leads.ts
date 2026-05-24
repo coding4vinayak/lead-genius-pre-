@@ -53,7 +53,7 @@ router.post('/', validate(leadSchema), async (req: Request, res: Response, next:
   try {
     const data = await prisma.lead.create({ data: req.body });
     res.status(201).json({ data });
-    publishEvent('lead.created', 'lead', data.id, { lead: data });
+    publishEvent('lead.created', 'lead', data.id, { lead: data }).catch(() => {});
   } catch (err) { next(err); }
 });
 
@@ -62,7 +62,7 @@ router.put('/:id', validate(leadSchema), async (req: Request, res: Response, nex
     const id = req.params.id as string;
     const data = await prisma.lead.update({ where: { id }, data: req.body });
     res.json({ data });
-    publishEvent('lead.updated', 'lead', data.id, { lead: data });
+    publishEvent('lead.updated', 'lead', data.id, { lead: data }).catch(() => {});
   } catch (err) { next(err); }
 });
 
@@ -71,7 +71,7 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
     const id = req.params.id as string;
     await prisma.lead.delete({ where: { id } });
     res.json({ data: { id } });
-    publishEvent('lead.deleted', 'lead', id, { leadId: id });
+    publishEvent('lead.deleted', 'lead', id, { leadId: id }).catch(() => {});
   } catch (err) { next(err); }
 });
 

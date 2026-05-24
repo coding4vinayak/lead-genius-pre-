@@ -199,21 +199,23 @@ async function start() {
     const automations = await db.automation.findMany({
       where: { isActive: true, triggerType: type },
     });
-    for (const automation of automations) {
-      await executeAutomation(automation.id, payload || {});
-    }
+    await Promise.all(
+      automations.map((automation) => executeAutomation(automation.id, payload || {}))
+    );
 
     // Dispatch to outbound webhook subscriptions
     const { createDelivery } = await import('./services/webhook-delivery.js');
     const webhooks = await db.webhookSubscription.findMany({
       where: { isActive: true },
     });
-    for (const webhook of webhooks) {
-      const events = webhook.events as string[];
-      if (events.includes(type)) {
-        await createDelivery(webhook.id, type, payload || {});
-      }
-    }
+    await Promise.all(
+      webhooks
+        .filter((webhook) => {
+          const events = webhook.events as string[];
+          return events.includes(type);
+        })
+        .map((webhook) => createDelivery(webhook.id, type, payload || {}))
+    );
   });
 
   await createWebhookWorker(async (job) => {

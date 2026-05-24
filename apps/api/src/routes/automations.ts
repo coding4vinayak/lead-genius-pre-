@@ -95,15 +95,6 @@ router.put('/:id', validate(createAutomationSchema), async (req: Request, res: R
 
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await prisma.automationExecutionStep.deleteMany({
-      where: { execution: { automationId: req.params.id as string } },
-    });
-    await prisma.automationExecution.deleteMany({
-      where: { automationId: req.params.id as string },
-    });
-    await prisma.automationStep.deleteMany({
-      where: { automationId: req.params.id as string },
-    });
     await prisma.automation.delete({ where: { id: req.params.id as string } });
     res.json({ data: { id: req.params.id as string } });
   } catch (err) { next(err); }
