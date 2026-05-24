@@ -1,5 +1,5 @@
 import { prisma } from '../db.js';
-import { aiQueue } from '../queue/index.js';
+import { aiQueue, sendQueue } from '../queue/index.js';
 import { analyzeMessageIntent, generateReplyDraft } from './ai/index.js';
 import { publishEvent } from './event-bus.js';
 import { logger } from '../lib/logger.js';
@@ -150,11 +150,11 @@ export async function processInboundMessage(messageId: string): Promise<InboundP
   // All checks passed - auto send
   const originalMessage = await prisma.message.findUnique({
     where: { id: messageId },
-    select: { leadId: true, channel: true, subject: true },
+    include: { lead: { select: { email: true, phone: true } } },
   });
 
   if (originalMessage) {
-    await prisma.message.create({
+    const replyMsg = await prisma.message.create({
       data: {
         leadId: originalMessage.leadId,
         channel: originalMessage.channel,
@@ -166,6 +166,20 @@ export async function processInboundMessage(messageId: string): Promise<InboundP
         status: 'queued',
       },
     });
+
+    const to = originalMessage.channel === 'email'
+      ? originalMessage.lead?.email
+      : originalMessage.lead?.phone;
+
+    if (to) {
+      await sendQueue.add('send-message', {
+        messageId: replyMsg.id,
+        channel: originalMessage.channel,
+        to,
+        subject: draft.subject || originalMessage.subject || 'Re: Your message',
+        body: draft.body,
+      });
+    }
   }
 
   await prisma.message.update({

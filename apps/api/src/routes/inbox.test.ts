@@ -8,6 +8,11 @@ import { buildLead, buildMessage } from '../test/factories.js';
 const mockPrisma = createMockPrisma();
 vi.mock('../db.js', () => ({ prisma: mockPrisma }));
 
+vi.mock('../queue/index.js', () => ({
+  sendQueue: { add: vi.fn().mockResolvedValue(undefined) },
+  aiQueue: { add: vi.fn().mockResolvedValue(undefined) },
+}));
+
 vi.mock('../services/ai/index.js', () => ({
   analyzeMessageIntent: vi.fn().mockResolvedValue({ category: 'interested', sentiment: 'positive', urgency: 'medium', confidence: 85 }),
   generateReplyDraft: vi.fn().mockResolvedValue({ subject: 'Re: Test', body: 'Thank you for your interest' }),
@@ -203,6 +208,7 @@ describe('Inbox API', () => {
         id: 'msg_1', leadId: 'lead_1', channel: 'email',
         subject: 'Hello', draftReply: 'Thank you!', reviewStatus: 'pending_review',
       });
+      mockPrisma.lead.findUnique.mockResolvedValue({ email: 'test@example.com', phone: null });
       mockPrisma.message.create.mockResolvedValue(buildMessage({ id: 'reply_1', isAiGenerated: true, reviewStatus: 'approved' }));
       mockPrisma.message.update.mockResolvedValue({});
 

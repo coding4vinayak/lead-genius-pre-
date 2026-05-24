@@ -104,6 +104,12 @@ export async function processAutomationStep(
         const leadId = (payload.lead as Record<string, unknown>)?.id as string || config.leadId as string;
         const field = config.field as string;
         const value = config.value;
+
+        const ALLOWED_FIELDS = ['name', 'company', 'title', 'source', 'status', 'stage', 'score', 'tags', 'customFields'];
+        if (!ALLOWED_FIELDS.includes(field)) {
+          throw new Error(`Field '${field}' is not allowed for update_lead_field. Allowed: ${ALLOWED_FIELDS.join(', ')}`);
+        }
+
         await prisma.lead.update({
           where: { id: leadId },
           data: { [field]: value },

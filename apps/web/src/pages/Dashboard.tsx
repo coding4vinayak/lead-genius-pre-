@@ -53,13 +53,11 @@ export default function Dashboard() {
           icon={<Users size={20} />}
           label="Total Leads"
           value={d.totalLeads}
-          trend={{ value: 12, positive: true }}
         />
         <StatCard
           icon={<BarChart3 size={20} />}
           label="Active Campaigns"
           value={d.activeCampaigns}
-          trend={{ value: 3, positive: true }}
         />
         <StatCard
           icon={<Send size={20} />}
@@ -70,7 +68,6 @@ export default function Dashboard() {
           icon={<TrendingUp size={20} />}
           label="Delivery Rate"
           value={`${d.deliveryRate}%`}
-          trend={{ value: 2, positive: true }}
         />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { prisma } from '../db.js';
 import { validate } from '../middleware/validate.js';
 import { paginationSchema } from '@leadgenius/shared';
-import { aiQueue } from '../queue/index.js';
+import { aiQueue, sendQueue } from '../queue/index.js';
 import { analyzeMessageIntent } from '../services/ai/index.js';
 import { processInboundMessage } from '../services/inbound-ai-pipeline.js';
 
@@ -203,6 +203,11 @@ router.post('/:messageId/approve-draft', async (req: Request, res: Response, nex
       return res.status(400).json({ error: { code: 400, message: 'No draft reply available' } });
     }
 
+    const lead = await prisma.lead.findUnique({
+      where: { id: message.leadId },
+      select: { email: true, phone: true },
+    });
+
     const reply = await prisma.message.create({
       data: {
         leadId: message.leadId,
@@ -215,6 +220,17 @@ router.post('/:messageId/approve-draft', async (req: Request, res: Response, nex
         status: 'queued',
       },
     });
+
+    const to = message.channel === 'email' ? lead?.email : lead?.phone;
+    if (to) {
+      await sendQueue.add('send-message', {
+        messageId: reply.id,
+        channel: message.channel,
+        to,
+        subject: message.subject || 'Re: Your message',
+        body: message.draftReply,
+      });
+    }
 
     await prisma.message.update({
       where: { id: messageId },

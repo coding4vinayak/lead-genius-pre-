@@ -43,14 +43,17 @@ export async function enrollLeadsInSequence(sequenceId: string, leadIds: string[
 }
 
 /**
- * Check if current time is within the sending window for a sequence
+ * Check if current time is within the sending window for a sequence.
+ * NOTE: Timezone-aware comparison requires a library like luxon or date-fns-tz.
+ * For now, we use the server's local time as a reasonable default.
+ * Full timezone support (using sequence.timezone) is a future enhancement.
  */
 function isInSendingWindow(sequence: { sendingWindowStart: string | null; sendingWindowEnd: string | null; timezone: string }): boolean {
   if (!sequence.sendingWindowStart || !sequence.sendingWindowEnd) return true;
 
   const now = new Date();
-  const hours = now.getUTCHours();
-  const minutes = now.getUTCMinutes();
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
   const currentTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 
   return currentTime >= sequence.sendingWindowStart && currentTime <= sequence.sendingWindowEnd;
@@ -357,32 +360,48 @@ export async function processSequenceStep(enrollmentId: string): Promise<void> {
 }
 
 /**
+ * In-process mutex to prevent overlapping tick executions.
+ */
+let isTickRunning = false;
+
+/**
  * Tick sequences - called by cron every minute.
  * Finds enrollments that are due to be processed and processes them.
+ * Uses a simple in-process mutex to prevent overlapping ticks.
  */
 export async function tickSequences(): Promise<number> {
-  const now = new Date();
-
-  const dueEnrollments = await prisma.sequenceEnrollment.findMany({
-    where: {
-      status: 'active',
-      nextRunAt: { lte: now },
-      sequence: { status: 'active' },
-    },
-    take: 100, // Process in batches
-  });
-
-  let processed = 0;
-  for (const enrollment of dueEnrollments) {
-    try {
-      await processSequenceStep(enrollment.id);
-      processed++;
-    } catch (err) {
-      logger.error('Failed to process sequence enrollment', { enrollmentId: enrollment.id, error: (err as Error).message });
-    }
+  if (isTickRunning) {
+    logger.warn('Sequence tick skipped: previous tick still running');
+    return 0;
   }
 
-  return processed;
+  isTickRunning = true;
+  try {
+    const now = new Date();
+
+    const dueEnrollments = await prisma.sequenceEnrollment.findMany({
+      where: {
+        status: 'active',
+        nextRunAt: { lte: now },
+        sequence: { status: 'active' },
+      },
+      take: 100, // Process in batches
+    });
+
+    let processed = 0;
+    for (const enrollment of dueEnrollments) {
+      try {
+        await processSequenceStep(enrollment.id);
+        processed++;
+      } catch (err) {
+        logger.error('Failed to process sequence enrollment', { enrollmentId: enrollment.id, error: (err as Error).message });
+      }
+    }
+
+    return processed;
+  } finally {
+    isTickRunning = false;
+  }
 }
 
 /**

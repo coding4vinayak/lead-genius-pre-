@@ -16,6 +16,11 @@ vi.mock('./event-bus.js', () => ({
   publishEvent: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock('../queue/index.js', () => ({
+  sendQueue: { add: vi.fn().mockResolvedValue(undefined) },
+  aiQueue: { add: vi.fn().mockResolvedValue(undefined) },
+}));
+
 const { processInboundMessage } = await import('./inbound-ai-pipeline.js');
 
 describe('Inbound AI Pipeline', () => {
@@ -106,9 +111,10 @@ describe('Inbound AI Pipeline', () => {
     mockAnalyzeMessageIntent.mockResolvedValue({ category: 'interested', confidence: 85 });
     mockGenerateReplyDraft.mockResolvedValue({ subject: 'Re: Test', body: 'Great to hear!' });
     mockPrisma.message.count.mockResolvedValue(5);
-    mockPrisma.message.findUnique.mockResolvedValue(
-      buildMessage({ id: 'msg_1', leadId: 'lead_1', channel: 'email', subject: 'Hello' }),
-    );
+    mockPrisma.message.findUnique.mockResolvedValue({
+      ...buildMessage({ id: 'msg_1', leadId: 'lead_1', channel: 'email', subject: 'Hello' }),
+      lead: { email: 'test@example.com', phone: null },
+    });
     mockPrisma.message.create.mockResolvedValue(buildMessage({ id: 'reply_1' }));
     mockPrisma.message.update.mockResolvedValue({});
 
