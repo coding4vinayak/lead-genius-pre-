@@ -3,6 +3,7 @@ import { prisma } from '../db.js';
 import { AppError } from '../lib/errors.js';
 import { aiQueue } from '../queue/index.js';
 import { verifyWebhook } from '../middleware/webhook-verify.js';
+import { publishEvent } from '../services/event-bus.js';
 
 const router = Router();
 
@@ -38,6 +39,7 @@ router.post('/email', verifyWebhook, async (req: Request, res: Response, next: N
       await prisma.lead.update({ where: { id: lead.id }, data: { lastContactedAt: new Date() } });
 
       await aiQueue.add('analyze-intent', { messageId: inboundMsg.id });
+      publishEvent('message.received', 'message', inboundMsg.id, { message: inboundMsg, leadId: lead.id, channel: 'email' });
     }
     res.json({ data: { processed: true } });
   } catch (err) { next(err); }
@@ -59,6 +61,7 @@ router.post('/whatsapp', verifyWebhook, async (req: Request, res: Response, next
     await prisma.lead.update({ where: { id: lead.id }, data: { lastContactedAt: new Date() } });
 
     await aiQueue.add('analyze-intent', { messageId: inboundMsg.id });
+    publishEvent('message.received', 'message', inboundMsg.id, { message: inboundMsg, leadId: lead.id, channel: 'whatsapp' });
     res.json({ data: { processed: true } });
   } catch (err) { next(err); }
 });
