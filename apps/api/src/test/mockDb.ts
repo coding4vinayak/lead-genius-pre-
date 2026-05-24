@@ -53,6 +53,7 @@ export interface MockPrismaClient {
   task: MockModel;
   $connect: MockFn;
   $disconnect: MockFn;
+  $transaction: MockFn;
 }
 
 export function createMockPrisma(): MockPrismaClient {
@@ -77,5 +78,6 @@ export function createMockPrisma(): MockPrismaClient {
     task: mockModel(),
     $connect: vi.fn(),
     $disconnect: vi.fn(),
+    $transaction: vi.fn().mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => fn(createMockPrisma())),
   };
 }

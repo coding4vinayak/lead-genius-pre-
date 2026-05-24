@@ -6,7 +6,7 @@ import { prisma } from './db.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { requireAuth } from './middleware/auth.js';
 import { logger } from './lib/logger.js';
-import { createCampaignWorker, createSendWorker, createAiWorker, campaignQueue, sendQueue } from './queue/index.js';
+import { createCampaignWorker, createSendWorker, createAiWorker, createEventWorker, createAutomationWorker, campaignQueue, sendQueue } from './queue/index.js';
 
 import authRoutes from './routes/auth.js';
 import leadRoutes from './routes/leads.js';
@@ -20,6 +20,7 @@ import webhookRoutes from './routes/webhooks.js';
 import aiRoutes from './routes/ai.js';
 import inboxRoutes from './routes/inbox.js';
 import agentRoutes from './routes/agent.js';
+import automationRoutes from './routes/automations.js';
 import { sendEmail } from './services/email.js';
 import { sendWhatsApp } from './services/whatsapp.js';
 import { renderTemplate } from './services/template.js';
@@ -47,6 +48,7 @@ app.use('/api/settings', requireAuth, settingsRoutes);
 app.use('/api/ai', requireAuth, aiRoutes);
 app.use('/api/inbox', requireAuth, inboxRoutes);
 app.use('/api/agent', requireAuth, agentRoutes);
+app.use('/api/automations', requireAuth, automationRoutes);
 app.use('/webhook', webhookRoutes);
 
 if (process.env.EMAIL_SANDBOX !== 'false') {
@@ -170,6 +172,23 @@ async function start() {
       await enrichLeadData(data.leadId);
     } else if (name === 'generate-campaign') {
       await generateCampaignSequence(data.name, data.industry, data.product, data.channel, data.targetCount);
+    }
+  });
+
+  await createAutomationWorker(async (job) => {
+    const { processAutomationStep } = await import('./services/automation-engine.js');
+    const { executionId, stepId, payload } = job.data;
+    await processAutomationStep(executionId, stepId, payload);
+  });
+
+  await createEventWorker(async (job) => {
+    const { executeAutomation } = await import('./services/automation-engine.js');
+    const { type, payload } = job.data;
+    const automations = await db.automation.findMany({
+      where: { isActive: true, triggerType: type },
+    });
+    for (const automation of automations) {
+      await executeAutomation(automation.id, payload || {});
     }
   });
 
