@@ -15,6 +15,10 @@ vi.mock('../services/ai/index.js', () => ({
   generateCampaignSequence: vi.fn().mockResolvedValue({ steps: [{ subject: 'Step 1', body: 'Hello' }] }),
 }));
 
+vi.mock('../services/inbound-ai-pipeline.js', () => ({
+  processInboundMessage: vi.fn().mockResolvedValue({ action: 'draft_generated', messageId: 'msg_1' }),
+}));
+
 const { default: inboxRoutes } = await import('./inbox.js');
 
 function createApp() {
@@ -163,6 +167,163 @@ describe('Inbox API', () => {
         .send({ draftBody: 'Hello' });
 
       expect(res.status).toBe(404);
+    });
+  });
+
+  describe('GET /api/inbox/review-queue', () => {
+    it('should return messages pending review', async () => {
+      const messages = [
+        buildMessage({ id: 'msg_1', direction: 'inbound', reviewStatus: 'pending_review', draftReply: 'Draft reply' }),
+      ];
+      mockPrisma.message.findMany.mockResolvedValue(messages);
+      mockPrisma.message.count.mockResolvedValue(1);
+
+      const res = await request(createApp()).get('/api/inbox/review-queue?page=1&pageSize=20');
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toHaveLength(1);
+      expect(res.body.meta.total).toBe(1);
+    });
+
+    it('should return empty list when no pending reviews', async () => {
+      mockPrisma.message.findMany.mockResolvedValue([]);
+      mockPrisma.message.count.mockResolvedValue(0);
+
+      const res = await request(createApp()).get('/api/inbox/review-queue');
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toHaveLength(0);
+      expect(res.body.meta.total).toBe(0);
+    });
+  });
+
+  describe('POST /api/inbox/:messageId/approve-draft', () => {
+    it('should approve a pending draft and create outbound message', async () => {
+      mockPrisma.message.findUnique.mockResolvedValue({
+        id: 'msg_1', leadId: 'lead_1', channel: 'email',
+        subject: 'Hello', draftReply: 'Thank you!', reviewStatus: 'pending_review',
+      });
+      mockPrisma.message.create.mockResolvedValue(buildMessage({ id: 'reply_1', isAiGenerated: true, reviewStatus: 'approved' }));
+      mockPrisma.message.update.mockResolvedValue({});
+
+      const res = await request(createApp())
+        .post('/api/inbox/msg_1/approve-draft');
+
+      expect(res.status).toBe(200);
+      expect(mockPrisma.message.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          leadId: 'lead_1',
+          direction: 'outbound',
+          isAiGenerated: true,
+          reviewStatus: 'approved',
+          status: 'queued',
+        }),
+      });
+    });
+
+    it('should return 404 for non-existent message', async () => {
+      mockPrisma.message.findUnique.mockResolvedValue(null);
+
+      const res = await request(createApp())
+        .post('/api/inbox/nonexistent/approve-draft');
+
+      expect(res.status).toBe(404);
+    });
+
+    it('should return 400 if message is not pending review', async () => {
+      mockPrisma.message.findUnique.mockResolvedValue({
+        id: 'msg_1', reviewStatus: 'approved', draftReply: 'Hi',
+      });
+
+      const res = await request(createApp())
+        .post('/api/inbox/msg_1/approve-draft');
+
+      expect(res.status).toBe(400);
+    });
+
+    it('should return 400 if no draft reply exists', async () => {
+      mockPrisma.message.findUnique.mockResolvedValue({
+        id: 'msg_1', reviewStatus: 'pending_review', draftReply: null,
+      });
+
+      const res = await request(createApp())
+        .post('/api/inbox/msg_1/approve-draft');
+
+      expect(res.status).toBe(400);
+    });
+  });
+
+  describe('POST /api/inbox/:messageId/reject-draft', () => {
+    it('should reject a pending draft', async () => {
+      mockPrisma.message.findUnique.mockResolvedValue({
+        id: 'msg_1', leadId: 'lead_1', channel: 'email',
+        subject: 'Hello', reviewStatus: 'pending_review',
+      });
+      mockPrisma.message.update.mockResolvedValue({});
+
+      const res = await request(createApp())
+        .post('/api/inbox/msg_1/reject-draft');
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.rejected).toBe(true);
+      expect(res.body.data.reply).toBeNull();
+    });
+
+    it('should reject a draft and send manual reply', async () => {
+      mockPrisma.message.findUnique.mockResolvedValue({
+        id: 'msg_1', leadId: 'lead_1', channel: 'email',
+        subject: 'Hello', reviewStatus: 'pending_review',
+      });
+      mockPrisma.message.update.mockResolvedValue({});
+      mockPrisma.message.create.mockResolvedValue(buildMessage({ id: 'reply_1', isAiGenerated: false }));
+
+      const res = await request(createApp())
+        .post('/api/inbox/msg_1/reject-draft')
+        .send({ manualReply: 'My custom reply' });
+
+      expect(res.status).toBe(200);
+      expect(mockPrisma.message.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          body: 'My custom reply',
+          isAiGenerated: false,
+        }),
+      });
+    });
+
+    it('should return 404 for non-existent message', async () => {
+      mockPrisma.message.findUnique.mockResolvedValue(null);
+
+      const res = await request(createApp())
+        .post('/api/inbox/nonexistent/reject-draft');
+
+      expect(res.status).toBe(404);
+    });
+
+    it('should return 400 if message is not pending review', async () => {
+      mockPrisma.message.findUnique.mockResolvedValue({
+        id: 'msg_1', reviewStatus: 'approved',
+      });
+
+      const res = await request(createApp())
+        .post('/api/inbox/msg_1/reject-draft');
+
+      expect(res.status).toBe(400);
+    });
+  });
+
+  describe('GET /api/inbox/stats', () => {
+    it('should return inbox statistics', async () => {
+      mockPrisma.message.count
+        .mockResolvedValueOnce(5)
+        .mockResolvedValueOnce(3)
+        .mockResolvedValueOnce(10);
+
+      const res = await request(createApp()).get('/api/inbox/stats');
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.unread).toBe(5);
+      expect(res.body.data.pendingReviews).toBe(3);
+      expect(res.body.data.autoRepliedToday).toBe(10);
     });
   });
 });

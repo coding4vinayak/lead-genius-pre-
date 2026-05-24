@@ -20,6 +20,10 @@ vi.mock('../services/channel-health.js', () => ({
   updateChannelMetrics: vi.fn().mockResolvedValue({}),
 }));
 
+vi.mock('../services/inbound-ai-pipeline.js', () => ({
+  processInboundMessage: vi.fn().mockResolvedValue({ action: 'draft_generated', messageId: 'msg_1' }),
+}));
+
 const { default: webhookRoutes } = await import('./webhooks.js');
 
 function createApp() {

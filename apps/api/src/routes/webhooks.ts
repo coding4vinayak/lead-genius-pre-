@@ -6,6 +6,7 @@ import { verifyWebhook } from '../middleware/webhook-verify.js';
 import { publishEvent } from '../services/event-bus.js';
 import { handleScoringEvent } from '../services/lead-scoring.js';
 import { updateChannelMetrics } from '../services/channel-health.js';
+import { processInboundMessage } from '../services/inbound-ai-pipeline.js';
 
 const router = Router();
 
@@ -65,7 +66,7 @@ router.post('/email', verifyWebhook, async (req: Request, res: Response, next: N
         }
       }
 
-      await aiQueue.add('analyze-intent', { messageId: inboundMsg.id });
+      await processInboundMessage(inboundMsg.id).catch(() => {});
       publishEvent('message.received', 'message', inboundMsg.id, { message: inboundMsg, leadId: lead.id, channel: 'email' });
       handleScoringEvent(lead.id, 'reply').catch(() => {});
     }
@@ -102,7 +103,7 @@ router.post('/whatsapp', verifyWebhook, async (req: Request, res: Response, next
       }
     }
 
-    await aiQueue.add('analyze-intent', { messageId: inboundMsg.id });
+    await processInboundMessage(inboundMsg.id).catch(() => {});
     publishEvent('message.received', 'message', inboundMsg.id, { message: inboundMsg, leadId: lead.id, channel: 'whatsapp' });
     handleScoringEvent(lead.id, 'reply').catch(() => {});
     updateChannelMetrics('whatsapp', 'delivered').catch(() => {});

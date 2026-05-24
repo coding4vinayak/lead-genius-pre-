@@ -75,3 +75,6 @@ export type WhatsAppTemplateCategory = (typeof WHATSAPP_TEMPLATE_CATEGORY)[numbe
 
 export const DOMAIN_AUTH_STATUS = ['verified', 'pending', 'failed'] as const;
 export type DomainAuthStatus = (typeof DOMAIN_AUTH_STATUS)[number];
+
+export const REVIEW_STATUS = ['pending_review', 'approved', 'rejected', 'auto_sent'] as const;
+export type ReviewStatus = (typeof REVIEW_STATUS)[number];

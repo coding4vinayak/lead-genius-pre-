@@ -228,6 +228,7 @@ model Message {
   isAiGenerated   Boolean       @default(false)
   intentAnalysis  Json?
   draftReply      String?
+  reviewStatus    String?
   deliveredAt     DateTime?
   readAt          DateTime?
   createdAt       DateTime      @default(now())
@@ -239,6 +240,7 @@ model Message {
   @@index([leadId])
   @@index([status])
   @@index([createdAt])
+  @@index([reviewStatus])
 }
 
 model User {
@@ -289,6 +291,9 @@ model AgentSettings {
   workingHoursStart  String?
   workingHoursEnd    String?
   humanHandoffRules  Json?
+  autoReplyEnabled   Boolean    @default(false)
+  reviewQueueEnabled Boolean    @default(true)
+  excludedIntents    String[]
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
 }
