@@ -6,7 +6,7 @@ import { prisma } from './db.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { requireAuth } from './middleware/auth.js';
 import { logger } from './lib/logger.js';
-import { createCampaignWorker, createSendWorker, createAiWorker, createEventWorker, createAutomationWorker, createWebhookWorker, campaignQueue, sendQueue } from './queue/index.js';
+import { createCampaignWorker, createSendWorker, createAiWorker, createEventWorker, createAutomationWorker, createWebhookWorker, createSequenceWorker, campaignQueue, sendQueue } from './queue/index.js';
 
 import authRoutes from './routes/auth.js';
 import leadRoutes from './routes/leads.js';
@@ -27,6 +27,7 @@ import hooksRoutes from './routes/hooks.js';
 import integrationRoutes from './routes/integrations.js';
 import taskRoutes from './routes/tasks.js';
 import eventRoutes from './routes/events.js';
+import sequenceRoutes from './routes/sequences.js';
 import { sendEmail } from './services/email.js';
 import { sendWhatsApp } from './services/whatsapp.js';
 import { renderTemplate } from './services/template.js';
@@ -61,6 +62,7 @@ app.use('/api/inbound-webhooks', requireAuth, inboundWebhookRoutes);
 app.use('/api/integrations', requireAuth, integrationRoutes);
 app.use('/api/tasks', requireAuth, taskRoutes);
 app.use('/api/events', requireAuth, eventRoutes);
+app.use('/api/sequences', requireAuth, sequenceRoutes);
 app.use('/webhook', webhookRoutes);
 
 if (process.env.EMAIL_SANDBOX !== 'false') {
@@ -223,6 +225,22 @@ async function start() {
     const { deliveryId } = job.data;
     await deliverWebhook(deliveryId);
   });
+
+  await createSequenceWorker(async (job) => {
+    const { processSequenceStep } = await import('./services/sequence-engine.js');
+    const { enrollmentId } = job.data;
+    await processSequenceStep(enrollmentId);
+  });
+
+  // Sequence ticker - runs every 60 seconds
+  setInterval(async () => {
+    try {
+      const { tickSequences } = await import('./services/sequence-engine.js');
+      await tickSequences();
+    } catch (err) {
+      logger.error('Sequence tick failed', { error: (err as Error).message });
+    }
+  }, 60_000);
 
   app.listen(config.port, () => {
     logger.info(`API server running on port ${config.port}`);

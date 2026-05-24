@@ -71,6 +71,46 @@ enum IntentCategory {
   other
 }
 
+enum LeadStage {
+  new
+  contacted
+  engaged
+  warm
+  hot
+  converted
+  lost
+}
+
+enum SequenceStatus {
+  draft
+  active
+  paused
+  completed
+}
+
+enum SequenceStepType {
+  send_email
+  send_whatsapp
+  delay
+  condition
+  update_lead_stage
+  update_lead_score
+}
+
+enum SequenceEnrollmentStatus {
+  active
+  paused
+  completed
+  exited
+}
+
+enum SequenceStepExecutionStatus {
+  pending
+  completed
+  failed
+  skipped
+}
+
 model Lead {
   id              String     @id @default(cuid())
   email           String?
@@ -83,6 +123,7 @@ model Lead {
   tags            String[]
   customFields    Json?
   score           Int?
+  stage           LeadStage  @default(new)
   enrichmentData  Json?
   intentAnalysis  Json?
   currentStep     String?
@@ -91,13 +132,15 @@ model Lead {
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 
-  groupMembers GroupMember[]
-  messages     Message[]
+  groupMembers        GroupMember[]
+  messages            Message[]
+  sequenceEnrollments SequenceEnrollment[]
 
   @@index([status])
   @@index([email])
   @@index([tags])
   @@index([score])
+  @@index([stage])
 }
 
 model LeadGroup {
@@ -504,4 +547,85 @@ model Task {
   @@index([assigneeId])
   @@index([automationId])
   @@index([dueDate])
+}
+
+model Sequence {
+  id                 String         @id @default(cuid())
+  name               String
+  description        String?
+  status             SequenceStatus @default(draft)
+  leadGroupIds       String[]
+  triggerType        String         @default("manual")
+  triggerConfig      Json           @default("{}")
+  pauseOnReply       Boolean        @default(true)
+  sendingWindowStart String?
+  sendingWindowEnd   String?
+  dailyLimit         Int?
+  timezone           String         @default("UTC")
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  steps       SequenceStep[]
+  enrollments SequenceEnrollment[]
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model SequenceStep {
+  id                   String           @id @default(cuid())
+  sequenceId           String
+  position             Int
+  type                 SequenceStepType
+  config               Json             @default("{}")
+  nextStepId           String?
+  conditionTrueStepId  String?
+  conditionFalseStepId String?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  sequence   Sequence                @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  executions SequenceStepExecution[]
+
+  @@index([sequenceId])
+  @@index([position])
+}
+
+model SequenceEnrollment {
+  id            String                     @id @default(cuid())
+  sequenceId    String
+  leadId        String
+  status        SequenceEnrollmentStatus   @default(active)
+  currentStepId String?
+  nextRunAt     DateTime?
+  startedAt     DateTime                   @default(now())
+  completedAt   DateTime?
+  exitReason    String?
+  createdAt     DateTime                   @default(now())
+  updatedAt     DateTime                   @updatedAt
+
+  sequence       Sequence                @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  lead           Lead                    @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  stepExecutions SequenceStepExecution[]
+
+  @@index([sequenceId])
+  @@index([leadId])
+  @@index([status])
+  @@index([nextRunAt])
+}
+
+model SequenceStepExecution {
+  id           String                       @id @default(cuid())
+  enrollmentId String
+  stepId       String
+  status       SequenceStepExecutionStatus  @default(pending)
+  executedAt   DateTime?
+  result       Json?
+  createdAt    DateTime                     @default(now())
+
+  enrollment SequenceEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  step       SequenceStep       @relation(fields: [stepId], references: [id], onDelete: Cascade)
+
+  @@index([enrollmentId])
+  @@index([stepId])
 }

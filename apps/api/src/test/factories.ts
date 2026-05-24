@@ -276,3 +276,69 @@ export function buildTask(overrides: Record<string, unknown> = {}) {
     ...overrides,
   };
 }
+
+export function buildSequence(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'seq_' + Math.random().toString(36).slice(2, 9),
+    name: 'Test Sequence',
+    description: 'A test drip sequence',
+    status: 'draft',
+    leadGroupIds: ['group_1'],
+    triggerType: 'manual',
+    triggerConfig: {},
+    pauseOnReply: true,
+    sendingWindowStart: null,
+    sendingWindowEnd: null,
+    dailyLimit: null,
+    timezone: 'UTC',
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildSequenceStep(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'seqstep_' + Math.random().toString(36).slice(2, 9),
+    sequenceId: 'seq_1',
+    position: 0,
+    type: 'send_email',
+    config: { templateId: 'tmpl_1' },
+    nextStepId: null,
+    conditionTrueStepId: null,
+    conditionFalseStepId: null,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildSequenceEnrollment(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'enroll_' + Math.random().toString(36).slice(2, 9),
+    sequenceId: 'seq_1',
+    leadId: 'lead_1',
+    status: 'active',
+    currentStepId: 'seqstep_1',
+    nextRunAt: new Date('2025-01-01T00:00:00Z'),
+    startedAt: new Date('2025-01-01T00:00:00Z'),
+    completedAt: null,
+    exitReason: null,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildSequenceStepExecution(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'seqexec_' + Math.random().toString(36).slice(2, 9),
+    enrollmentId: 'enroll_1',
+    stepId: 'seqstep_1',
+    status: 'completed',
+    executedAt: new Date('2025-01-01T00:00:00Z'),
+    result: null,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}

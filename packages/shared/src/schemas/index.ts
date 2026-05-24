@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LEAD_STATUS, CHANNEL, MESSAGE_STATUS, CAMPAIGN_STATUS, SCHEDULE_TYPE, SEND_STRATEGY, AI_PROVIDER, INTENT_CATEGORY, AUTOMATION_STATUS, AUTOMATION_TRIGGER_TYPE, AUTOMATION_STEP_TYPE, AUTOMATION_EXECUTION_STATUS, WEBHOOK_EVENT, INTEGRATION_TYPE, TASK_STATUS, TASK_PRIORITY } from '../types';
+import { LEAD_STATUS, CHANNEL, MESSAGE_STATUS, CAMPAIGN_STATUS, SCHEDULE_TYPE, SEND_STRATEGY, AI_PROVIDER, INTENT_CATEGORY, AUTOMATION_STATUS, AUTOMATION_TRIGGER_TYPE, AUTOMATION_STEP_TYPE, AUTOMATION_EXECUTION_STATUS, WEBHOOK_EVENT, INTEGRATION_TYPE, TASK_STATUS, TASK_PRIORITY, SEQUENCE_STATUS, SEQUENCE_STEP_TYPE, SEQUENCE_ENROLLMENT_STATUS, LEAD_STAGE } from '../types';
 
 export const leadSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
@@ -170,3 +170,29 @@ export type WebhookSubscriptionInput = z.infer<typeof webhookSubscriptionSchema>
 export type IntegrationInput = z.infer<typeof integrationSchema>;
 export type TaskInput = z.infer<typeof taskSchema>;
 export type InboundWebhookInput = z.infer<typeof inboundWebhookSchema>;
+
+export const sequenceSchema = z.object({
+  name: z.string().min(1, 'Sequence name is required'),
+  description: z.string().optional(),
+  status: z.enum(SEQUENCE_STATUS).default('draft'),
+  leadGroupIds: z.array(z.string()).default([]),
+  triggerType: z.enum(['manual', 'on_lead_created', 'on_tag_added'] as const).default('manual'),
+  triggerConfig: z.record(z.unknown()).default({}),
+  pauseOnReply: z.boolean().default(true),
+  sendingWindowStart: z.string().optional(),
+  sendingWindowEnd: z.string().optional(),
+  dailyLimit: z.number().int().positive().optional(),
+  timezone: z.string().default('UTC'),
+});
+
+export const sequenceStepSchema = z.object({
+  position: z.number().int().min(0),
+  type: z.enum(SEQUENCE_STEP_TYPE),
+  config: z.record(z.unknown()).default({}),
+  nextStepId: z.string().optional(),
+  conditionTrueStepId: z.string().optional(),
+  conditionFalseStepId: z.string().optional(),
+});
+
+export type SequenceInput = z.infer<typeof sequenceSchema>;
+export type SequenceStepInput = z.infer<typeof sequenceStepSchema>;

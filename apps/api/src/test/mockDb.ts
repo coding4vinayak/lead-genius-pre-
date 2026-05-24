@@ -14,6 +14,7 @@ export interface MockModel {
   upsert: MockFn;
   delete: MockFn;
   deleteMany: MockFn;
+  groupBy: MockFn;
 }
 
 function mockModel(): MockModel {
@@ -29,6 +30,7 @@ function mockModel(): MockModel {
     upsert: vi.fn(),
     delete: vi.fn(),
     deleteMany: vi.fn(),
+    groupBy: vi.fn(),
   };
 }
 
@@ -51,6 +53,10 @@ export interface MockPrismaClient {
   inboundWebhook: MockModel;
   integration: MockModel;
   task: MockModel;
+  sequence: MockModel;
+  sequenceStep: MockModel;
+  sequenceEnrollment: MockModel;
+  sequenceStepExecution: MockModel;
   $connect: MockFn;
   $disconnect: MockFn;
   $transaction: MockFn;
@@ -76,6 +82,10 @@ export function createMockPrisma(): MockPrismaClient {
     inboundWebhook: mockModel(),
     integration: mockModel(),
     task: mockModel(),
+    sequence: mockModel(),
+    sequenceStep: mockModel(),
+    sequenceEnrollment: mockModel(),
+    sequenceStepExecution: mockModel(),
     $connect: vi.fn(),
     $disconnect: vi.fn(),
     $transaction: vi.fn().mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => fn(createMockPrisma())),

@@ -32,3 +32,4 @@ export async function createAiWorker(handler: (job: any) => Promise<void>) {
 export { eventQueue, createEventWorker } from './event-queue.js';
 export { automationQueue, createAutomationWorker } from './automation-queue.js';
 export { webhookQueue, createWebhookWorker } from './webhook-queue.js';
+export { sequenceQueue, createSequenceWorker } from './sequence-queue.js';
