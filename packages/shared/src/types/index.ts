@@ -63,3 +63,15 @@ export type SequenceEnrollmentStatus = (typeof SEQUENCE_ENROLLMENT_STATUS)[numbe
 
 export const LEAD_STAGE = ['new', 'contacted', 'engaged', 'warm', 'hot', 'converted', 'lost'] as const;
 export type LeadStage = (typeof LEAD_STAGE)[number];
+
+export const CHANNEL_HEALTH_STATUS = ['healthy', 'degraded', 'down'] as const;
+export type ChannelHealthStatus = (typeof CHANNEL_HEALTH_STATUS)[number];
+
+export const WHATSAPP_TEMPLATE_STATUS = ['pending', 'approved', 'rejected'] as const;
+export type WhatsAppTemplateStatus = (typeof WHATSAPP_TEMPLATE_STATUS)[number];
+
+export const WHATSAPP_TEMPLATE_CATEGORY = ['marketing', 'utility', 'authentication'] as const;
+export type WhatsAppTemplateCategory = (typeof WHATSAPP_TEMPLATE_CATEGORY)[number];
+
+export const DOMAIN_AUTH_STATUS = ['verified', 'pending', 'failed'] as const;
+export type DomainAuthStatus = (typeof DOMAIN_AUTH_STATUS)[number];

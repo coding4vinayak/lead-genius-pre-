@@ -342,3 +342,57 @@ export function buildSequenceStepExecution(overrides: Record<string, unknown> = 
     ...overrides,
   };
 }
+
+export function buildChannelHealth(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'ch_' + Math.random().toString(36).slice(2, 9),
+    channel: 'email',
+    provider: 'smtp',
+    status: 'healthy',
+    dailySent: 100,
+    dailyBounced: 2,
+    dailyComplaints: 0,
+    deliveryRate: 98,
+    bounceRate: 2,
+    lastCheckedAt: new Date('2025-01-01T00:00:00Z'),
+    lastErrorMessage: null,
+    quotaUsed: 100,
+    quotaLimit: 10000,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildWhatsAppTemplate(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'wat_' + Math.random().toString(36).slice(2, 9),
+    name: 'Welcome Template',
+    language: 'en',
+    category: 'marketing',
+    status: 'approved',
+    body: 'Hello {{name}}, welcome to our service!',
+    headerType: null,
+    headerContent: null,
+    footerText: null,
+    buttons: null,
+    twilioTemplateSid: null,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildEmailDomainAuth(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'eda_' + Math.random().toString(36).slice(2, 9),
+    domain: 'example.com',
+    spfStatus: 'verified',
+    dkimStatus: 'verified',
+    dmarcStatus: 'pending',
+    lastVerifiedAt: new Date('2025-01-01T00:00:00Z'),
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}

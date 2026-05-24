@@ -57,6 +57,8 @@ const fakeDb = {
   message: createStore<any>(),
   settings: createStore<any>(),
   agentSettings: createStore<any>(),
+  sequenceEnrollment: createStore<any>(),
+  channelHealth: createStore<any>(),
 };
 
 fakeDb.settings.items.set('global', {
@@ -206,7 +208,7 @@ function makeInMemoryPrisma() {
     return items;
   }
 
-  const models = ['lead', 'campaign', 'template', 'message', 'settings', 'agentSettings', 'group'] as const;
+  const models = ['lead', 'campaign', 'template', 'message', 'settings', 'agentSettings', 'group', 'sequenceEnrollment', 'channelHealth'] as const;
   const handlers: Record<string, any> = {};
 
   for (const m of models) {
@@ -274,7 +276,7 @@ function makeInMemoryPrisma() {
     };
   }
 
-  return { lead: handlers.lead, campaign: handlers.campaign, template: handlers.template, message: handlers.message, settings: handlers.settings, agentSettings: handlers.agentSettings, leadGroup: handlers.group };
+  return { lead: handlers.lead, campaign: handlers.campaign, template: handlers.template, message: handlers.message, settings: handlers.settings, agentSettings: handlers.agentSettings, leadGroup: handlers.group, sequenceEnrollment: handlers.sequenceEnrollment, channelHealth: handlers.channelHealth };
 }
 
 const mockPrisma = makeInMemoryPrisma();

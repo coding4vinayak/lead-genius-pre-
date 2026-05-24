@@ -629,3 +629,57 @@ model SequenceStepExecution {
   @@index([enrollmentId])
   @@index([stepId])
 }
+
+model ChannelHealth {
+  id              String   @id @default(cuid())
+  channel         Channel
+  provider        String
+  status          String   @default("healthy")
+  dailySent       Int      @default(0)
+  dailyBounced    Int      @default(0)
+  dailyComplaints Int      @default(0)
+  deliveryRate    Float    @default(100)
+  bounceRate      Float    @default(0)
+  lastCheckedAt   DateTime @default(now())
+  lastErrorMessage String?
+  quotaUsed       Int      @default(0)
+  quotaLimit      Int?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([channel, provider])
+  @@index([channel])
+  @@index([status])
+}
+
+model WhatsAppTemplate {
+  id               String   @id @default(cuid())
+  name             String
+  language         String   @default("en")
+  category         String   @default("marketing")
+  status           String   @default("pending")
+  body             String
+  headerType       String?
+  headerContent    String?
+  footerText       String?
+  buttons          Json?
+  twilioTemplateSid String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([status])
+  @@index([category])
+}
+
+model EmailDomainAuth {
+  id             String    @id @default(cuid())
+  domain         String    @unique
+  spfStatus      String    @default("pending")
+  dkimStatus     String    @default("pending")
+  dmarcStatus    String    @default("pending")
+  lastVerifiedAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([domain])
+}

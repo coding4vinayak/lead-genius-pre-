@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LEAD_STATUS, CHANNEL, MESSAGE_STATUS, CAMPAIGN_STATUS, SCHEDULE_TYPE, SEND_STRATEGY, AI_PROVIDER, INTENT_CATEGORY, AUTOMATION_STATUS, AUTOMATION_TRIGGER_TYPE, AUTOMATION_STEP_TYPE, AUTOMATION_EXECUTION_STATUS, WEBHOOK_EVENT, INTEGRATION_TYPE, TASK_STATUS, TASK_PRIORITY, SEQUENCE_STATUS, SEQUENCE_STEP_TYPE, SEQUENCE_ENROLLMENT_STATUS, LEAD_STAGE } from '../types';
+import { LEAD_STATUS, CHANNEL, MESSAGE_STATUS, CAMPAIGN_STATUS, SCHEDULE_TYPE, SEND_STRATEGY, AI_PROVIDER, INTENT_CATEGORY, AUTOMATION_STATUS, AUTOMATION_TRIGGER_TYPE, AUTOMATION_STEP_TYPE, AUTOMATION_EXECUTION_STATUS, WEBHOOK_EVENT, INTEGRATION_TYPE, TASK_STATUS, TASK_PRIORITY, SEQUENCE_STATUS, SEQUENCE_STEP_TYPE, SEQUENCE_ENROLLMENT_STATUS, LEAD_STAGE, CHANNEL_HEALTH_STATUS, WHATSAPP_TEMPLATE_STATUS, WHATSAPP_TEMPLATE_CATEGORY, DOMAIN_AUTH_STATUS } from '../types';
 
 export const leadSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
@@ -196,3 +196,25 @@ export const sequenceStepSchema = z.object({
 
 export type SequenceInput = z.infer<typeof sequenceSchema>;
 export type SequenceStepInput = z.infer<typeof sequenceStepSchema>;
+
+export const whatsAppTemplateSchema = z.object({
+  name: z.string().min(1, 'Template name is required'),
+  language: z.string().default('en'),
+  category: z.enum(WHATSAPP_TEMPLATE_CATEGORY).default('marketing'),
+  body: z.string().min(1, 'Template body is required'),
+  headerType: z.enum(['text', 'image', 'document'] as const).optional(),
+  headerContent: z.string().optional(),
+  footerText: z.string().optional(),
+  buttons: z.any().optional(),
+  twilioTemplateSid: z.string().optional(),
+});
+
+export const emailDomainAuthSchema = z.object({
+  domain: z.string().min(1, 'Domain is required'),
+  spfStatus: z.enum(DOMAIN_AUTH_STATUS).default('pending'),
+  dkimStatus: z.enum(DOMAIN_AUTH_STATUS).default('pending'),
+  dmarcStatus: z.enum(DOMAIN_AUTH_STATUS).default('pending'),
+});
+
+export type WhatsAppTemplateInput = z.infer<typeof whatsAppTemplateSchema>;
+export type EmailDomainAuthInput = z.infer<typeof emailDomainAuthSchema>;

@@ -16,6 +16,10 @@ vi.mock('../config.js', () => ({
   },
 }));
 
+vi.mock('../services/channel-health.js', () => ({
+  updateChannelMetrics: vi.fn().mockResolvedValue({}),
+}));
+
 const { default: webhookRoutes } = await import('./webhooks.js');
 
 function createApp() {
@@ -37,6 +41,7 @@ describe('Webhooks API', () => {
       mockPrisma.message.findFirst.mockResolvedValue(buildMessage({ id: 'msg_1', campaignId: 'camp_1' }));
       mockPrisma.message.create.mockResolvedValue(buildMessage({ id: 'inbound_1' }));
       mockPrisma.campaign.update.mockResolvedValue({} as any);
+      mockPrisma.sequenceEnrollment.findMany.mockResolvedValue([]);
 
       const res = await request(createApp())
         .post('/webhook/email')
@@ -118,6 +123,7 @@ describe('Webhooks API', () => {
     it('should handle an incoming WhatsApp message', async () => {
       mockPrisma.lead.findFirst.mockResolvedValue(buildLead({ id: 'lead_1', phone: '+1234567890' }));
       mockPrisma.message.create.mockResolvedValue(buildMessage({ id: 'inbound_wa' }));
+      mockPrisma.sequenceEnrollment.findMany.mockResolvedValue([]);
 
       const res = await request(createApp())
         .post('/webhook/whatsapp')
@@ -142,12 +148,101 @@ describe('Webhooks API', () => {
     it('should strip whatsapp: prefix from phone number', async () => {
       mockPrisma.lead.findFirst.mockResolvedValue(buildLead({ id: 'lead_1' }));
       mockPrisma.message.create.mockResolvedValue(buildMessage());
+      mockPrisma.sequenceEnrollment.findMany.mockResolvedValue([]);
 
       await request(createApp())
         .post('/webhook/whatsapp')
         .send({ From: 'whatsapp:+1234567890', Body: 'Test' });
 
       expect(mockPrisma.lead.findFirst.mock.calls[0][0].where.phone).toBe('+1234567890');
+    });
+  });
+
+  describe('Lead scoring and channel health integration', () => {
+    it('should pause active sequence enrollments on reply when pauseOnReply is true', async () => {
+      mockPrisma.lead.findFirst.mockResolvedValue(buildLead({ id: 'lead_1', email: 'lead@test.com' }));
+      mockPrisma.message.findFirst.mockResolvedValue(buildMessage({ id: 'msg_1', campaignId: 'camp_1' }));
+      mockPrisma.message.create.mockResolvedValue(buildMessage({ id: 'inbound_1' }));
+      mockPrisma.campaign.update.mockResolvedValue({} as any);
+      mockPrisma.sequenceEnrollment.findMany.mockResolvedValue([
+        {
+          id: 'enroll_1',
+          leadId: 'lead_1',
+          status: 'active',
+          sequence: { pauseOnReply: true },
+        },
+      ]);
+      mockPrisma.sequenceEnrollment.update.mockResolvedValue({});
+
+      const res = await request(createApp())
+        .post('/webhook/email')
+        .send({ to: 'lead@test.com', subject: 'Re: Hello', text: 'Thanks!', messageId: 'ext-msg-1' });
+
+      expect(res.status).toBe(200);
+      expect(mockPrisma.sequenceEnrollment.update).toHaveBeenCalledWith({
+        where: { id: 'enroll_1' },
+        data: { status: 'paused', exitReason: 'replied' },
+      });
+    });
+
+    it('should not pause sequence enrollment when pauseOnReply is false', async () => {
+      mockPrisma.lead.findFirst.mockResolvedValue(buildLead({ id: 'lead_1', email: 'lead@test.com' }));
+      mockPrisma.message.findFirst.mockResolvedValue(buildMessage({ id: 'msg_1', campaignId: 'camp_1' }));
+      mockPrisma.message.create.mockResolvedValue(buildMessage({ id: 'inbound_1' }));
+      mockPrisma.campaign.update.mockResolvedValue({} as any);
+      mockPrisma.sequenceEnrollment.findMany.mockResolvedValue([
+        {
+          id: 'enroll_2',
+          leadId: 'lead_1',
+          status: 'active',
+          sequence: { pauseOnReply: false },
+        },
+      ]);
+
+      const res = await request(createApp())
+        .post('/webhook/email')
+        .send({ to: 'lead@test.com', subject: 'Re: Hello', text: 'Thanks!', messageId: 'ext-msg-1' });
+
+      expect(res.status).toBe(200);
+      expect(mockPrisma.sequenceEnrollment.update).not.toHaveBeenCalled();
+    });
+
+    it('should handle delivered event and update channel metrics', async () => {
+      mockPrisma.lead.findFirst.mockResolvedValue(buildLead({ id: 'lead_1' }));
+      mockPrisma.message.findFirst.mockResolvedValue(buildMessage({ id: 'msg_1' }));
+
+      const res = await request(createApp())
+        .post('/webhook/email')
+        .send({ to: 'lead@test.com', event: 'delivered', messageId: 'ext-msg-1' });
+
+      expect(res.status).toBe(200);
+      expect(mockPrisma.message.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ status: 'delivered' }) }),
+      );
+    });
+
+    it('should pause WhatsApp sequence enrollments on inbound message', async () => {
+      mockPrisma.lead.findFirst.mockResolvedValue(buildLead({ id: 'lead_1', phone: '+1234567890' }));
+      mockPrisma.message.create.mockResolvedValue(buildMessage({ id: 'inbound_wa' }));
+      mockPrisma.sequenceEnrollment.findMany.mockResolvedValue([
+        {
+          id: 'enroll_3',
+          leadId: 'lead_1',
+          status: 'active',
+          sequence: { pauseOnReply: true },
+        },
+      ]);
+      mockPrisma.sequenceEnrollment.update.mockResolvedValue({});
+
+      const res = await request(createApp())
+        .post('/webhook/whatsapp')
+        .send({ From: 'whatsapp:+1234567890', Body: 'Hello', MessageSid: 'SM123' });
+
+      expect(res.status).toBe(200);
+      expect(mockPrisma.sequenceEnrollment.update).toHaveBeenCalledWith({
+        where: { id: 'enroll_3' },
+        data: { status: 'paused', exitReason: 'replied' },
+      });
     });
   });
 });
