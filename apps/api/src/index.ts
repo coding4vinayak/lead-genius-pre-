@@ -6,7 +6,7 @@ import { prisma } from './db.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { requireAuth } from './middleware/auth.js';
 import { logger } from './lib/logger.js';
-import { createCampaignWorker, createSendWorker, createAiWorker, createEventWorker, createAutomationWorker, campaignQueue, sendQueue } from './queue/index.js';
+import { createCampaignWorker, createSendWorker, createAiWorker, createEventWorker, createAutomationWorker, createWebhookWorker, campaignQueue, sendQueue } from './queue/index.js';
 
 import authRoutes from './routes/auth.js';
 import leadRoutes from './routes/leads.js';
@@ -21,6 +21,10 @@ import aiRoutes from './routes/ai.js';
 import inboxRoutes from './routes/inbox.js';
 import agentRoutes from './routes/agent.js';
 import automationRoutes from './routes/automations.js';
+import webhookSubscriptionRoutes from './routes/webhook-subscriptions.js';
+import inboundWebhookRoutes from './routes/inbound-webhooks.js';
+import hooksRoutes from './routes/hooks.js';
+import integrationRoutes from './routes/integrations.js';
 import { sendEmail } from './services/email.js';
 import { sendWhatsApp } from './services/whatsapp.js';
 import { renderTemplate } from './services/template.js';
@@ -38,6 +42,7 @@ app.use(express.json({ limit: '10mb' }));
 app.get('/api/health', (_req, res) => res.json({ data: { status: 'ok', timestamp: new Date().toISOString() } }));
 
 app.use('/api/auth', authRoutes);
+app.use('/api/hooks', hooksRoutes);
 app.use('/api/leads', requireAuth, leadRoutes);
 app.use('/api/groups', requireAuth, groupRoutes);
 app.use('/api/templates', requireAuth, templateRoutes);
@@ -49,6 +54,9 @@ app.use('/api/ai', requireAuth, aiRoutes);
 app.use('/api/inbox', requireAuth, inboxRoutes);
 app.use('/api/agent', requireAuth, agentRoutes);
 app.use('/api/automations', requireAuth, automationRoutes);
+app.use('/api/webhook-subscriptions', requireAuth, webhookSubscriptionRoutes);
+app.use('/api/inbound-webhooks', requireAuth, inboundWebhookRoutes);
+app.use('/api/integrations', requireAuth, integrationRoutes);
 app.use('/webhook', webhookRoutes);
 
 if (process.env.EMAIL_SANDBOX !== 'false') {
@@ -190,6 +198,24 @@ async function start() {
     for (const automation of automations) {
       await executeAutomation(automation.id, payload || {});
     }
+
+    // Dispatch to outbound webhook subscriptions
+    const { createDelivery } = await import('./services/webhook-delivery.js');
+    const webhooks = await db.webhookSubscription.findMany({
+      where: { isActive: true },
+    });
+    for (const webhook of webhooks) {
+      const events = webhook.events as string[];
+      if (events.includes(type)) {
+        await createDelivery(webhook.id, type, payload || {});
+      }
+    }
+  });
+
+  await createWebhookWorker(async (job) => {
+    const { deliverWebhook } = await import('./services/webhook-delivery.js');
+    const { deliveryId } = job.data;
+    await deliverWebhook(deliveryId);
   });
 
   app.listen(config.port, () => {
