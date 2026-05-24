@@ -25,6 +25,8 @@ import webhookSubscriptionRoutes from './routes/webhook-subscriptions.js';
 import inboundWebhookRoutes from './routes/inbound-webhooks.js';
 import hooksRoutes from './routes/hooks.js';
 import integrationRoutes from './routes/integrations.js';
+import taskRoutes from './routes/tasks.js';
+import eventRoutes from './routes/events.js';
 import { sendEmail } from './services/email.js';
 import { sendWhatsApp } from './services/whatsapp.js';
 import { renderTemplate } from './services/template.js';
@@ -57,6 +59,8 @@ app.use('/api/automations', requireAuth, automationRoutes);
 app.use('/api/webhook-subscriptions', requireAuth, webhookSubscriptionRoutes);
 app.use('/api/inbound-webhooks', requireAuth, inboundWebhookRoutes);
 app.use('/api/integrations', requireAuth, integrationRoutes);
+app.use('/api/tasks', requireAuth, taskRoutes);
+app.use('/api/events', requireAuth, eventRoutes);
 app.use('/webhook', webhookRoutes);
 
 if (process.env.EMAIL_SANDBOX !== 'false') {

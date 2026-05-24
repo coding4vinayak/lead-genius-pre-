@@ -1,0 +1,29 @@
+{
+  "id": "FEAT-005",
+  "type": "feat",
+  "description": "Task system and event log API - simple task management for human tasks and automated tasks, plus an event log browser for debugging automations and webhooks.",
+  "status": "in_progress",
+  "steps": [
+    "Step 1: Create apps/api/src/routes/tasks.ts - Full CRUD router for tasks. Endpoints: GET / (list with pagination, filter by status, priority, assigneeId, automationId), GET /:id, POST / (create task with title, description, assigneeId, priority, dueDate, automationId), PUT /:id (update any field), DELETE /:id, POST /:id/complete (set status=completed, completedAt=now, publish task.completed event), POST /:id/assign (update assigneeId). Validate with taskSchema from shared.",
+    "Step 2: Create apps/api/src/routes/events.ts - Event log browser. Endpoints: GET / (list events with pagination, filter by type, entityType, entityId, dateRange with createdAt gte/lte), GET /:id (single event with full payload). This is read-only - events are created by the event bus, not directly by users.",
+    "Step 3: Register routes in apps/api/src/index.ts: /api/tasks (requireAuth), /api/events (requireAuth).",
+    "Step 4: Create apps/api/src/routes/tasks.test.ts - Test all CRUD endpoints, complete action, assign action, filtering by status/priority/assignee.",
+    "Step 5: Create apps/api/src/routes/events.test.ts - Test list with pagination, filter by type, filter by entityType+entityId, date range filter, get by id."
+  ],
+  "acceptance_criteria": [
+    "Tasks can be created, read, updated, deleted, completed, and assigned",
+    "Task list supports filtering by status, priority, assigneeId, and automationId",
+    "Completing a task sets completedAt and publishes task.completed event",
+    "Events API provides read-only paginated access to the event log",
+    "Events can be filtered by type, entityType, entityId, and date range",
+    "All route tests pass",
+    "TypeScript compilation passes"
+  ],
+  "verification": [
+    "cd /projects/sandbox/lead-genius-pre-/apps/api && npx tsc --noEmit",
+    "cd /projects/sandbox/lead-genius-pre-/apps/api && npx vitest run src/routes/tasks.test.ts",
+    "cd /projects/sandbox/lead-genius-pre-/apps/api && npx vitest run src/routes/events.test.ts"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
