@@ -139,3 +139,140 @@ export function buildAgentSettings(overrides: Record<string, unknown> = {}) {
     ...overrides,
   };
 }
+
+export function buildAutomation(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'auto_' + Math.random().toString(36).slice(2, 9),
+    name: 'Test Automation',
+    description: 'A test automation',
+    triggerType: 'lead.created',
+    triggerConfig: {},
+    status: 'draft',
+    isActive: false,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildAutomationStep(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'step_' + Math.random().toString(36).slice(2, 9),
+    automationId: 'auto_1',
+    type: 'send_message',
+    config: {},
+    position: 0,
+    nextStepId: null,
+    conditionTrueStepId: null,
+    conditionFalseStepId: null,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildAutomationExecution(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'exec_' + Math.random().toString(36).slice(2, 9),
+    automationId: 'auto_1',
+    triggerEvent: 'lead.created',
+    triggerPayload: null,
+    status: 'running',
+    startedAt: new Date('2025-01-01T00:00:00Z'),
+    completedAt: null,
+    errorMessage: null,
+    ...overrides,
+  };
+}
+
+export function buildEvent(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'evt_' + Math.random().toString(36).slice(2, 9),
+    type: 'lead.created',
+    entityType: 'lead',
+    entityId: 'lead_1',
+    payload: {},
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildWebhookSubscription(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'wh_' + Math.random().toString(36).slice(2, 9),
+    name: 'Test Webhook',
+    url: 'https://example.com/webhook',
+    events: ['lead.created'],
+    secret: null,
+    headers: null,
+    isActive: true,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildWebhookDelivery(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'whd_' + Math.random().toString(36).slice(2, 9),
+    webhookId: 'wh_1',
+    event: 'lead.created',
+    payload: {},
+    responseStatus: null,
+    responseBody: null,
+    attempts: 0,
+    maxAttempts: 5,
+    nextRetryAt: null,
+    lastAttemptAt: null,
+    status: 'pending',
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildInboundWebhook(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'iwh_' + Math.random().toString(36).slice(2, 9),
+    name: 'Test Inbound Webhook',
+    description: null,
+    token: 'tok_' + Math.random().toString(36).slice(2, 18),
+    automationId: null,
+    isActive: true,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildIntegration(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'int_' + Math.random().toString(36).slice(2, 9),
+    type: 'slack',
+    name: 'Test Integration',
+    config: {},
+    credentials: null,
+    isActive: true,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildTask(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'task_' + Math.random().toString(36).slice(2, 9),
+    title: 'Test Task',
+    description: null,
+    assigneeId: null,
+    status: 'pending',
+    priority: 'medium',
+    dueDate: null,
+    automationId: null,
+    automationExecutionId: null,
+    metadata: null,
+    completedAt: null,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}

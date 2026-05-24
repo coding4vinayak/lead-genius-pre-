@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LEAD_STATUS, CHANNEL, MESSAGE_STATUS, CAMPAIGN_STATUS, SCHEDULE_TYPE, SEND_STRATEGY, AI_PROVIDER, INTENT_CATEGORY } from '../types';
+import { LEAD_STATUS, CHANNEL, MESSAGE_STATUS, CAMPAIGN_STATUS, SCHEDULE_TYPE, SEND_STRATEGY, AI_PROVIDER, INTENT_CATEGORY, AUTOMATION_STATUS, AUTOMATION_TRIGGER_TYPE, AUTOMATION_STEP_TYPE, AUTOMATION_EXECUTION_STATUS, WEBHOOK_EVENT, INTEGRATION_TYPE, TASK_STATUS, TASK_PRIORITY } from '../types';
 
 export const leadSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
@@ -113,3 +113,59 @@ export type GroupInput = z.infer<typeof groupSchema>;
 export type TemplateInput = z.infer<typeof templateSchema>;
 export type CampaignInput = z.infer<typeof campaignSchema>;
 export type SettingsInput = z.infer<typeof settingsSchema>;
+
+export const automationSchema = z.object({
+  name: z.string().min(1, 'Automation name is required'),
+  description: z.string().optional(),
+  triggerType: z.enum(AUTOMATION_TRIGGER_TYPE),
+  triggerConfig: z.record(z.unknown()).default({}),
+  status: z.enum(AUTOMATION_STATUS).default('draft'),
+  isActive: z.boolean().default(false),
+});
+
+export const automationStepSchema = z.object({
+  type: z.enum(AUTOMATION_STEP_TYPE),
+  config: z.record(z.unknown()).default({}),
+  position: z.number().int().min(0),
+  nextStepId: z.string().optional(),
+  conditionTrueStepId: z.string().optional(),
+  conditionFalseStepId: z.string().optional(),
+});
+
+export const webhookSubscriptionSchema = z.object({
+  name: z.string().min(1, 'Webhook name is required'),
+  url: z.string().url('Valid URL is required'),
+  events: z.array(z.enum(WEBHOOK_EVENT)).min(1, 'At least one event is required'),
+  secret: z.string().optional(),
+  headers: z.record(z.string()).optional(),
+  isActive: z.boolean().default(true),
+});
+
+export const integrationSchema = z.object({
+  type: z.enum(INTEGRATION_TYPE),
+  name: z.string().min(1, 'Integration name is required'),
+  config: z.record(z.unknown()).default({}),
+  credentials: z.record(z.unknown()).optional(),
+});
+
+export const taskSchema = z.object({
+  title: z.string().min(1, 'Task title is required'),
+  description: z.string().optional(),
+  assigneeId: z.string().optional(),
+  status: z.enum(TASK_STATUS).default('pending'),
+  priority: z.enum(TASK_PRIORITY).default('medium'),
+  dueDate: z.string().datetime().optional(),
+  automationId: z.string().optional(),
+});
+
+export const inboundWebhookSchema = z.object({
+  name: z.string().min(1, 'Inbound webhook name is required'),
+  description: z.string().optional(),
+});
+
+export type AutomationInput = z.infer<typeof automationSchema>;
+export type AutomationStepInput = z.infer<typeof automationStepSchema>;
+export type WebhookSubscriptionInput = z.infer<typeof webhookSubscriptionSchema>;
+export type IntegrationInput = z.infer<typeof integrationSchema>;
+export type TaskInput = z.infer<typeof taskSchema>;
+export type InboundWebhookInput = z.infer<typeof inboundWebhookSchema>;

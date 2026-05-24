@@ -41,6 +41,16 @@ export interface MockPrismaClient {
   message: MockModel;
   settings: MockModel;
   agentSettings: MockModel;
+  automation: MockModel;
+  automationStep: MockModel;
+  automationExecution: MockModel;
+  automationExecutionStep: MockModel;
+  event: MockModel;
+  webhookSubscription: MockModel;
+  webhookDelivery: MockModel;
+  inboundWebhook: MockModel;
+  integration: MockModel;
+  task: MockModel;
   $connect: MockFn;
   $disconnect: MockFn;
 }
@@ -55,6 +65,16 @@ export function createMockPrisma(): MockPrismaClient {
     message: mockModel(),
     settings: mockModel(),
     agentSettings: mockModel(),
+    automation: mockModel(),
+    automationStep: mockModel(),
+    automationExecution: mockModel(),
+    automationExecutionStep: mockModel(),
+    event: mockModel(),
+    webhookSubscription: mockModel(),
+    webhookDelivery: mockModel(),
+    inboundWebhook: mockModel(),
+    integration: mockModel(),
+    task: mockModel(),
     $connect: vi.fn(),
     $disconnect: vi.fn(),
   };
