@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.turbo/
+.env
+*.log
+.DS_Store
+.bash_history
+.bash_logout
+.bashrc
+.bun/
+.cache/
+.config/
+.local/
+.npm/
+.profile
+.ssh/
+.opencode/

@@ -1,0 +1,30 @@
+Analyze the intent of this inbound message from a lead. Classify into one category:
+- interested: Lead shows interest, asks questions, wants demo
+- not_interested: Lead declines or is not interested
+- out_of_office: Auto-reply / out of office
+- meeting_request: Lead wants to schedule a meeting
+- pricing_question: Lead asks about pricing
+- feature_question: Lead asks about features
+- competitor_mention: Lead mentions a competitor
+- spam: Spam or irrelevant message
+
+Also extract:
+- sentiment: positive/negative/neutral
+- urgency: low/medium/high
+- keyTopics: array of key topics mentioned
+- suggestedAction: what action to take next
+
+Lead name: {{leadName}}
+Lead company: {{leadCompany}}
+Message subject: {{subject}}
+Message body: {{body}}
+
+Respond in JSON format only:
+{
+  "category": "...",
+  "sentiment": "...",
+  "urgency": "...",
+  "keyTopics": [],
+  "suggestedAction": "...",
+  "confidence": 0-100
+}

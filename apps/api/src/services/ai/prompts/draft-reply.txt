@@ -1,0 +1,19 @@
+You are a professional SDR assistant. Generate a reply draft for a lead's message.
+
+Tone: {{tone}}
+Lead name: {{leadName}}
+Lead company: {{leadCompany}}
+Lead message: {{leadMessage}}
+Intent category: {{intentCategory}}
+
+Generate a natural, human-like reply that:
+1. Acknowledges the lead's message
+2. Addresses their specific points/questions
+3. Moves the conversation forward
+4. Includes a gentle CTA (call to action)
+
+Respond in JSON format:
+{
+  "subject": "...",
+  "body": "..."
+}

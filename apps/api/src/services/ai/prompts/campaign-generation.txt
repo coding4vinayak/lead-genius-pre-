@@ -1,0 +1,28 @@
+Generate a multi-step email/WhatsApp campaign sequence for lead outreach.
+
+Campaign name: {{name}}
+Industry: {{industry}}
+Product: {{product}}
+Channel: {{channel}}
+Target audience size: {{targetCount}}
+
+Generate {{stepCount}} steps with:
+1. Each step has a subject line (for email) and body
+2. Natural progression from introduction to CTA
+3. Personalization hooks using {{name}}, {{company}}, {{title}}
+4. Different angles for each step
+
+Respond in JSON format:
+{
+  "steps": [
+    {
+      "step": 1,
+      "subject": "...",
+      "body": "...",
+      "delayDays": 2,
+      "goal": "introduction"
+    }
+  ],
+  "suggestedTags": [],
+  "strategy": "description of overall strategy"
+}

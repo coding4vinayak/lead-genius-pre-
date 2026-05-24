@@ -1,0 +1,249 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum LeadStatus {
+  active
+  unsubscribed
+  bounced
+  invalid
+}
+
+enum Channel {
+  email
+  whatsapp
+}
+
+enum Direction {
+  outbound
+  inbound
+}
+
+enum MessageStatus {
+  queued
+  sent
+  delivered
+  failed
+  bounced
+  replied
+}
+
+enum CampaignStatus {
+  draft
+  scheduled
+  running
+  paused
+  completed
+}
+
+enum ScheduleType {
+  immediate
+  scheduled
+  recurring
+}
+
+enum SendStrategy {
+  sequential
+  batch
+  burst
+}
+
+enum AiProvider {
+  openai
+  gemini
+  anthropic
+}
+
+enum IntentCategory {
+  interested
+  not_interested
+  out_of_office
+  meeting_request
+  pricing_question
+  feature_question
+  competitor_mention
+  spam
+  other
+}
+
+model Lead {
+  id              String     @id @default(cuid())
+  email           String?
+  phone           String?
+  name            String?
+  company         String?
+  title           String?
+  source          String?
+  status          LeadStatus @default(active)
+  tags            String[]
+  customFields    Json?
+  score           Int?
+  enrichmentData  Json?
+  intentAnalysis  Json?
+  currentStep     String?
+  nextActionAt    DateTime?
+  lastContactedAt DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  groupMembers GroupMember[]
+  messages     Message[]
+
+  @@index([status])
+  @@index([email])
+  @@index([tags])
+  @@index([score])
+}
+
+model LeadGroup {
+  id          String       @id @default(cuid())
+  name        String
+  description String?
+  filterRules Json?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  members GroupMember[]
+
+  @@index([name])
+}
+
+model GroupMember {
+  leadId     String
+  groupId    String
+  assignedAt DateTime @default(now())
+
+  lead  Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  group LeadGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@id([leadId, groupId])
+}
+
+model Template {
+  id        String   @id @default(cuid())
+  name      String
+  channel   Channel
+  subject   String?
+  body      String
+  variables String[]
+  category  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  campaigns Campaign[]
+
+  @@index([channel])
+  @@index([category])
+}
+
+model Campaign {
+  id            String         @id @default(cuid())
+  name          String
+  description   String?
+  status        CampaignStatus @default(draft)
+  channel       Channel
+  templateId    String
+  leadGroupIds  String[]
+  productFilter String?
+  scheduleType  ScheduleType   @default(immediate)
+  scheduledAt   DateTime?
+  recurringRule String?
+  sendStrategy  SendStrategy   @default(sequential)
+  dailyLimit    Int?
+  minDelayMs    Int?
+  sentCount     Int            @default(0)
+  failedCount   Int            @default(0)
+  replyCount    Int            @default(0)
+  openedCount   Int            @default(0)
+  clickedCount  Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  template Template @relation(fields: [templateId], references: [id])
+  messages Message[]
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Message {
+  id              String        @id @default(cuid())
+  campaignId      String?
+  leadId          String
+  channel         Channel
+  direction       Direction     @default(outbound)
+  subject         String?
+  body            String
+  status          MessageStatus @default(queued)
+  providerId      String?
+  errorMessage    String?
+  isAiGenerated   Boolean       @default(false)
+  intentAnalysis  Json?
+  draftReply      String?
+  deliveredAt     DateTime?
+  readAt          DateTime?
+  createdAt       DateTime      @default(now())
+
+  campaign Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  lead     Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@index([leadId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  name            String?
+  password        String
+  role            String    @default("user")
+  resetToken      String?
+  resetTokenExpires DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([email])
+  @@index([resetToken])
+}
+
+model Settings {
+  id                 String @id @default("global")
+  smtpHost           String?
+  smtpPort           Int?
+  smtpUser           String?
+  smtpPass           String?
+  sendgridApiKey     String?
+  twilioAccountSid   String?
+  twilioAuthToken    String?
+  twilioFromNumber   String?
+  fromEmail          String?
+  fromName           String?
+  dailyGlobalLimit   Int?
+  defaultMinDelayMs  Int?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model AgentSettings {
+  id                 String     @id @default("global")
+  aiProvider         AiProvider @default(openai)
+  aiModel            String     @default("gpt-4o-mini")
+  aiApiKey           String?
+  aiBaseUrl          String?
+  tone               String     @default("professional")
+  autoReplyThreshold Int        @default(70)
+  isAutoPilotActive  Boolean    @default(false)
+  maxDailyReplies    Int        @default(50)
+  workingHoursStart  String?
+  workingHoursEnd    String?
+  humanHandoffRules  Json?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+}

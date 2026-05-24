@@ -1,0 +1,19 @@
+Enrich this lead's profile with inferred data based on available information.
+
+Available data:
+- Name: {{name}}
+- Email: {{email}}
+- Company: {{company}}
+- Title: {{title}}
+- Source: {{source}}
+
+Infer and return JSON:
+{
+  "companySize": "inferred company size",
+  "industry": "inferred industry",
+  "seniorityLevel": "entry/mid/senior/executive",
+  "department": "inferred department",
+  "likelihoodToConvert": "low/medium/high",
+  "suggestedTags": [],
+  "personalizationNotes": "what to mention when contacting"
+}
