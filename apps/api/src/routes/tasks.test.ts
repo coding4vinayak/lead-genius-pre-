@@ -8,7 +8,7 @@ import { buildTask } from '../test/factories.js';
 const mockPrisma = createMockPrisma();
 vi.mock('../db.js', () => ({ prisma: mockPrisma }));
 
-const mockPublishEvent = vi.fn();
+const mockPublishEvent = vi.fn().mockResolvedValue(undefined);
 vi.mock('../services/event-bus.js', () => ({ publishEvent: mockPublishEvent }));
 
 const { default: taskRoutes } = await import('./tasks.js');

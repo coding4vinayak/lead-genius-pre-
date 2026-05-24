@@ -72,7 +72,7 @@ router.post('/:id/complete', async (req: Request, res: Response, next: NextFunct
       data: { status: 'completed', completedAt: new Date() },
     });
     res.json({ data: task });
-    publishEvent('task.completed', 'task', task.id, { taskId: task.id, title: task.title });
+    publishEvent('task.completed', 'task', task.id, { taskId: task.id, title: task.title }).catch(() => {});
   } catch (err) { next(err); }
 });
 

@@ -455,6 +455,7 @@ model InboundWebhook {
   name         String
   description  String?
   token        String   @unique
+  secret       String?
   automationId String?
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())

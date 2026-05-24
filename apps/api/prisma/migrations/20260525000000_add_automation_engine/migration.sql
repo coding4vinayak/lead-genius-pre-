@@ -255,6 +255,9 @@ CREATE INDEX "Task_automationId_idx" ON "Task"("automationId");
 -- CreateIndex
 CREATE INDEX "Task_dueDate_idx" ON "Task"("dueDate");
 
+-- AlterTable
+ALTER TABLE "InboundWebhook" ADD COLUMN "secret" TEXT;
+
 -- AddForeignKey
 ALTER TABLE "AutomationStep" ADD CONSTRAINT "AutomationStep_automationId_fkey" FOREIGN KEY ("automationId") REFERENCES "Automation"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
