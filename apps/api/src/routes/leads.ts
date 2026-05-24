@@ -41,7 +41,10 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id as string;
     const data = await prisma.lead.findUnique({
       where: { id },
-      include: { messages: { orderBy: { createdAt: 'desc' }, take: 50 } },
+      include: {
+        messages: { orderBy: { createdAt: 'desc' }, take: 50 },
+        groupMembers: { include: { group: true } },
+      },
     });
     if (!data) throw AppError.notFound('Lead');
     res.json({ data });
