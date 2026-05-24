@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "feat",
   "description": "Autonomous Campaign Sequences - Database schema, API routes, and worker logic for multi-step drip campaigns with delays, conditions, lead scoring, and stage progression. This is the core backend that powers rule-based lead warming without AI.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "STEP 1 - Prisma Schema Extension: Add new models to apps/api/prisma/schema.prisma: (a) `Sequence` model with fields: id, name, description, status (draft/active/paused/completed), leadGroupIds (String[]), triggerType (manual/on_lead_created/on_tag_added), triggerConfig (Json), pauseOnReply (Boolean default true), sendingWindowStart (String? like '09:00'), sendingWindowEnd (String? like '18:00'), dailyLimit (Int?), timezone (String default 'UTC'), createdAt, updatedAt. (b) `SequenceStep` model with: id, sequenceId, position (Int), type (enum: send_email/send_whatsapp/delay/condition/update_lead_stage/update_lead_score), config (Json - holds templateId, delayHours, condition rules, score delta, target stage), nextStepId (String?), conditionTrueStepId (String?), conditionFalseStepId (String?), createdAt, updatedAt. (c) `SequenceEnrollment` model with: id, sequenceId, leadId, status (enum: active/paused/completed/exited), currentStepId (String?), nextRunAt (DateTime?), startedAt, completedAt, exitReason (String?), createdAt, updatedAt. (d) `SequenceStepExecution` model with: id, enrollmentId, stepId, status (enum: pending/completed/failed/skipped), executedAt (DateTime?), result (Json?), createdAt. (e) Add `LeadStage` enum: new/contacted/engaged/warm/hot/converted/lost. Add `stage` field (LeadStage default 'new') and `score` field (Int default 0 - already exists) to Lead model. (f) Create migration file at apps/api/prisma/migrations/20260526000000_add_sequences/migration.sql.",
     "STEP 2 - Shared Types and Schemas: Add to packages/shared/src/types/index.ts: SEQUENCE_STATUS, SEQUENCE_STEP_TYPE, SEQUENCE_ENROLLMENT_STATUS, LEAD_STAGE constants and types. Add to packages/shared/src/schemas/index.ts: sequenceSchema, sequenceStepSchema with Zod validation. Export all new types.",
@@ -29,5 +29,5 @@
     "Run `npx prisma generate` in apps/api to verify schema is valid"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 470 tests pass (414 existing + 56 new). Pre-existing TS errors in demo.pipeline, auth.ts, email-sandbox, external-email-test, smtp-server.test, simulation.test are unrelated. Compiled stale .js/.d.ts files in src/test/ were blocking test factory imports - removed them to fix. Used AppError.validation instead of non-existent AppError.badRequest. The groupBy mock method was added to MockModel interface since the sequences analytics endpoint uses it."
 }
