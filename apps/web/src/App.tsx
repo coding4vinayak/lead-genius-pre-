@@ -11,6 +11,8 @@ import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 import AiInbox from './pages/AiInbox';
 import Agent from './pages/Agent';
+import Sequences from './pages/Sequences';
+import Integrations from './pages/Integrations';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 
@@ -28,11 +30,13 @@ export default function App() {
               <Route path="/groups" element={<Groups />} />
               <Route path="/templates" element={<Templates />} />
               <Route path="/campaigns" element={<Campaigns />} />
+              <Route path="/sequences" element={<Sequences />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/inbox" element={<AiInbox />} />
               <Route path="/agent" element={<Agent />} />
+              <Route path="/integrations" element={<Integrations />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Layout>

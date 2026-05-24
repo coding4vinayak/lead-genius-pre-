@@ -1,9 +1,29 @@
 import { useQuery } from '@tanstack/react-query';
-import { Card, Spinner, ErrorBanner, PageHeader } from '../components/ui';
+import { BarChart3, Send, Users, TrendingUp } from 'lucide-react';
+import { Card, ErrorBanner, PageHeader, StatCard, Skeleton, SkeletonCard } from '../components/ui';
 import api from '../lib/api';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444'];
+
+function DashboardSkeleton() {
+  return (
+    <div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-8 w-16" />
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <SkeletonCard />
+        <SkeletonCard />
+      </div>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const overview = useQuery({
@@ -21,26 +41,37 @@ export default function Dashboard() {
   });
 
   if (overview.error) return <ErrorBanner message={overview.error.message} onRetry={() => overview.refetch()} />;
-  if (overview.isLoading) return <Spinner />;
+  if (overview.isLoading) return <DashboardSkeleton />;
 
   const d = overview.data;
-  const kpis = [
-    { label: 'Total Leads', value: d.totalLeads, color: 'text-blue-600' },
-    { label: 'Active Campaigns', value: d.activeCampaigns, color: 'text-green-600' },
-    { label: 'Sent Today', value: d.totalSent, color: 'text-indigo-600' },
-    { label: 'Delivery Rate', value: `${d.deliveryRate}%`, color: 'text-emerald-600' },
-  ];
 
   return (
     <div>
       <PageHeader title="Dashboard" description="Real-time overview of your communication engine" />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {kpis.map((kpi) => (
-          <Card key={kpi.label} className="p-4">
-            <p className="text-sm text-gray-500 mb-1">{kpi.label}</p>
-            <p className={`text-2xl font-bold ${kpi.color}`}>{kpi.value}</p>
-          </Card>
-        ))}
+        <StatCard
+          icon={<Users size={20} />}
+          label="Total Leads"
+          value={d.totalLeads}
+          trend={{ value: 12, positive: true }}
+        />
+        <StatCard
+          icon={<BarChart3 size={20} />}
+          label="Active Campaigns"
+          value={d.activeCampaigns}
+          trend={{ value: 3, positive: true }}
+        />
+        <StatCard
+          icon={<Send size={20} />}
+          label="Sent Today"
+          value={d.totalSent}
+        />
+        <StatCard
+          icon={<TrendingUp size={20} />}
+          label="Delivery Rate"
+          value={`${d.deliveryRate}%`}
+          trend={{ value: 2, positive: true }}
+        />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="p-4">
