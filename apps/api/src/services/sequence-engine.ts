@@ -324,6 +324,34 @@ export async function processSequenceStep(enrollmentId: string): Promise<void> {
         break;
       }
 
+      case 'send_connection_request': {
+        const { sendConnectionRequest } = await import('./linkedin.js');
+        const note = config.note as string | undefined;
+        const profile = await sendConnectionRequest(enrollment.leadId, note);
+        result = { profile };
+        break;
+      }
+
+      case 'send_linkedin_message': {
+        const { sendLinkedInMessage } = await import('./linkedin.js');
+        const messageBody = config.body as string;
+        if (messageBody) {
+          const msg = await sendLinkedInMessage(enrollment.leadId, messageBody);
+          result = { message: msg };
+        } else {
+          executionStatus = 'skipped';
+          result = { reason: 'no_body' };
+        }
+        break;
+      }
+
+      case 'view_profile': {
+        const { viewProfile: viewLinkedInProfile } = await import('./linkedin.js');
+        const profile = await viewLinkedInProfile(enrollment.leadId);
+        result = { profile };
+        break;
+      }
+
       default:
         executionStatus = 'skipped';
         result = { reason: 'unknown_step_type' };

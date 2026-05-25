@@ -51,6 +51,7 @@ import notificationRoutes from './routes/notifications.js';
 import enrichmentRoutes from './routes/enrichment.js';
 import docsRoutes from './routes/docs.js';
 import apiKeyRoutes from './routes/api-keys.js';
+import linkedinRoutes from './routes/linkedin.js';
 import { apiKeyAuth } from './middleware/api-key-auth.js';
 import { rateLimiter } from './middleware/rate-limiter.js';
 import { sendEmail } from './services/email.js';
@@ -116,6 +117,7 @@ app.use('/api/analytics/advanced', requireAuth, advancedAnalyticsRoutes);
 app.use('/api/benchmarks', requireAuth, benchmarkRoutes);
 app.use('/api/notifications', requireAuth, notificationRoutes);
 app.use('/api', requireAuth, enrichmentRoutes);
+app.use('/api/linkedin', requireAuth, linkedinRoutes);
 app.use('/webhook', webhookRoutes);
 
 if (process.env.EMAIL_SANDBOX !== 'false') {

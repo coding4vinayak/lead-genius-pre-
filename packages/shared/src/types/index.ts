@@ -1,7 +1,7 @@
 export const LEAD_STATUS = ['active', 'unsubscribed', 'bounced', 'invalid'] as const;
 export type LeadStatus = (typeof LEAD_STATUS)[number];
 
-export const CHANNEL = ['email', 'whatsapp'] as const;
+export const CHANNEL = ['email', 'whatsapp', 'linkedin'] as const;
 export type Channel = (typeof CHANNEL)[number];
 
 export const DIRECTION = ['outbound', 'inbound'] as const;
@@ -55,8 +55,14 @@ export type TaskPriority = (typeof TASK_PRIORITY)[number];
 export const SEQUENCE_STATUS = ['draft', 'active', 'paused', 'completed'] as const;
 export type SequenceStatus = (typeof SEQUENCE_STATUS)[number];
 
-export const SEQUENCE_STEP_TYPE = ['send_email', 'send_whatsapp', 'delay', 'condition', 'update_lead_stage', 'update_lead_score'] as const;
+export const SEQUENCE_STEP_TYPE = ['send_email', 'send_whatsapp', 'delay', 'condition', 'update_lead_stage', 'update_lead_score', 'send_connection_request', 'send_linkedin_message', 'view_profile'] as const;
 export type SequenceStepType = (typeof SEQUENCE_STEP_TYPE)[number];
+
+export const LINKEDIN_STEP_TYPE = ['send_connection_request', 'send_linkedin_message', 'view_profile'] as const;
+export type LinkedInStepType = (typeof LINKEDIN_STEP_TYPE)[number];
+
+export const LINKEDIN_CONNECTION_STATUS = ['not_connected', 'pending', 'connected', 'declined'] as const;
+export type LinkedInConnectionStatus = (typeof LINKEDIN_CONNECTION_STATUS)[number];
 
 export const SEQUENCE_ENROLLMENT_STATUS = ['active', 'paused', 'completed', 'exited'] as const;
 export type SequenceEnrollmentStatus = (typeof SEQUENCE_ENROLLMENT_STATUS)[number];

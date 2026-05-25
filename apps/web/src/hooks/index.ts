@@ -131,3 +131,41 @@ export function useFindEmail() {
       api.post('/leads/find-email', body).then((r) => r.data),
   });
 }
+
+export function useLinkedInProfile(leadId: string) {
+  return useQuery({
+    queryKey: ['linkedin-profile', leadId],
+    queryFn: () => api.get(`/linkedin/profile/${leadId}`).then((r) => r.data),
+    enabled: !!leadId,
+  });
+}
+
+export function useLinkedInConnections(params?: Record<string, unknown>) {
+  return useQuery({
+    queryKey: ['linkedin-connections', params],
+    queryFn: () => api.get('/linkedin/connections', { params }).then((r) => r.data),
+  });
+}
+
+export function useSendConnectionRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ leadId, note, profileUrl }: { leadId: string; note?: string; profileUrl?: string }) =>
+      api.post(`/linkedin/connect/${leadId}`, { note, profileUrl }).then((r) => r.data),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['linkedin-profile', variables.leadId] });
+      queryClient.invalidateQueries({ queryKey: ['linkedin-connections'] });
+    },
+  });
+}
+
+export function useSendLinkedInMessage() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ leadId, body }: { leadId: string; body: string }) =>
+      api.post(`/linkedin/message/${leadId}`, { body }).then((r) => r.data),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['linkedin-profile', variables.leadId] });
+    },
+  });
+}

@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, FolderOpen, FileText, Send, MessageSquare,
   BarChart3, Settings, Inbox, Bot, ChevronLeft, ChevronRight, LogOut,
   GitBranch, Plug, ChevronDown, ShieldCheck, Flame, Mail, CreditCard,
-  Building2, Link2, FlaskConical, TrendingUp, Target, Key,
+  Building2, Link2, FlaskConical, TrendingUp, Target, Key, Linkedin,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/auth';
 import { Avatar } from '../ui';
@@ -50,6 +50,12 @@ const navSections: NavSection[] = [
     items: [
       { path: '/inbox', label: 'AI Inbox', icon: Inbox },
       { path: '/messages', label: 'Messages', icon: MessageSquare },
+    ],
+  },
+  {
+    title: 'Channels',
+    items: [
+      { path: '/linkedin', label: 'LinkedIn', icon: Linkedin },
     ],
   },
   {

@@ -90,6 +90,8 @@ export interface MockPrismaClient {
   enrichmentLog: MockModel;
   apiKey: MockModel;
   apiKeyUsage: MockModel;
+  linkedInProfile: MockModel;
+  linkedInMessage: MockModel;
   $connect: MockFn;
   $disconnect: MockFn;
   $transaction: MockFn;
@@ -152,6 +154,8 @@ export function createMockPrisma(): MockPrismaClient {
     enrichmentLog: mockModel(),
     apiKey: mockModel(),
     apiKeyUsage: mockModel(),
+    linkedInProfile: mockModel(),
+    linkedInMessage: mockModel(),
     $connect: vi.fn(),
     $disconnect: vi.fn(),
     $transaction: vi.fn().mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => fn(createMockPrisma())),

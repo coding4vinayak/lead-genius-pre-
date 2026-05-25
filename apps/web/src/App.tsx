@@ -23,6 +23,7 @@ import AbTesting from './pages/AbTesting';
 import AdvancedAnalytics from './pages/AdvancedAnalytics';
 import Benchmarks from './pages/Benchmarks';
 import ApiKeys from './pages/ApiKeys';
+import LinkedIn from './pages/LinkedIn';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 
@@ -57,6 +58,7 @@ export default function App() {
               <Route path="/advanced-analytics" element={<AdvancedAnalytics />} />
               <Route path="/benchmarks" element={<Benchmarks />} />
               <Route path="/api-keys" element={<ApiKeys />} />
+              <Route path="/linkedin" element={<LinkedIn />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Layout>

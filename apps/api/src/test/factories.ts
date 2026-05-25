@@ -828,3 +828,33 @@ export function buildApiKeyUsage(overrides: Record<string, unknown> = {}) {
     ...overrides,
   };
 }
+
+export function buildLinkedInProfile(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'lip_' + Math.random().toString(36).slice(2, 9),
+    leadId: 'lead_1',
+    profileUrl: 'https://linkedin.com/in/johndoe',
+    headline: 'CEO at Acme Inc',
+    connectionStatus: 'not_connected',
+    connectionRequestedAt: null,
+    connectedAt: null,
+    lastMessagedAt: null,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildLinkedInMessage(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'lim_' + Math.random().toString(36).slice(2, 9),
+    leadId: 'lead_1',
+    profileId: 'lip_1',
+    direction: 'outbound',
+    body: 'Hi, I would like to connect.',
+    status: 'sent',
+    sentAt: new Date('2025-01-01T00:00:00Z'),
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}

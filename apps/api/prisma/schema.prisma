@@ -17,6 +17,7 @@ enum LeadStatus {
 enum Channel {
   email
   whatsapp
+  linkedin
 }
 
 enum Direction {
@@ -95,6 +96,16 @@ enum SequenceStepType {
   condition
   update_lead_stage
   update_lead_score
+  send_connection_request
+  send_linkedin_message
+  view_profile
+}
+
+enum LinkedInConnectionStatus {
+  not_connected
+  pending
+  connected
+  declined
 }
 
 enum SequenceEnrollmentStatus {
@@ -161,6 +172,7 @@ model Lead {
   gdprConsents        GdprConsent[]
   calendarBookings    CalendarBooking[]
   enrichmentLogs      EnrichmentLog[]
+  linkedInProfile     LinkedInProfile?
 
   @@index([status])
   @@index([email])
@@ -1234,4 +1246,40 @@ model ApiKeyUsage {
 
   @@index([apiKeyId])
   @@index([createdAt])
+}
+
+model LinkedInProfile {
+  id                    String                   @id @default(cuid())
+  leadId                String                   @unique
+  profileUrl            String
+  headline              String?
+  connectionStatus      LinkedInConnectionStatus @default(not_connected)
+  connectionRequestedAt DateTime?
+  connectedAt           DateTime?
+  lastMessagedAt        DateTime?
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
+
+  lead     Lead              @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  messages LinkedInMessage[]
+
+  @@index([leadId])
+  @@index([connectionStatus])
+}
+
+model LinkedInMessage {
+  id        String    @id @default(cuid())
+  leadId    String
+  profileId String
+  direction String    @default("outbound")
+  body      String
+  status    String    @default("pending")
+  sentAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  profile LinkedInProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([profileId])
+  @@index([status])
 }
