@@ -2,7 +2,7 @@
   "id": "FEAT-007",
   "type": "feat",
   "description": "Production Infrastructure: Add comprehensive health checks (basic + readiness), graceful shutdown with queue draining, request correlation IDs propagated through logs, structured logging enhancements, error tracking service interface (Sentry-compatible), and request/response timing middleware.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Enhance `apps/api/src/index.ts` health check: Replace the inline `/api/health` handler with a proper route file. Create `apps/api/src/routes/health.ts` with two endpoints: GET /health (basic liveness - always returns {status:'ok'}), GET /ready (readiness - checks DB connection via prisma.$queryRaw`SELECT 1` and Redis via ioredis ping).",
     "Create `apps/api/src/middleware/correlation-id.ts`: Middleware that reads X-Request-Id header from incoming request (or generates a UUID if not present), attaches it to req object (req.correlationId), sets X-Request-Id on response headers, and stores in AsyncLocalStorage for access throughout the request lifecycle.",
@@ -36,5 +36,5 @@
     "cd /projects/sandbox/lead-genius-pre- && npx turbo build"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 1223 tests pass (102 test files). Build has pre-existing TS errors in workers package and some test files (smtp-server.test.ts, simulation.test.ts, demo.pipeline.test.ts) but none introduced by this feature. The API source files compile cleanly. IORedis mock in health test needed a class-based mock pattern rather than vi.fn().mockImplementation() for proper constructor behavior."
 }
