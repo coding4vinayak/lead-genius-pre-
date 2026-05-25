@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import Sidebar from './Sidebar';
+import CommandPalette from '../CommandPalette';
 import { useAppStore } from '../../store';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -63,6 +64,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </AnimatePresence>
         </main>
       </div>
+
+      {/* Command Palette overlay */}
+      <CommandPalette />
     </div>
   );
 }
