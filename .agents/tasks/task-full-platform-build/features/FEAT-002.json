@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Phase 1B: Email Warm-up System. Add warm-up scheduling, gradual volume ramping (start 5/day, increase 20% daily), per-account warm-up tracking, auto-throttle on high bounce rates. Includes Prisma model, service, queue worker, API routes, and tests.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "1. Add WarmupSchedule model to apps/api/prisma/schema.prisma: id, accountEmail, status (warming/paused/completed), startDate, currentDay, currentDailyLimit, maxDailyLimit, rampPercentage (default 20), sentToday, bouncedToday, bounceThreshold (default 5%), pausedReason?, createdAt, updatedAt. Add WarmupLog model: id, scheduleId, day, sent, bounced, delivered, date.",
     "2. Create migration at apps/api/prisma/migrations/20260529010000_add_warmup_system/migration.sql.",
@@ -29,5 +29,5 @@
     "Run `npx tsc --noEmit` in apps/api to confirm no TypeScript errors"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 626 tests pass (36 new warmup tests: 22 service + 14 route). No new TypeScript errors introduced (pre-existing errors in smtp-server.test.ts, email-sandbox.ts, simulation.test.ts, demo.pipeline.test.ts are unrelated). WarmupSchedule model starts at 5 emails/day with 20% daily ramp. Auto-pause triggers on bounce rate exceeding configurable threshold. warmupScheduleUpdateSchema uses partial/optional fields for PUT updates."
 }
