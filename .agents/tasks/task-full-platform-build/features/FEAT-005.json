@@ -2,7 +2,7 @@
   "id": "FEAT-005",
   "type": "feat",
   "description": "Phase 4: Integrations - HubSpot CRM sync (OAuth2, bi-directional contacts, lead stage push), Calendar booking link generation, Slack notifications (OAuth2, configurable alerts), and Zapier/Webhook marketplace (pre-built templates and recipes).",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "1. Add Prisma models: CrmSync (id, integrationId, provider: hubspot/salesforce, direction: inbound/outbound/bidirectional, lastSyncAt, syncStatus, fieldMapping Json, createdAt, updatedAt), CalendarBooking (id, leadId, title, startTime, endTime, meetingLink, status: scheduled/completed/cancelled, bookedAt, createdAt), SlackNotification (id, integrationId, channel, eventTypes String[], isActive, createdAt, updatedAt), WebhookTemplate (id, name, description, category, triggerEvents String[], targetUrl, headers Json?, bodyTemplate String?, isPublic, createdAt, updatedAt), Recipe (id, name, description, category, steps Json, isActive, createdAt, updatedAt).",
     "2. Create migration at apps/api/prisma/migrations/20260529040000_add_integrations/migration.sql.",
@@ -36,5 +36,5 @@
     "Run `npx tsc --noEmit` in apps/api to confirm no TypeScript errors"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 917 tests passing (105 new tests added). TypeScript compiles cleanly for new code; pre-existing TS errors in demo.pipeline.test.ts, auth.ts, email-sandbox.ts, smtp-server.test.ts remain unchanged. Calendar /book endpoint is registered without requireAuth (public). Used Prisma.InputJsonValue cast for JSON array fields in recipe update."
 }
