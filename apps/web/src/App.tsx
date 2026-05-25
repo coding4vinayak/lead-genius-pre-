@@ -13,6 +13,15 @@ import AiInbox from './pages/AiInbox';
 import Agent from './pages/Agent';
 import Sequences from './pages/Sequences';
 import Integrations from './pages/Integrations';
+import Deliverability from './pages/Deliverability';
+import EmailAccounts from './pages/EmailAccounts';
+import Warmup from './pages/Warmup';
+import Billing from './pages/Billing';
+import Workspace from './pages/Workspace';
+import CrmIntegrations from './pages/CrmIntegrations';
+import AbTesting from './pages/AbTesting';
+import AdvancedAnalytics from './pages/AdvancedAnalytics';
+import Benchmarks from './pages/Benchmarks';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 
@@ -37,6 +46,15 @@ export default function App() {
               <Route path="/inbox" element={<AiInbox />} />
               <Route path="/agent" element={<Agent />} />
               <Route path="/integrations" element={<Integrations />} />
+              <Route path="/deliverability" element={<Deliverability />} />
+              <Route path="/email-accounts" element={<EmailAccounts />} />
+              <Route path="/warmup" element={<Warmup />} />
+              <Route path="/billing" element={<Billing />} />
+              <Route path="/workspace" element={<Workspace />} />
+              <Route path="/crm-integrations" element={<CrmIntegrations />} />
+              <Route path="/ab-testing" element={<AbTesting />} />
+              <Route path="/advanced-analytics" element={<AdvancedAnalytics />} />
+              <Route path="/benchmarks" element={<Benchmarks />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Layout>

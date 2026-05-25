@@ -108,9 +108,9 @@ export default function Sequences() {
                   <h3 className="font-semibold text-gray-900 truncate">{seq.name as string}</h3>
                   <Badge variant={STATUS_COLORS[seq.status as string] || 'default'}>{seq.status as string}</Badge>
                 </div>
-                {seq.description && (
-                  <p className="text-xs text-gray-500 mb-3 line-clamp-2">{seq.description as string}</p>
-                )}
+                {seq.description ? (
+                  <p className="text-xs text-gray-500 mb-3 line-clamp-2">{String(seq.description)}</p>
+                ) : null}
                 <div className="grid grid-cols-3 gap-2 text-center text-xs mb-3">
                   <div>
                     <p className="font-semibold text-gray-900">{steps.length}</p>

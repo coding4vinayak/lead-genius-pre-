@@ -3,7 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, FolderOpen, FileText, Send, MessageSquare,
   BarChart3, Settings, Inbox, Bot, ChevronLeft, ChevronRight, LogOut,
-  GitBranch, Plug, ChevronDown,
+  GitBranch, Plug, ChevronDown, ShieldCheck, Flame, Mail, CreditCard,
+  Building2, Link2, FlaskConical, TrendingUp, Target,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/auth';
 import { Avatar } from '../ui';
@@ -37,6 +38,14 @@ const navSections: NavSection[] = [
     ],
   },
   {
+    title: 'Deliverability',
+    items: [
+      { path: '/deliverability', label: 'Email Verification', icon: ShieldCheck },
+      { path: '/warmup', label: 'Warm-up', icon: Flame },
+      { path: '/email-accounts', label: 'Accounts', icon: Mail },
+    ],
+  },
+  {
     title: 'Communication',
     items: [
       { path: '/inbox', label: 'AI Inbox', icon: Inbox },
@@ -47,13 +56,24 @@ const navSections: NavSection[] = [
     title: 'Intelligence',
     items: [
       { path: '/analytics', label: 'Analytics', icon: BarChart3 },
+      { path: '/ab-testing', label: 'A/B Tests', icon: FlaskConical },
+      { path: '/advanced-analytics', label: 'Advanced Analytics', icon: TrendingUp },
+      { path: '/benchmarks', label: 'Benchmarks', icon: Target },
       { path: '/agent', label: 'AI Agent', icon: Bot },
+    ],
+  },
+  {
+    title: 'Billing',
+    items: [
+      { path: '/billing', label: 'Plans', icon: CreditCard },
+      { path: '/workspace', label: 'Workspace', icon: Building2 },
     ],
   },
   {
     title: 'System',
     items: [
       { path: '/integrations', label: 'Integrations', icon: Plug },
+      { path: '/crm-integrations', label: 'CRM', icon: Link2 },
       { path: '/groups', label: 'Groups', icon: FolderOpen },
       { path: '/settings', label: 'Settings', icon: Settings },
     ],
