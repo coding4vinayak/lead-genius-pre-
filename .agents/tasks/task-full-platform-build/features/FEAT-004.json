@@ -2,7 +2,7 @@
   "id": "FEAT-004",
   "type": "feat",
   "description": "Phase 3: Billing, Auth & Teams - Team workspaces with multi-tenancy, role-based access control (owner/admin/member/viewer), usage metering (emails sent, contacts, sequences, team members), and Stripe billing integration (Free/Pro/Enterprise plans, checkout sessions, webhooks, usage-based overage).",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "1. Add Prisma models: Workspace (id, name, slug, plan: free/pro/enterprise, stripeCustomerId?, stripeSubscriptionId?, physicalAddress?, createdAt, updatedAt), WorkspaceMember (id, workspaceId, userId, role: owner/admin/member/viewer, invitedAt, joinedAt), WorkspaceInvite (id, workspaceId, email, role, token, expiresAt, createdAt), UsageRecord (id, workspaceId, metric: emails_sent/contacts_stored/sequences_active/team_members, value, period: daily/monthly, periodStart, periodEnd, createdAt), BillingEvent (id, workspaceId, stripeEventId, type, data Json, createdAt).",
     "2. Update User model to add workspaceId (optional) and currentWorkspaceId fields.",
@@ -35,5 +35,5 @@
     "Run `npx tsc --noEmit` in apps/api to confirm no TypeScript errors"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 108 new tests pass (workspace: 25, rbac: 18, usage-metering: 15, billing: 21, workspaces route: 16, billing route: 13). Full suite passes with 812 tests total. Pre-existing TS errors in demo.pipeline.test.ts, middleware/auth.ts, email-sandbox.ts, external-email-test.ts, smtp-server.test.ts remain unchanged. Prisma client regenerated with Workspace, WorkspaceMember, WorkspaceInvite, UsageRecord, BillingEvent models. User model extended with currentWorkspaceId field."
 }
