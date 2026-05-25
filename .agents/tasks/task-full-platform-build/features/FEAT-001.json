@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "feat",
   "description": "Phase 1A: Email Verification, Suppression Lists, and Unsubscribe/CAN-SPAM Compliance. Add Prisma models for email verification status, suppression lists, unsubscribe records, and GDPR consent. Build services for email validation (format + MX lookup + SMTP verify), global/per-campaign suppression list management, one-click unsubscribe (RFC 8058), and CAN-SPAM compliance (physical address in settings, auto-injected unsubscribe links). Add API routes and tests.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "1. Add new Prisma models to apps/api/prisma/schema.prisma: EmailVerification (leadId, email, status: valid/invalid/risky/unknown, mxValid, smtpValid, verifiedAt), SuppressionEntry (email, reason: bounce/unsubscribe/complaint, source, campaignId?), UnsubscribeRecord (leadId, email, reason, unsubscribedAt, ipAddress?), GdprConsent (leadId, consentType, source, givenAt, revokedAt?). Add verificationStatus field to Lead model (valid/invalid/risky/unknown).",
     "2. Create migration file at apps/api/prisma/migrations/20260529000000_add_deliverability_compliance/migration.sql with the SQL for the new models.",
@@ -38,5 +38,5 @@
     "Run `npx tsc --noEmit` in apps/api to confirm no TypeScript errors"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 590 tests pass (including 63 new tests). API TypeScript compilation clean. Pre-existing TS error in web app (Sequences.tsx line 111) is unrelated. New models use proper indexes and unique constraints. The unsubscribe endpoints are registered without auth middleware as required. physicalAddress added to settingsSchema as optional field."
 }
