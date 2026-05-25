@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LEAD_STATUS, CHANNEL, MESSAGE_STATUS, CAMPAIGN_STATUS, SCHEDULE_TYPE, SEND_STRATEGY, AI_PROVIDER, INTENT_CATEGORY } from '../types';
+import { LEAD_STATUS, CHANNEL, MESSAGE_STATUS, CAMPAIGN_STATUS, SCHEDULE_TYPE, SEND_STRATEGY, AI_PROVIDER, INTENT_CATEGORY, AUTOMATION_STATUS, AUTOMATION_TRIGGER_TYPE, AUTOMATION_STEP_TYPE, AUTOMATION_EXECUTION_STATUS, WEBHOOK_EVENT, INTEGRATION_TYPE, TASK_STATUS, TASK_PRIORITY, SEQUENCE_STATUS, SEQUENCE_STEP_TYPE, SEQUENCE_ENROLLMENT_STATUS, LEAD_STAGE, CHANNEL_HEALTH_STATUS, WHATSAPP_TEMPLATE_STATUS, WHATSAPP_TEMPLATE_CATEGORY, DOMAIN_AUTH_STATUS, EMAIL_VERIFICATION_STATUS, SUPPRESSION_REASON, GDPR_CONSENT_TYPE, WARMUP_STATUS, ROTATION_STRATEGY, TRACKING_DOMAIN_STATUS, WORKSPACE_ROLE, WORKSPACE_PLAN, USAGE_METRIC, CRM_PROVIDER, CRM_SYNC_DIRECTION, CRM_SYNC_STATUS, BOOKING_STATUS, SLACK_EVENT_TYPE, RECIPE_CATEGORY, AB_TEST_STATUS, ANALYTICS_SNAPSHOT_TYPE, BENCHMARK_METRIC, NOTIFICATION_TYPE, NOTIFICATION_CHANNEL, SPAM_SEVERITY, PREVIEW_DEVICE, API_KEY_PERMISSION, LINKEDIN_CONNECTION_STATUS, ASSIGNMENT_RULE_TYPE } from '../types';
 
 export const leadSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
@@ -56,6 +56,7 @@ export const settingsSchema = z.object({
   fromName: z.string().optional(),
   dailyGlobalLimit: z.number().int().positive().optional(),
   defaultMinDelayMs: z.number().int().positive().optional(),
+  physicalAddress: z.string().optional(),
 });
 
 export const paginationSchema = z.object({
@@ -113,3 +114,495 @@ export type GroupInput = z.infer<typeof groupSchema>;
 export type TemplateInput = z.infer<typeof templateSchema>;
 export type CampaignInput = z.infer<typeof campaignSchema>;
 export type SettingsInput = z.infer<typeof settingsSchema>;
+
+export const automationSchema = z.object({
+  name: z.string().min(1, 'Automation name is required'),
+  description: z.string().optional(),
+  triggerType: z.enum(AUTOMATION_TRIGGER_TYPE),
+  triggerConfig: z.record(z.unknown()).default({}),
+  status: z.enum(AUTOMATION_STATUS).default('draft'),
+  isActive: z.boolean().default(false),
+});
+
+export const automationStepSchema = z.object({
+  type: z.enum(AUTOMATION_STEP_TYPE),
+  config: z.record(z.unknown()).default({}),
+  position: z.number().int().min(0),
+  nextStepId: z.string().optional(),
+  conditionTrueStepId: z.string().optional(),
+  conditionFalseStepId: z.string().optional(),
+});
+
+export const webhookSubscriptionSchema = z.object({
+  name: z.string().min(1, 'Webhook name is required'),
+  url: z.string().url('Valid URL is required'),
+  events: z.array(z.enum(WEBHOOK_EVENT)).min(1, 'At least one event is required'),
+  secret: z.string().optional(),
+  headers: z.record(z.string()).optional(),
+  isActive: z.boolean().default(true),
+});
+
+export const integrationSchema = z.object({
+  type: z.enum(INTEGRATION_TYPE),
+  name: z.string().min(1, 'Integration name is required'),
+  config: z.record(z.unknown()).default({}),
+  credentials: z.record(z.unknown()).optional(),
+});
+
+export const taskSchema = z.object({
+  title: z.string().min(1, 'Task title is required'),
+  description: z.string().optional(),
+  assigneeId: z.string().optional(),
+  status: z.enum(TASK_STATUS).default('pending'),
+  priority: z.enum(TASK_PRIORITY).default('medium'),
+  dueDate: z.string().datetime().optional(),
+  automationId: z.string().optional(),
+});
+
+export const inboundWebhookSchema = z.object({
+  name: z.string().min(1, 'Inbound webhook name is required'),
+  description: z.string().optional(),
+  secret: z.string().optional(),
+});
+
+export type AutomationInput = z.infer<typeof automationSchema>;
+export type AutomationStepInput = z.infer<typeof automationStepSchema>;
+export type WebhookSubscriptionInput = z.infer<typeof webhookSubscriptionSchema>;
+export type IntegrationInput = z.infer<typeof integrationSchema>;
+export type TaskInput = z.infer<typeof taskSchema>;
+export type InboundWebhookInput = z.infer<typeof inboundWebhookSchema>;
+
+export const sequenceSchema = z.object({
+  name: z.string().min(1, 'Sequence name is required'),
+  description: z.string().optional(),
+  status: z.enum(SEQUENCE_STATUS).default('draft'),
+  leadGroupIds: z.array(z.string()).default([]),
+  triggerType: z.enum(['manual', 'on_lead_created', 'on_tag_added'] as const).default('manual'),
+  triggerConfig: z.record(z.unknown()).default({}),
+  pauseOnReply: z.boolean().default(true),
+  sendingWindowStart: z.string().optional(),
+  sendingWindowEnd: z.string().optional(),
+  dailyLimit: z.number().int().positive().optional(),
+  timezone: z.string().default('UTC'),
+});
+
+export const sequenceStepSchema = z.object({
+  position: z.number().int().min(0),
+  type: z.enum(SEQUENCE_STEP_TYPE),
+  config: z.record(z.unknown()).default({}),
+  nextStepId: z.string().optional(),
+  conditionTrueStepId: z.string().optional(),
+  conditionFalseStepId: z.string().optional(),
+});
+
+export type SequenceInput = z.infer<typeof sequenceSchema>;
+export type SequenceStepInput = z.infer<typeof sequenceStepSchema>;
+
+export const whatsAppTemplateSchema = z.object({
+  name: z.string().min(1, 'Template name is required'),
+  language: z.string().default('en'),
+  category: z.enum(WHATSAPP_TEMPLATE_CATEGORY).default('marketing'),
+  body: z.string().min(1, 'Template body is required'),
+  headerType: z.enum(['text', 'image', 'document'] as const).optional(),
+  headerContent: z.string().optional(),
+  footerText: z.string().optional(),
+  buttons: z.any().optional(),
+  twilioTemplateSid: z.string().optional(),
+});
+
+export const emailDomainAuthSchema = z.object({
+  domain: z.string().min(1, 'Domain is required'),
+  spfStatus: z.enum(DOMAIN_AUTH_STATUS).default('pending'),
+  dkimStatus: z.enum(DOMAIN_AUTH_STATUS).default('pending'),
+  dmarcStatus: z.enum(DOMAIN_AUTH_STATUS).default('pending'),
+});
+
+export type WhatsAppTemplateInput = z.infer<typeof whatsAppTemplateSchema>;
+export type EmailDomainAuthInput = z.infer<typeof emailDomainAuthSchema>;
+
+export const emailVerificationSchema = z.object({
+  email: z.string().email('Valid email is required'),
+});
+
+export const bulkEmailVerificationSchema = z.object({
+  emails: z.array(z.string().email()).min(1, 'At least one email is required'),
+});
+
+export const suppressionEntrySchema = z.object({
+  email: z.string().email('Valid email is required'),
+  reason: z.enum(SUPPRESSION_REASON),
+  source: z.string().optional(),
+  campaignId: z.string().optional(),
+});
+
+export const suppressionImportSchema = z.object({
+  entries: z.array(z.object({
+    email: z.string().email(),
+    reason: z.enum(SUPPRESSION_REASON),
+    source: z.string().optional(),
+  })).min(1, 'At least one entry is required'),
+});
+
+export const unsubscribeSchema = z.object({
+  reason: z.string().optional(),
+});
+
+export const gdprConsentSchema = z.object({
+  leadId: z.string().min(1, 'Lead ID is required'),
+  consentType: z.enum(GDPR_CONSENT_TYPE),
+  source: z.string().optional(),
+});
+
+export const complianceSettingsSchema = z.object({
+  physicalAddress: z.string().min(1, 'Physical address is required for CAN-SPAM compliance'),
+});
+
+export type EmailVerificationInput = z.infer<typeof emailVerificationSchema>;
+export type SuppressionEntryInput = z.infer<typeof suppressionEntrySchema>;
+export type UnsubscribeInput = z.infer<typeof unsubscribeSchema>;
+export type GdprConsentInput = z.infer<typeof gdprConsentSchema>;
+export type ComplianceSettingsInput = z.infer<typeof complianceSettingsSchema>;
+
+export const warmupScheduleSchema = z.object({
+  accountEmail: z.string().email('Valid email is required'),
+  maxDailyLimit: z.number().int().positive().default(50),
+  rampPercentage: z.number().min(1).max(100).default(20),
+  bounceThreshold: z.number().min(0).max(100).default(5),
+});
+
+export const warmupScheduleUpdateSchema = z.object({
+  maxDailyLimit: z.number().int().positive().optional(),
+  rampPercentage: z.number().min(1).max(100).optional(),
+  bounceThreshold: z.number().min(0).max(100).optional(),
+});
+
+export type WarmupScheduleInput = z.infer<typeof warmupScheduleSchema>;
+export type WarmupScheduleUpdateInput = z.infer<typeof warmupScheduleUpdateSchema>;
+
+export const emailAccountSchema = z.object({
+  email: z.string().email('Valid email is required'),
+  name: z.string().optional(),
+  smtpHost: z.string().optional(),
+  smtpPort: z.number().int().positive().optional(),
+  smtpUser: z.string().optional(),
+  smtpPass: z.string().optional(),
+  sendgridApiKey: z.string().optional(),
+  dailyLimit: z.number().int().positive().default(100),
+  isActive: z.boolean().default(true),
+});
+
+export const emailAccountUpdateSchema = z.object({
+  name: z.string().optional(),
+  smtpHost: z.string().optional(),
+  smtpPort: z.number().int().positive().optional(),
+  smtpUser: z.string().optional(),
+  smtpPass: z.string().optional(),
+  sendgridApiKey: z.string().optional(),
+  dailyLimit: z.number().int().positive().optional(),
+  isActive: z.boolean().optional(),
+});
+
+export const trackingDomainSchema = z.object({
+  domain: z.string().min(1, 'Domain is required'),
+  cnameTarget: z.string().min(1, 'CNAME target is required'),
+  isDefault: z.boolean().default(false),
+});
+
+export const accountRotationConfigSchema = z.object({
+  strategy: z.enum(ROTATION_STRATEGY).default('round_robin'),
+  weights: z.record(z.number()).optional(),
+  skipOnDailyLimit: z.boolean().default(true),
+  skipOnHighBounce: z.boolean().default(true),
+  bounceThreshold: z.number().min(0).max(100).default(10),
+});
+
+export type EmailAccountInput = z.infer<typeof emailAccountSchema>;
+export type EmailAccountUpdateInput = z.infer<typeof emailAccountUpdateSchema>;
+export type TrackingDomainInput = z.infer<typeof trackingDomainSchema>;
+export type AccountRotationConfigInput = z.infer<typeof accountRotationConfigSchema>;
+
+export const workspaceSchema = z.object({
+  name: z.string().min(1, 'Workspace name is required'),
+  slug: z.string().min(1).regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with dashes'),
+  plan: z.enum(WORKSPACE_PLAN).default('free'),
+});
+
+export const workspaceUpdateSchema = z.object({
+  name: z.string().min(1).optional(),
+  slug: z.string().min(1).regex(/^[a-z0-9-]+$/).optional(),
+  physicalAddress: z.string().optional(),
+});
+
+export const workspaceMemberSchema = z.object({
+  email: z.string().email('Valid email is required'),
+  role: z.enum(WORKSPACE_ROLE).default('member'),
+});
+
+export const workspaceInviteSchema = z.object({
+  email: z.string().email('Valid email is required'),
+  role: z.enum(WORKSPACE_ROLE).default('member'),
+});
+
+export const usageRecordSchema = z.object({
+  metric: z.enum(USAGE_METRIC),
+  value: z.number().int().min(0),
+  period: z.enum(['daily', 'monthly'] as const),
+  periodStart: z.string().datetime(),
+  periodEnd: z.string().datetime(),
+});
+
+export const billingPlanSchema = z.object({
+  plan: z.enum(WORKSPACE_PLAN),
+});
+
+export const switchWorkspaceSchema = z.object({
+  workspaceId: z.string().min(1, 'Workspace ID is required'),
+});
+
+export const billingCheckoutSchema = z.object({
+  plan: z.enum(WORKSPACE_PLAN),
+  successUrl: z.string().url().optional(),
+  cancelUrl: z.string().url().optional(),
+});
+
+export type WorkspaceInput = z.infer<typeof workspaceSchema>;
+export type WorkspaceUpdateInput = z.infer<typeof workspaceUpdateSchema>;
+export type WorkspaceMemberInput = z.infer<typeof workspaceMemberSchema>;
+export type WorkspaceInviteInput = z.infer<typeof workspaceInviteSchema>;
+export type UsageRecordInput = z.infer<typeof usageRecordSchema>;
+export type BillingPlanInput = z.infer<typeof billingPlanSchema>;
+export type SwitchWorkspaceInput = z.infer<typeof switchWorkspaceSchema>;
+export type BillingCheckoutInput = z.infer<typeof billingCheckoutSchema>;
+
+export const crmSyncSchema = z.object({
+  integrationId: z.string().min(1, 'Integration ID is required'),
+  provider: z.enum(CRM_PROVIDER),
+  direction: z.enum(CRM_SYNC_DIRECTION).default('bidirectional'),
+  fieldMapping: z.record(z.string()).default({}),
+});
+
+export const crmOAuthCallbackSchema = z.object({
+  provider: z.enum(CRM_PROVIDER),
+  code: z.string().min(1, 'OAuth code is required'),
+});
+
+export const crmFieldMappingSchema = z.object({
+  fieldMapping: z.record(z.string()).refine((obj) => Object.keys(obj).length > 0, {
+    message: 'At least one field mapping is required',
+  }),
+});
+
+export const calendarBookingSchema = z.object({
+  leadId: z.string().min(1, 'Lead ID is required'),
+  title: z.string().min(1, 'Title is required'),
+  startTime: z.string().datetime(),
+  endTime: z.string().datetime(),
+  timezone: z.string().default('UTC'),
+});
+
+export const calendarBookingLinkSchema = z.object({
+  leadId: z.string().min(1, 'Lead ID is required'),
+  duration: z.number().int().positive().default(30),
+  title: z.string().optional(),
+});
+
+export const calendarSlotsSchema = z.object({
+  date: z.string().min(1, 'Date is required'),
+  timezone: z.string().default('UTC'),
+});
+
+export const slackNotificationSchema = z.object({
+  integrationId: z.string().min(1, 'Integration ID is required'),
+  channel: z.string().min(1, 'Channel is required'),
+  eventTypes: z.array(z.enum(SLACK_EVENT_TYPE)).min(1, 'At least one event type is required'),
+  isActive: z.boolean().default(true),
+});
+
+export const slackConnectSchema = z.object({
+  code: z.string().min(1, 'OAuth code is required'),
+});
+
+export const webhookTemplateSchema = z.object({
+  name: z.string().min(1, 'Template name is required'),
+  description: z.string().optional(),
+  category: z.enum(RECIPE_CATEGORY),
+  triggerEvents: z.array(z.string()).min(1, 'At least one trigger event is required'),
+  targetUrl: z.string().url('Valid URL is required'),
+  headers: z.record(z.string()).optional(),
+  bodyTemplate: z.string().optional(),
+  isPublic: z.boolean().default(true),
+});
+
+export const recipeSchema = z.object({
+  name: z.string().min(1, 'Recipe name is required'),
+  description: z.string().optional(),
+  category: z.enum(RECIPE_CATEGORY),
+  steps: z.array(z.record(z.unknown())).min(1, 'At least one step is required'),
+  isActive: z.boolean().default(false),
+});
+
+export const recipeActivateSchema = z.object({
+  config: z.record(z.unknown()).default({}),
+});
+
+export type CrmSyncInput = z.infer<typeof crmSyncSchema>;
+export type CrmOAuthCallbackInput = z.infer<typeof crmOAuthCallbackSchema>;
+export type CrmFieldMappingInput = z.infer<typeof crmFieldMappingSchema>;
+export type CalendarBookingInput = z.infer<typeof calendarBookingSchema>;
+export type CalendarBookingLinkInput = z.infer<typeof calendarBookingLinkSchema>;
+export type CalendarSlotsInput = z.infer<typeof calendarSlotsSchema>;
+export type SlackNotificationInput = z.infer<typeof slackNotificationSchema>;
+export type SlackConnectInput = z.infer<typeof slackConnectSchema>;
+export type WebhookTemplateInput = z.infer<typeof webhookTemplateSchema>;
+export type RecipeInput = z.infer<typeof recipeSchema>;
+export type RecipeActivateInput = z.infer<typeof recipeActivateSchema>;
+
+export const abTestSchema = z.object({
+  sequenceStepId: z.string().min(1, 'Sequence step ID is required'),
+  name: z.string().min(1, 'Test name is required'),
+  variants: z.array(z.object({
+    name: z.string().min(1, 'Variant name is required'),
+    subject: z.string().optional(),
+    body: z.string().optional(),
+    weight: z.number().int().min(1).max(100).default(50),
+  })).min(2, 'At least two variants are required'),
+});
+
+export const abTestVariantSchema = z.object({
+  name: z.string().min(1, 'Variant name is required'),
+  subject: z.string().optional(),
+  body: z.string().optional(),
+  weight: z.number().int().min(1).max(100).default(50),
+});
+
+export const sendTimePreferenceSchema = z.object({
+  leadId: z.string().min(1, 'Lead ID is required'),
+  timezone: z.string().default('UTC'),
+  preferredHour: z.number().int().min(0).max(23).optional(),
+  preferredDay: z.number().int().min(0).max(6).optional(),
+});
+
+export const analyticsSnapshotSchema = z.object({
+  type: z.enum(['funnel', 'cohort', 'revenue'] as const),
+  entityId: z.string().min(1),
+  entityType: z.string().min(1),
+  periodStart: z.string().datetime(),
+  periodEnd: z.string().datetime(),
+});
+
+export const sendOptimizationScheduleSchema = z.object({
+  messageId: z.string().min(1, 'Message ID is required'),
+  leadId: z.string().min(1, 'Lead ID is required'),
+});
+
+export const analyticsExportSchema = z.object({
+  type: z.enum(['funnel', 'cohort', 'revenue'] as const),
+  sequenceId: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+});
+
+export type AbTestInput = z.infer<typeof abTestSchema>;
+export type AbTestVariantInput = z.infer<typeof abTestVariantSchema>;
+export type SendTimePreferenceInput = z.infer<typeof sendTimePreferenceSchema>;
+export type AnalyticsSnapshotInput = z.infer<typeof analyticsSnapshotSchema>;
+export type SendOptimizationScheduleInput = z.infer<typeof sendOptimizationScheduleSchema>;
+export type AnalyticsExportInput = z.infer<typeof analyticsExportSchema>;
+
+export const notificationPreferenceSchema = z.object({
+  preferences: z.array(z.object({
+    eventType: z.enum(NOTIFICATION_TYPE),
+    channel: z.enum(NOTIFICATION_CHANNEL).default('in_app'),
+  })).min(1, 'At least one preference is required'),
+});
+
+export type NotificationPreferenceInput = z.infer<typeof notificationPreferenceSchema>;
+
+export const spamCheckContentSchema = z.object({
+  subject: z.string().optional(),
+  body: z.string().min(1, 'Body is required'),
+});
+
+export const templatePreviewEnhancedSchema = z.object({
+  variables: z.record(z.string()).optional().default({}),
+  device: z.enum(PREVIEW_DEVICE).optional().default('desktop'),
+});
+
+export const linkCheckResultSchema = z.object({
+  url: z.string(),
+  status: z.enum(['valid', 'invalid'] as const),
+  reason: z.string().optional(),
+});
+
+export type SpamCheckContentInput = z.infer<typeof spamCheckContentSchema>;
+export type TemplatePreviewEnhancedInput = z.infer<typeof templatePreviewEnhancedSchema>;
+export type LinkCheckResultInput = z.infer<typeof linkCheckResultSchema>;
+
+export const enrichLeadRequestSchema = z.object({
+  providers: z.array(z.string()).optional(),
+});
+
+export const bulkEnrichRequestSchema = z.object({
+  providers: z.array(z.string()).optional(),
+});
+
+export const findEmailRequestSchema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  domain: z.string().min(1, 'Domain is required'),
+});
+
+export type EnrichLeadRequestInput = z.infer<typeof enrichLeadRequestSchema>;
+export type BulkEnrichRequestInput = z.infer<typeof bulkEnrichRequestSchema>;
+export type FindEmailRequestInput = z.infer<typeof findEmailRequestSchema>;
+
+export const apiKeyCreateSchema = z.object({
+  name: z.string().min(1, 'API key name is required'),
+  permissions: z.array(z.enum(API_KEY_PERMISSION)).optional().default([]),
+});
+
+export const apiKeyUsageQuerySchema = z.object({
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().optional(),
+});
+
+export type ApiKeyCreateInput = z.infer<typeof apiKeyCreateSchema>;
+export type ApiKeyUsageQueryInput = z.infer<typeof apiKeyUsageQuerySchema>;
+
+export const linkedInConnectSchema = z.object({
+  note: z.string().optional(),
+  profileUrl: z.string().url().optional(),
+});
+
+export const linkedInMessageSchema = z.object({
+  body: z.string().min(1, 'Message body is required'),
+});
+
+export const linkedInProfileUpdateSchema = z.object({
+  profileUrl: z.string().url().optional(),
+  connectionStatus: z.enum(LINKEDIN_CONNECTION_STATUS).optional(),
+});
+
+export type LinkedInConnectInput = z.infer<typeof linkedInConnectSchema>;
+export type LinkedInMessageInput = z.infer<typeof linkedInMessageSchema>;
+export type LinkedInProfileUpdateInput = z.infer<typeof linkedInProfileUpdateSchema>;
+
+export const leadNoteSchema = z.object({
+  body: z.string().min(1, 'Note body is required'),
+});
+
+export const leadAssignSchema = z.object({
+  userId: z.string().min(1, 'User ID is required'),
+});
+
+export const assignmentRuleSchema = z.object({
+  name: z.string().min(1, 'Rule name is required'),
+  type: z.enum(ASSIGNMENT_RULE_TYPE),
+  config: z.record(z.unknown()).default({}),
+  isActive: z.boolean().default(true),
+  priority: z.number().int().default(0),
+});
+
+export type LeadNoteInput = z.infer<typeof leadNoteSchema>;
+export type LeadAssignInput = z.infer<typeof leadAssignSchema>;
+export type AssignmentRuleInput = z.infer<typeof assignmentRuleSchema>;

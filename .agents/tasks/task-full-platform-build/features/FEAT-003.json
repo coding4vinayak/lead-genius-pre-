@@ -1,0 +1,38 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Phase 2: Multi-Account Email Management, Account Rotation, Custom Tracking Domains, and Sending Reputation Dashboard. CRUD for multiple sender accounts with SMTP/SendGrid config, round-robin and weighted rotation, daily limit enforcement, custom tracking domain with DNS verification, and per-account reputation scoring.",
+  "status": "in_progress",
+  "steps": [
+    "1. Add Prisma models to schema.prisma: EmailAccount (id, email, name, smtpHost, smtpPort, smtpUser, smtpPass, sendgridApiKey, dailyLimit, sentToday, warmupStatus, isActive, reputationScore, bounceRate, lastResetAt, createdAt, updatedAt), TrackingDomain (id, domain, cnameTarget, cnameVerified, verifiedAt, isDefault, createdAt, updatedAt), AccountRotationConfig (id, strategy: round_robin/weighted/failover, weights Json?, skipOnDailyLimit, skipOnHighBounce, bounceThreshold, createdAt, updatedAt).",
+    "2. Create migration at apps/api/prisma/migrations/20260529020000_add_multi_account/migration.sql.",
+    "3. Add shared types: EMAIL_ACCOUNT_STATUS, ROTATION_STRATEGY, TRACKING_DOMAIN_STATUS in packages/shared/src/types/index.ts.",
+    "4. Add schemas: emailAccountSchema, trackingDomainSchema, accountRotationConfigSchema in packages/shared/src/schemas/index.ts.",
+    "5. Create apps/api/src/services/email-accounts.ts: createAccount, updateAccount, deleteAccount, testConnection (send test email via account SMTP), getAccountHealth, resetDailyCounts (called by daily cron), selectNextAccount(strategy) - implements round-robin, weighted, and failover rotation logic.",
+    "6. Create apps/api/src/services/tracking-domains.ts: addDomain, verifyDomain (check CNAME DNS records), removeDomain, getActiveDomain.",
+    "7. Create apps/api/src/services/reputation.ts: calculateReputationScore(accountId), getReputationDashboard(), checkReputationAlerts() - returns warnings when score drops below threshold.",
+    "8. Create apps/api/src/routes/email-accounts.ts: full CRUD + POST /:id/test-connection, GET /:id/health, POST /rotate (get next account for sending).",
+    "9. Create apps/api/src/routes/tracking-domains.ts: GET, POST, DELETE /:id, POST /:id/verify.",
+    "10. Create apps/api/src/routes/reputation.ts: GET /api/reputation/dashboard, GET /api/reputation/accounts/:id, GET /api/reputation/alerts.",
+    "11. Register all new routes in apps/api/src/index.ts.",
+    "12. Update mockDb.ts with emailAccount, trackingDomain, accountRotationConfig models.",
+    "13. Add factory functions: buildEmailAccount, buildTrackingDomain, buildAccountRotationConfig.",
+    "14. Create service tests: email-accounts.test.ts, tracking-domains.test.ts, reputation.test.ts.",
+    "15. Create route tests: email-accounts.test.ts, tracking-domains.test.ts, reputation.test.ts.",
+    "16. Ensure all tests pass."
+  ],
+  "acceptance_criteria": [
+    "Multiple email accounts can be created with SMTP or SendGrid config",
+    "Round-robin rotation selects accounts in order, skipping those at daily limit",
+    "Weighted rotation favors accounts with better reputation",
+    "Custom tracking domains can be added and verified via DNS CNAME lookup",
+    "Reputation dashboard shows per-account metrics",
+    "All tests pass"
+  ],
+  "verification": [
+    "Run `npm test` from /projects/sandbox/lead-genius-pre- and confirm all tests pass",
+    "Run `npx tsc --noEmit` in apps/api to confirm no TypeScript errors"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

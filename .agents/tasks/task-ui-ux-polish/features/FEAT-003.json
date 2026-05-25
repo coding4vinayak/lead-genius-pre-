@@ -1,0 +1,36 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Unified Inbox with Conversation Threads - a three-panel inbox (conversation list, message thread, lead context sidebar) with channel indicators, quick reply with template picker and AI suggest, keyboard shortcuts, search/filter, and read/star/assign actions. Replaces the existing AiInbox.tsx with a richer unified experience.",
+  "status": "completed",
+  "steps": [
+    "Create apps/web/src/pages/UnifiedInbox.tsx - main page with three-panel layout: left (conversation list, 320px), center (message thread, flex-1), right (lead context sidebar, 300px collapsible). Use existing /inbox API endpoints. Add keyboard shortcut listener (j/k navigate, r reply, a archive, s star).",
+    "Create apps/web/src/components/inbox/ConversationList.tsx - left panel showing conversations sorted by recency with unread at top. Each item shows: lead name, last message preview, timestamp, unread indicator (bold + dot), channel badge (Mail/MessageSquare/Linkedin icon). Include search input at top and filter dropdown (by channel, date range, intent).",
+    "Create apps/web/src/components/inbox/MessageThread.tsx - center panel showing full conversation thread (like Gmail). Messages grouped chronologically. Inbound messages on left with gray bubble, outbound on right with blue bubble. Show channel icon on each message. Show timestamp, read receipts. Include subject line for email threads.",
+    "Create apps/web/src/components/inbox/QuickReplyBox.tsx - fixed at bottom of message thread. Textarea for reply with: template picker dropdown (fetches from /templates), AI suggest button (calls /ai/generate-draft), send button. Show loading state during AI generation. Template picker inserts template body into textarea.",
+    "Create apps/web/src/components/inbox/LeadContextSidebar.tsx - collapsible right panel showing: lead avatar + name + company, score badge, stage badge, tags list, recent activity feed (last 5 items), internal notes section with add note input, quick actions (add tag button, change stage dropdown, assign to user dropdown). Toggle button to collapse/expand.",
+    "Add read/unread toggle, star, and assign dropdown to each conversation item in ConversationList. Star uses a filled/outline star icon. Assign shows team members dropdown.",
+    "Add channel indicator badges throughout - Mail icon for email, MessageSquare for WhatsApp, Linkedin for LinkedIn messages. Color-coded badges next to messages and in conversation list.",
+    "Update apps/web/src/App.tsx - change the /inbox route to use UnifiedInbox instead of AiInbox. Keep AiInbox file for reference but route to new component.",
+    "Create apps/web/src/components/inbox/UnifiedInbox.test.tsx - test that the three panels render, that clicking a conversation loads messages, that keyboard shortcuts work (j/k navigate), and that the quick reply box renders with template picker and AI suggest button."
+  ],
+  "acceptance_criteria": [
+    "The /inbox route renders the new UnifiedInbox with three panels",
+    "Left panel shows conversation list sorted by recency with unread items at top",
+    "Clicking a conversation loads the full message thread in the center panel",
+    "Messages show channel indicators (email/whatsapp/linkedin icons)",
+    "Quick reply box includes template picker dropdown and AI suggest button",
+    "Right sidebar shows lead context (name, score, stage, tags, activity, notes)",
+    "Right sidebar is collapsible",
+    "Keyboard shortcuts j/k navigate conversations, r focuses reply, s stars",
+    "Search/filter in conversation list works",
+    "TypeScript compiles without errors",
+    "Tests pass"
+  ],
+  "verification": [
+    "Run `npx turbo build` from /projects/sandbox/lead-genius-pre- and confirm no TypeScript errors",
+    "Run `npx turbo test` from /projects/sandbox/lead-genius-pre- and confirm all tests pass"
+  ],
+  "blocked_reason": null,
+  "findings": "All 134 tests pass (9 new tests for UnifiedInbox). Web build succeeds. Workers build has pre-existing TS errors (unrelated). Fixed nested button HTML warning by converting outer button to div with role=button. The /inbox route now renders UnifiedInbox; AiInbox.tsx file preserved for reference."
+}

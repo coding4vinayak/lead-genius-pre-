@@ -22,10 +22,11 @@ function renderSidebar(collapsed = false, onToggle = vi.fn()) {
 describe('Sidebar', () => {
   beforeEach(() => {
     mockAuthStore.useAuthStore.mockImplementation((sel: any) => {
-      const state = { user: { email: 'test@test.com' }, logout: vi.fn() };
+      const state = { user: { email: 'test@test.com', name: 'Test User' }, logout: vi.fn() };
       return sel ? sel(state) : state;
     });
   });
+
   it('should render navigation items', () => {
     renderSidebar();
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
@@ -34,10 +35,19 @@ describe('Sidebar', () => {
     expect(screen.getByText('Settings')).toBeInTheDocument();
   });
 
-  it('should show all 10 nav items', () => {
+  it('should show grouped navigation with section headers', () => {
     renderSidebar();
-    const items = ['Dashboard', 'Leads', 'Groups', 'Templates', 'Campaigns',
-      'Messages', 'Analytics', 'AI Inbox', 'AI Agent', 'Settings'];
+    expect(screen.getByText('Main')).toBeInTheDocument();
+    expect(screen.getByText('Outreach')).toBeInTheDocument();
+    expect(screen.getByText('Communication')).toBeInTheDocument();
+    expect(screen.getByText('Intelligence')).toBeInTheDocument();
+    expect(screen.getByText('System')).toBeInTheDocument();
+  });
+
+  it('should show all nav items', () => {
+    renderSidebar();
+    const items = ['Dashboard', 'Leads', 'Sequences', 'Campaigns', 'Templates',
+      'AI Inbox', 'Messages', 'Analytics', 'AI Agent', 'Integrations', 'Groups', 'Settings'];
     items.forEach((item) => {
       expect(screen.getByText(item)).toBeInTheDocument();
     });

@@ -10,7 +10,24 @@ import Messages from './pages/Messages';
 import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 import AiInbox from './pages/AiInbox';
+import UnifiedInbox from './pages/UnifiedInbox';
 import Agent from './pages/Agent';
+import Sequences from './pages/Sequences';
+import SequenceBuilderPage from './pages/SequenceBuilder';
+import TemplateEditor from './pages/TemplateEditor';
+import Integrations from './pages/Integrations';
+import Deliverability from './pages/Deliverability';
+import EmailAccounts from './pages/EmailAccounts';
+import Warmup from './pages/Warmup';
+import Billing from './pages/Billing';
+import Workspace from './pages/Workspace';
+import CrmIntegrations from './pages/CrmIntegrations';
+import AbTesting from './pages/AbTesting';
+import AdvancedAnalytics from './pages/AdvancedAnalytics';
+import Benchmarks from './pages/Benchmarks';
+import ApiKeys from './pages/ApiKeys';
+import LinkedIn from './pages/LinkedIn';
+import AssignmentRules from './pages/AssignmentRules';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 
@@ -27,12 +44,29 @@ export default function App() {
               <Route path="/leads" element={<Leads />} />
               <Route path="/groups" element={<Groups />} />
               <Route path="/templates" element={<Templates />} />
+              <Route path="/templates/new" element={<TemplateEditor />} />
+              <Route path="/templates/:id/edit" element={<TemplateEditor />} />
               <Route path="/campaigns" element={<Campaigns />} />
+              <Route path="/sequences" element={<Sequences />} />
+              <Route path="/sequences/:id/builder" element={<SequenceBuilderPage />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/settings" element={<Settings />} />
-              <Route path="/inbox" element={<AiInbox />} />
+              <Route path="/inbox" element={<UnifiedInbox />} />
               <Route path="/agent" element={<Agent />} />
+              <Route path="/integrations" element={<Integrations />} />
+              <Route path="/deliverability" element={<Deliverability />} />
+              <Route path="/email-accounts" element={<EmailAccounts />} />
+              <Route path="/warmup" element={<Warmup />} />
+              <Route path="/billing" element={<Billing />} />
+              <Route path="/workspace" element={<Workspace />} />
+              <Route path="/crm-integrations" element={<CrmIntegrations />} />
+              <Route path="/ab-testing" element={<AbTesting />} />
+              <Route path="/advanced-analytics" element={<AdvancedAnalytics />} />
+              <Route path="/benchmarks" element={<Benchmarks />} />
+              <Route path="/api-keys" element={<ApiKeys />} />
+              <Route path="/linkedin" element={<LinkedIn />} />
+              <Route path="/assignment-rules" element={<AssignmentRules />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Layout>

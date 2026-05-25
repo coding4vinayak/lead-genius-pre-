@@ -1,0 +1,29 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "AI Inbound Response Handler Enhancement - Make AI ONLY activate on inbound messages. Add auto-reply threshold controls, review queue, clear separation between template-based outbound and AI-assisted inbound. Extends the existing AI inbox with proper controls.",
+  "status": "completed",
+  "steps": [
+    "STEP 1 - Enhance AI Settings: The AgentSettings model already exists with autoReplyThreshold, isAutoPilotActive, maxDailyReplies, workingHoursStart, workingHoursEnd, humanHandoffRules. Add to schema: `autoReplyEnabled Boolean @default(false)` (separate from autopilot - this just enables AI draft generation on inbound), `reviewQueueEnabled Boolean @default(true)` (if true, AI drafts go to review queue rather than auto-sending), `excludedIntents String[]` (intents that should never auto-reply, e.g. ['not_interested', 'spam']). Add migration.",
+    "STEP 2 - Inbound AI Pipeline Service: Create apps/api/src/services/inbound-ai-pipeline.ts. This is the orchestrator called when any inbound message arrives. Flow: (a) Check if autoReplyEnabled in AgentSettings. If not, just store message and return. (b) Enqueue intent analysis job to ai-queue. (c) After analysis, check if intent category is in excludedIntents - if so, just notify user. (d) If reviewQueueEnabled, generate draft and mark it as 'pending_review' (add status field to message or use a new ReviewQueue model). (e) If autopilot is active AND confidence >= threshold AND within working hours AND daily limit not exceeded, auto-send the draft. (f) Publish event 'inbound.processed' with outcome.",
+    "STEP 3 - Review Queue API: Add to apps/api/src/routes/inbox.ts: GET /api/inbox/review-queue (messages with pending AI drafts awaiting approval), POST /api/inbox/:messageId/approve-draft (approve and send the AI-generated reply), POST /api/inbox/:messageId/reject-draft (reject the draft, optionally provide manual reply), GET /api/inbox/stats (count of unread, pending reviews, auto-replied today). These extend the existing inbox router.",
+    "STEP 4 - Wire Inbound Pipeline: Update the webhook handler (apps/api/src/routes/webhooks.ts) for email.reply and whatsapp.inbound events to call the inbound-ai-pipeline service instead of directly enqueuing to ai-queue. This ensures the proper controls (enabled check, working hours, limits) are always applied.",
+    "STEP 5 - Shared Types Update: Add REVIEW_STATUS type ('pending_review'|'approved'|'rejected'|'auto_sent') to packages/shared/src/types/index.ts.",
+    "STEP 6 - Tests: Create apps/api/src/services/inbound-ai-pipeline.test.ts (test the full flow: disabled->no-action, enabled->draft generated, autopilot->auto-send, excluded intents->skip, working hours check, daily limit). Add tests to apps/api/src/routes/inbox.test.ts for review queue endpoints."
+  ],
+  "acceptance_criteria": [
+    "AI only activates on inbound messages - outbound is always template-based",
+    "When autoReplyEnabled is false, no AI processing happens on inbound",
+    "Review queue shows pending AI drafts that user can approve/reject",
+    "Auto-reply respects: threshold, working hours, daily limit, excluded intents",
+    "Approving a draft sends the message via the normal send pipeline",
+    "All tests pass including new pipeline tests",
+    "TypeScript compiles cleanly"
+  ],
+  "verification": [
+    "Run `npx tsc --noEmit` in apps/api",
+    "Run `npx vitest run` in apps/api to verify all tests pass"
+  ],
+  "blocked_reason": null,
+  "findings": "All 527 tests pass. Pre-existing TS errors in demo.pipeline.test.ts, middleware/auth.ts, services/email-sandbox.ts, services/smtp-server.test.ts are not related to this feature. The simulation test was updated to reflect the new pipeline architecture where inbound messages go through processInboundMessage() instead of being directly enqueued to aiQueue. Route ordering in inbox.ts matters - specific named routes (review-queue, stats) must come before parameterized routes (/:leadId)."
+}

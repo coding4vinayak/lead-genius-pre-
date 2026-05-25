@@ -2,8 +2,9 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { prisma } from '../db.js';
 import { validate } from '../middleware/validate.js';
 import { paginationSchema } from '@leadgenius/shared';
-import { aiQueue } from '../queue/index.js';
+import { aiQueue, sendQueue } from '../queue/index.js';
 import { analyzeMessageIntent } from '../services/ai/index.js';
+import { processInboundMessage } from '../services/inbound-ai-pipeline.js';
 
 const router = Router();
 
@@ -87,6 +88,55 @@ router.get('/conversations', async (_req: Request, res: Response, next: NextFunc
   } catch (err) { next(err); }
 });
 
+router.get('/review-queue', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 20;
+
+    const where = {
+      direction: 'inbound' as const,
+      reviewStatus: 'pending_review',
+    };
+
+    const [data, total] = await Promise.all([
+      prisma.message.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        include: {
+          lead: { select: { id: true, name: true, email: true, phone: true, company: true, score: true } },
+        },
+      }),
+      prisma.message.count({ where }),
+    ]);
+
+    res.json({ data, meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) } });
+  } catch (err) { next(err); }
+});
+
+router.get('/stats', async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const [unread, pendingReviews, autoRepliedToday] = await Promise.all([
+      prisma.message.count({ where: { direction: 'inbound', readAt: null } }),
+      prisma.message.count({ where: { direction: 'inbound', reviewStatus: 'pending_review' } }),
+      prisma.message.count({
+        where: {
+          direction: 'outbound',
+          isAiGenerated: true,
+          reviewStatus: 'auto_sent',
+          createdAt: { gte: startOfDay },
+        },
+      }),
+    ]);
+
+    res.json({ data: { unread, pendingReviews, autoRepliedToday } });
+  } catch (err) { next(err); }
+});
+
 router.get('/:leadId', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const leadId = req.params.leadId as string;
@@ -134,6 +184,98 @@ router.post('/:messageId/send-draft', async (req: Request, res: Response, next: 
     });
 
     res.json({ data: reply });
+  } catch (err) { next(err); }
+});
+
+router.post('/:messageId/approve-draft', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const messageId = req.params.messageId as string;
+
+    const message = await prisma.message.findUnique({
+      where: { id: messageId },
+      select: { id: true, leadId: true, channel: true, subject: true, draftReply: true, reviewStatus: true },
+    });
+    if (!message) return res.status(404).json({ error: { code: 404, message: 'Message not found' } });
+    if (message.reviewStatus !== 'pending_review') {
+      return res.status(400).json({ error: { code: 400, message: 'Message is not pending review' } });
+    }
+    if (!message.draftReply) {
+      return res.status(400).json({ error: { code: 400, message: 'No draft reply available' } });
+    }
+
+    const lead = await prisma.lead.findUnique({
+      where: { id: message.leadId },
+      select: { email: true, phone: true },
+    });
+
+    const reply = await prisma.message.create({
+      data: {
+        leadId: message.leadId,
+        channel: message.channel,
+        direction: 'outbound',
+        subject: message.subject || 'Re: Your message',
+        body: message.draftReply,
+        isAiGenerated: true,
+        reviewStatus: 'approved',
+        status: 'queued',
+      },
+    });
+
+    const to = message.channel === 'email' ? lead?.email : lead?.phone;
+    if (to) {
+      await sendQueue.add('send-message', {
+        messageId: reply.id,
+        channel: message.channel,
+        to,
+        subject: message.subject || 'Re: Your message',
+        body: message.draftReply,
+      });
+    }
+
+    await prisma.message.update({
+      where: { id: messageId },
+      data: { reviewStatus: 'approved' },
+    });
+
+    res.json({ data: reply });
+  } catch (err) { next(err); }
+});
+
+router.post('/:messageId/reject-draft', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const messageId = req.params.messageId as string;
+    const { manualReply } = req.body as { manualReply?: string };
+
+    const message = await prisma.message.findUnique({
+      where: { id: messageId },
+      select: { id: true, leadId: true, channel: true, subject: true, reviewStatus: true },
+    });
+    if (!message) return res.status(404).json({ error: { code: 404, message: 'Message not found' } });
+    if (message.reviewStatus !== 'pending_review') {
+      return res.status(400).json({ error: { code: 400, message: 'Message is not pending review' } });
+    }
+
+    await prisma.message.update({
+      where: { id: messageId },
+      data: { reviewStatus: 'rejected' },
+    });
+
+    let reply = null;
+    if (manualReply) {
+      reply = await prisma.message.create({
+        data: {
+          leadId: message.leadId,
+          channel: message.channel,
+          direction: 'outbound',
+          subject: message.subject || 'Re: Your message',
+          body: manualReply,
+          isAiGenerated: false,
+          status: 'queued',
+        },
+      });
+    }
+
+    res.json({ data: { rejected: true, reply } });
   } catch (err) { next(err); }
 });
 

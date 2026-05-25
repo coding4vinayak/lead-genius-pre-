@@ -1,0 +1,35 @@
+{
+  "id": "FEAT-004",
+  "type": "feat",
+  "description": "UI/UX Overhaul - Transform the frontend into a polished SaaS dashboard. Enhanced sidebar with grouped navigation, new pages (Sequences, Integrations), improved design system components, toast notifications, skeleton loaders, page transitions, and responsive design.",
+  "status": "completed",
+  "steps": [
+    "STEP 1 - Design System Foundation: Update apps/web/src/styles/app.css with an expanded color palette (add --color-primary-50 through --color-primary-900 scale, surface variants, overlay colors, better shadow variables). Add a typography scale. Add smooth transition utilities.",
+    "STEP 2 - Enhanced UI Components: Rewrite apps/web/src/components/ui/index.tsx to add: (a) Skeleton loader component (rectangular shimmer animation for text, avatar, card placeholders). (b) Tabs component (horizontal tab bar with active state). (c) DataTable component with built-in sorting, column headers with sort indicators, row selection checkboxes, bulk action bar. (d) Toast component integrated with react-hot-toast (already installed). (e) Dropdown menu component. (f) Avatar component. (g) Progress bar component. (h) Stat card component (icon + label + value + trend indicator). (i) Update existing components (Card, Button, Modal) with better transitions and responsive padding.",
+    "STEP 3 - Enhanced Sidebar Navigation: Rewrite apps/web/src/components/layout/Sidebar.tsx to have: (a) Grouped navigation sections: 'Main' (Dashboard), 'Outreach' (Leads, Sequences, Campaigns, Templates), 'Communication' (Inbox, Messages), 'Intelligence' (Analytics, Automations), 'System' (Integrations, Settings). (b) Section headers that collapse/expand. (c) Notification badges on Inbox (unread count). (d) Active state with left border indicator. (e) Better mobile behavior (overlay on small screens). (f) User profile section at bottom with avatar.",
+    "STEP 4 - Layout Enhancement: Update apps/web/src/components/layout/Layout.tsx to add: (a) Top bar with breadcrumb, search spotlight (Cmd+K), and notification bell. (b) Mobile hamburger menu. (c) Page transition animations with framer-motion (wrap Routes in AnimatePresence). (d) Responsive breakpoints that collapse sidebar on mobile.",
+    "STEP 5 - New Sequences Page: Create apps/web/src/pages/Sequences.tsx. This is the visual sequence builder UI: (a) List view showing all sequences as cards with status, enrollment count, step count, conversion rate. (b) Create/Edit modal or full page with: sequence name, target lead groups, trigger type, sending window config. (c) Step builder - a vertical timeline showing steps in order. Each step shows type icon, config summary, and metrics (if running). User can add steps (send_email, send_whatsapp, delay, condition, update_stage, update_score), reorder them, configure each. (d) Enrollment view - table of leads enrolled in a sequence with their current step and status. (e) Sequence analytics - per-step funnel showing how many leads progressed through each step.",
+    "STEP 6 - New Integrations Page: Create apps/web/src/pages/Integrations.tsx. Shows: (a) Email integration card - connection status, SMTP/SendGrid config, domain auth status (SPF/DKIM/DMARC badges), delivery rate gauge, daily sent/limit counters. (b) WhatsApp integration card - Twilio connection status, WA template list, session vs template message info. (c) Channel health dashboard - delivery rates per channel, bounce/complaint rates, quota usage bars. (d) Test connection buttons for each channel.",
+    "STEP 7 - Enhanced Dashboard: Rewrite apps/web/src/pages/Dashboard.tsx with: (a) Replace Spinner with skeleton loaders during loading. (b) Better KPI cards using new StatCard component with trend indicators. (c) Add sequence performance summary card. (d) Add lead stage distribution chart (pie/donut showing leads per stage). (e) Add channel health summary indicators. (f) Recent activity feed with proper icons per event type.",
+    "STEP 8 - Route Registration and Navigation: Update apps/web/src/App.tsx to add routes: /sequences -> Sequences page, /integrations -> Integrations page. Update sidebar navItems to include the new grouped structure.",
+    "STEP 9 - Tests: Create apps/web/src/pages/Sequences.test.tsx (renders without crash, shows empty state, renders sequence list). Create apps/web/src/pages/Integrations.test.tsx (renders without crash, shows channel cards). Update apps/web/src/components/layout/Sidebar.test.tsx for new grouped navigation."
+  ],
+  "acceptance_criteria": [
+    "Sidebar shows grouped navigation with section headers",
+    "Sequences page renders with list view and ability to create sequence",
+    "Integrations page shows email and WhatsApp integration cards",
+    "Dashboard uses skeleton loaders instead of spinner",
+    "All new pages have loading, empty, and error states",
+    "Page transitions are animated with framer-motion",
+    "All existing web tests continue to pass",
+    "New page tests pass",
+    "TypeScript compiles cleanly: `npx tsc --noEmit` in apps/web (via vite build)",
+    "Responsive layout works (sidebar collapses, content stacks on mobile)"
+  ],
+  "verification": [
+    "Run `npx vitest run` in apps/web to verify all tests pass",
+    "Run `npx vite build` in apps/web to verify the build succeeds (includes TypeScript checking)"
+  ],
+  "blocked_reason": null,
+  "findings": "All 104 tests pass (91 original + 13 new from Sequences and Integrations pages plus updated Sidebar test). Vite build succeeds. framer-motion AnimatePresence works in happy-dom without mocking. Skeleton loaders use CSS animation class .animate-shimmer defined in app.css."
+}

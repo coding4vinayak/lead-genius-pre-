@@ -1,0 +1,34 @@
+{
+  "id": "FEAT-004",
+  "type": "feat",
+  "description": "Command Palette (Cmd+K) - a global keyboard-triggered modal overlay with fuzzy search across leads, templates, campaigns, sequences, pages, and actions. Includes recent items, category grouping, keyboard navigation, and highlighted matches.",
+  "status": "completed",
+  "steps": [
+    "Create apps/web/src/components/CommandPalette.tsx - modal overlay component. Renders when open state is true. Dark semi-transparent backdrop. Centered modal with search input (auto-focused), results list below with category grouping. Animate in/out with Framer Motion (fade + scale).",
+    "Create apps/web/src/hooks/useCommandPalette.ts - hook that manages command palette state: open/close, search query, results, selected index. Registers global keydown listener for Cmd+K / Ctrl+K to toggle. Arrow up/down changes selected index. Enter executes selected item. Escape closes.",
+    "Create apps/web/src/lib/commandPaletteItems.ts - defines all searchable items: static pages (Dashboard, Leads, Templates, etc. with their routes), action commands (Create new campaign, Import leads, Open settings, Create new template, Create new sequence). Each item has: id, label, category (Pages, Actions, Leads, Templates), icon, action (navigate or callback).",
+    "Add fuzzy search logic in useCommandPalette - implement simple fuzzy matching (characters appear in order in the label). Rank by: exact prefix > word start > fuzzy. Return matched character indices for highlighting.",
+    "Add recent items tracking - store last 5 used command palette items in localStorage. Show 'Recent' section at top when query is empty.",
+    "Create apps/web/src/components/CommandPaletteResult.tsx - individual result item showing: category icon, label with highlighted matching characters (wrap matched chars in <mark> or colored span), category badge on right. Highlight selected item with bg color.",
+    "Mount CommandPalette in apps/web/src/components/layout/Layout.tsx - render it inside the Layout so it is available on all authenticated pages. It renders as a portal/overlay so it does not affect layout flow.",
+    "Create apps/web/src/components/CommandPalette.test.tsx - test that Cmd+K opens the palette, that typing filters results, that arrow keys change selection, that Enter navigates, and that Escape closes."
+  ],
+  "acceptance_criteria": [
+    "Pressing Cmd+K (Mac) or Ctrl+K (Windows) opens the command palette overlay",
+    "Search input is auto-focused when palette opens",
+    "Typing filters results with fuzzy matching and highlighted characters",
+    "Results are grouped by category (Pages, Actions, Recent)",
+    "Arrow up/down navigates results, Enter executes selected item",
+    "Escape or clicking backdrop closes the palette",
+    "Recent items appear when query is empty",
+    "Navigating to a page via palette closes it and routes correctly",
+    "TypeScript compiles without errors",
+    "Tests pass"
+  ],
+  "verification": [
+    "Run `npx turbo build` from /projects/sandbox/lead-genius-pre- and confirm no TypeScript errors",
+    "Run `npx turbo test` from /projects/sandbox/lead-genius-pre- and confirm all tests pass"
+  ],
+  "blocked_reason": null,
+  "findings": "All 9 command palette tests pass. Build compiles cleanly. Text highlighting splits characters across spans, so tests must use textContent on result elements rather than getByText for label assertions."
+}
