@@ -112,6 +112,16 @@ router.post('/assignment-rules', validate(assignmentRuleSchema), async (req: Req
 router.put('/assignment-rules/:id', validate(assignmentRuleSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
+    const userId = req.user!.userId;
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const workspaceId = user?.currentWorkspaceId;
+    if (!workspaceId) throw AppError.validation('No workspace selected');
+
+    const existing = await prisma.assignmentRule.findUnique({ where: { id } });
+    if (!existing || existing.workspaceId !== workspaceId) {
+      return res.status(404).json({ error: { code: 404, message: 'Assignment rule not found' } });
+    }
+
     const data = await prisma.assignmentRule.update({
       where: { id },
       data: req.body,
@@ -123,6 +133,16 @@ router.put('/assignment-rules/:id', validate(assignmentRuleSchema), async (req: 
 router.delete('/assignment-rules/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
+    const userId = req.user!.userId;
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const workspaceId = user?.currentWorkspaceId;
+    if (!workspaceId) throw AppError.validation('No workspace selected');
+
+    const existing = await prisma.assignmentRule.findUnique({ where: { id } });
+    if (!existing || existing.workspaceId !== workspaceId) {
+      return res.status(404).json({ error: { code: 404, message: 'Assignment rule not found' } });
+    }
+
     await prisma.assignmentRule.delete({ where: { id } });
     res.json({ data: { id } });
   } catch (err) { next(err); }

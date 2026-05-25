@@ -190,6 +190,9 @@ describe('Collaboration API', () => {
 
   describe('PUT /api/assignment-rules/:id', () => {
     it('should update a rule', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({ id: 'user_1', currentWorkspaceId: 'ws_1' });
+      const existingRule = buildAssignmentRule({ id: 'rule_1', workspaceId: 'ws_1' });
+      mockPrisma.assignmentRule.findUnique.mockResolvedValue(existingRule);
       const rule = buildAssignmentRule({ id: 'rule_1', name: 'Updated Rule' });
       mockPrisma.assignmentRule.update.mockResolvedValue(rule);
 
@@ -200,16 +203,61 @@ describe('Collaboration API', () => {
       expect(res.status).toBe(200);
       expect(res.body.data.name).toBe('Updated Rule');
     });
+
+    it('should return 404 if rule belongs to another workspace', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({ id: 'user_1', currentWorkspaceId: 'ws_1' });
+      const existingRule = buildAssignmentRule({ id: 'rule_1', workspaceId: 'ws_other' });
+      mockPrisma.assignmentRule.findUnique.mockResolvedValue(existingRule);
+
+      const res = await request(createApp())
+        .put('/api/assignment-rules/rule_1')
+        .send({ name: 'Updated Rule', type: 'round_robin', config: {}, isActive: true, priority: 1 });
+
+      expect(res.status).toBe(404);
+    });
+
+    it('should return 404 if rule does not exist', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({ id: 'user_1', currentWorkspaceId: 'ws_1' });
+      mockPrisma.assignmentRule.findUnique.mockResolvedValue(null);
+
+      const res = await request(createApp())
+        .put('/api/assignment-rules/rule_1')
+        .send({ name: 'Updated Rule', type: 'round_robin', config: {}, isActive: true, priority: 1 });
+
+      expect(res.status).toBe(404);
+    });
   });
 
   describe('DELETE /api/assignment-rules/:id', () => {
     it('should delete a rule', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({ id: 'user_1', currentWorkspaceId: 'ws_1' });
+      const existingRule = buildAssignmentRule({ id: 'rule_1', workspaceId: 'ws_1' });
+      mockPrisma.assignmentRule.findUnique.mockResolvedValue(existingRule);
       mockPrisma.assignmentRule.delete.mockResolvedValue({});
 
       const res = await request(createApp()).delete('/api/assignment-rules/rule_1');
 
       expect(res.status).toBe(200);
       expect(res.body.data.id).toBe('rule_1');
+    });
+
+    it('should return 404 if rule belongs to another workspace', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({ id: 'user_1', currentWorkspaceId: 'ws_1' });
+      const existingRule = buildAssignmentRule({ id: 'rule_1', workspaceId: 'ws_other' });
+      mockPrisma.assignmentRule.findUnique.mockResolvedValue(existingRule);
+
+      const res = await request(createApp()).delete('/api/assignment-rules/rule_1');
+
+      expect(res.status).toBe(404);
+    });
+
+    it('should return 404 if rule does not exist', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({ id: 'user_1', currentWorkspaceId: 'ws_1' });
+      mockPrisma.assignmentRule.findUnique.mockResolvedValue(null);
+
+      const res = await request(createApp()).delete('/api/assignment-rules/rule_1');
+
+      expect(res.status).toBe(404);
     });
   });
 });

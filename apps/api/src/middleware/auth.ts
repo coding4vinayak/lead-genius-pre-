@@ -18,6 +18,16 @@ declare global {
 }
 
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
+  // If a valid API key has already been set by apiKeyAuth middleware, allow access
+  if (req.apiKey) {
+    req.user = {
+      userId: `apikey:${req.apiKey.id}`,
+      email: `apikey-${req.apiKey.id}@system.local`,
+      role: 'apikey',
+    };
+    return next();
+  }
+
   const token = extractToken(req);
   if (!token) {
     return res.status(401).json({ error: { code: 401, message: 'Authentication required' } });

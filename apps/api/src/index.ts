@@ -65,7 +65,7 @@ import { prisma as db } from './db.js';
 import { getRouter as getSandboxRouter } from './services/email-sandbox.js';
 import { startSmtpServer, stopSmtpServer } from './services/smtp-server.js';
 import { createEtherealAccount } from './services/external-email-test.js';
-import { initWebSocket } from './services/websocket.js';
+import { initWebSocket, getWss } from './services/websocket.js';
 import { subscribeToEvent } from './services/event-bus.js';
 import { createNotification } from './services/notification.js';
 import type { Server } from 'node:http';
@@ -163,6 +163,15 @@ async function shutdown() {
 
   // Stop SMTP server
   await stopSmtpServer().catch(() => {});
+
+  // Close WebSocket server
+  const wss = getWss();
+  if (wss) {
+    await new Promise<void>((resolve) => {
+      wss.close(() => resolve());
+      setTimeout(() => resolve(), 5000);
+    });
+  }
 
   // Disconnect Prisma
   await prisma.$disconnect().catch(() => {});

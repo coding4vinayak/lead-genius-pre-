@@ -10,19 +10,34 @@ export async function createNotification(
   metadata?: Record<string, unknown>,
 ) {
   try {
+    // Check user notification preferences for this event type
+    const preference = await prisma.notificationPreference.findFirst({
+      where: { userId, eventType: type },
+    });
+
+    const channel = preference?.channel || 'both';
+
+    // If user has opted out of this notification type entirely, skip
+    if (channel === 'none') {
+      return null;
+    }
+
     const notification = await prisma.notification.create({
       data: { userId, type, title, body, metadata: metadata ? JSON.parse(JSON.stringify(metadata)) : undefined },
     });
 
-    broadcastToUser(userId, 'notification', {
-      id: notification.id,
-      type: notification.type,
-      title: notification.title,
-      body: notification.body,
-      metadata: notification.metadata,
-      isRead: notification.isRead,
-      createdAt: notification.createdAt,
-    });
+    // Only broadcast via WebSocket if channel allows in-app notifications
+    if (channel === 'in_app' || channel === 'both') {
+      broadcastToUser(userId, 'notification', {
+        id: notification.id,
+        type: notification.type,
+        title: notification.title,
+        body: notification.body,
+        metadata: notification.metadata,
+        isRead: notification.isRead,
+        createdAt: notification.createdAt,
+      });
+    }
 
     return notification;
   } catch (err) {
