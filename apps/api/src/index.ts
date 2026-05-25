@@ -47,6 +47,7 @@ import abTestRoutes from './routes/ab-tests.js';
 import sendOptimizationRoutes from './routes/send-optimization.js';
 import advancedAnalyticsRoutes from './routes/advanced-analytics.js';
 import benchmarkRoutes from './routes/benchmarks.js';
+import notificationRoutes from './routes/notifications.js';
 import { sendEmail } from './services/email.js';
 import { sendWhatsApp } from './services/whatsapp.js';
 import { renderTemplate } from './services/template.js';
@@ -54,6 +55,9 @@ import { prisma as db } from './db.js';
 import { getRouter as getSandboxRouter } from './services/email-sandbox.js';
 import { startSmtpServer, stopSmtpServer } from './services/smtp-server.js';
 import { createEtherealAccount } from './services/external-email-test.js';
+import { initWebSocket } from './services/websocket.js';
+import { subscribeToEvent } from './services/event-bus.js';
+import { createNotification } from './services/notification.js';
 
 const app = express();
 
@@ -101,6 +105,7 @@ app.use('/api/ab-tests', requireAuth, abTestRoutes);
 app.use('/api/send-optimization', requireAuth, sendOptimizationRoutes);
 app.use('/api/analytics/advanced', requireAuth, advancedAnalyticsRoutes);
 app.use('/api/benchmarks', requireAuth, benchmarkRoutes);
+app.use('/api/notifications', requireAuth, notificationRoutes);
 app.use('/webhook', webhookRoutes);
 
 if (process.env.EMAIL_SANDBOX !== 'false') {
@@ -280,9 +285,41 @@ async function start() {
     }
   }, 60_000);
 
-  app.listen(config.port, () => {
+  // Subscribe to events for real-time notifications
+  subscribeToEvent('message.received', async (data) => {
+    const msg = data.payload as Record<string, unknown>;
+    if (msg.userId && typeof msg.userId === 'string') {
+      await createNotification(msg.userId, 'lead.replied', 'New Reply', `You received a reply from a lead`, { entityId: data.entityId, entityType: data.entityType }).catch(() => {});
+    }
+  });
+
+  subscribeToEvent('campaign.completed', async (data) => {
+    const payload = data.payload as Record<string, unknown>;
+    if (payload.userId && typeof payload.userId === 'string') {
+      await createNotification(payload.userId, 'campaign.completed', 'Campaign Completed', `Campaign has finished sending`, { entityId: data.entityId, entityType: data.entityType }).catch(() => {});
+    }
+  });
+
+  subscribeToEvent('sequence.completed', async (data) => {
+    const payload = data.payload as Record<string, unknown>;
+    if (payload.userId && typeof payload.userId === 'string') {
+      await createNotification(payload.userId, 'sequence.completed', 'Sequence Completed', `A sequence has finished`, { entityId: data.entityId, entityType: data.entityType }).catch(() => {});
+    }
+  });
+
+  subscribeToEvent('message.delivered', async (data) => {
+    const payload = data.payload as Record<string, unknown>;
+    if (payload.userId && typeof payload.userId === 'string') {
+      await createNotification(payload.userId, 'message.delivered', 'Message Delivered', `Your message was delivered`, { entityId: data.entityId, entityType: data.entityType }).catch(() => {});
+    }
+  });
+
+  const server = app.listen(config.port, () => {
     logger.info(`API server running on port ${config.port}`);
   });
+
+  initWebSocket(server);
+  logger.info('WebSocket server initialized');
 }
 
 start().catch((err) => {

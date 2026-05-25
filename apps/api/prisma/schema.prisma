@@ -351,6 +351,8 @@ model User {
 
   tasks Task[]
   workspaceMembers WorkspaceMember[]
+  notifications Notification[]
+  notificationPreferences NotificationPreference[]
 
   @@index([email])
   @@index([resetToken])
@@ -1145,4 +1147,36 @@ model PerformanceBenchmark {
   createdAt       DateTime @default(now())
 
   @@index([metric])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  body      String
+  metadata  Json?
+  isRead    Boolean   @default(false)
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
+model NotificationPreference {
+  id        String   @id @default(cuid())
+  userId    String
+  eventType String
+  channel   String   @default("in_app")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventType])
+  @@index([userId])
 }

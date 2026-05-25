@@ -138,3 +138,9 @@ export type AnalyticsSnapshotType = (typeof ANALYTICS_SNAPSHOT_TYPE)[number];
 
 export const BENCHMARK_METRIC = ['open_rate', 'reply_rate', 'bounce_rate', 'click_rate', 'conversion_rate'] as const;
 export type BenchmarkMetric = (typeof BENCHMARK_METRIC)[number];
+
+export const NOTIFICATION_TYPE = ['lead.replied', 'campaign.completed', 'sequence.completed', 'message.delivered', 'message.bounced', 'lead.score_threshold', 'system'] as const;
+export type NotificationType = (typeof NOTIFICATION_TYPE)[number];
+
+export const NOTIFICATION_CHANNEL = ['in_app', 'email', 'both', 'none'] as const;
+export type NotificationChannel = (typeof NOTIFICATION_CHANNEL)[number];

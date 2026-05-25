@@ -756,3 +756,30 @@ export function buildPerformanceBenchmark(overrides: Record<string, unknown> = {
     ...overrides,
   };
 }
+
+export function buildNotification(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'notif_' + Math.random().toString(36).slice(2, 9),
+    userId: 'user_1',
+    type: 'lead.replied',
+    title: 'New Reply',
+    body: 'You received a reply from a lead',
+    metadata: null,
+    isRead: false,
+    readAt: null,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildNotificationPreference(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'notifpref_' + Math.random().toString(36).slice(2, 9),
+    userId: 'user_1',
+    eventType: 'lead.replied',
+    channel: 'in_app',
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
