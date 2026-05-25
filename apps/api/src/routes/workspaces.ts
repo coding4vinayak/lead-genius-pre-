@@ -1,6 +1,8 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { validate } from '../middleware/validate.js';
 import { workspaceSchema, workspaceUpdateSchema, workspaceInviteSchema, switchWorkspaceSchema } from '@leadgenius/shared';
+import { requireRole } from '../services/rbac.js';
+import { requireWorkspaceMembership } from '../middleware/workspace-membership.js';
 import {
   createWorkspace,
   getWorkspace,
@@ -30,7 +32,7 @@ router.post('/', validate(workspaceSchema), async (req: Request, res: Response, 
   } catch (err) { next(err); }
 });
 
-router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:id', requireWorkspaceMembership, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const workspace = await getWorkspace(id);
@@ -38,7 +40,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   } catch (err) { next(err); }
 });
 
-router.put('/:id', validate(workspaceUpdateSchema), async (req: Request, res: Response, next: NextFunction) => {
+router.put('/:id', requireWorkspaceMembership, requireRole('admin'), validate(workspaceUpdateSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const workspace = await updateWorkspace(id, req.body);
@@ -46,7 +48,7 @@ router.put('/:id', validate(workspaceUpdateSchema), async (req: Request, res: Re
   } catch (err) { next(err); }
 });
 
-router.post('/:id/invite', validate(workspaceInviteSchema), async (req: Request, res: Response, next: NextFunction) => {
+router.post('/:id/invite', requireWorkspaceMembership, requireRole('admin'), validate(workspaceInviteSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const { email, role } = req.body as { email: string; role: string };
@@ -55,7 +57,7 @@ router.post('/:id/invite', validate(workspaceInviteSchema), async (req: Request,
   } catch (err) { next(err); }
 });
 
-router.get('/:id/members', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:id/members', requireWorkspaceMembership, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const members = await getMembers(id);
@@ -63,7 +65,7 @@ router.get('/:id/members', async (req: Request, res: Response, next: NextFunctio
   } catch (err) { next(err); }
 });
 
-router.delete('/:id/members/:userId', async (req: Request, res: Response, next: NextFunction) => {
+router.delete('/:id/members/:userId', requireWorkspaceMembership, requireRole('admin'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const userId = req.params.userId as string;

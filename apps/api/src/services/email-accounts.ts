@@ -72,7 +72,7 @@ export async function deleteAccount(id: string) {
 export async function getAccount(id: string) {
   const account = await prisma.emailAccount.findUnique({ where: { id } });
   if (!account) throw AppError.notFound('EmailAccount');
-  return account;
+  return stripSensitiveFields(account);
 }
 
 export async function listAccounts(page: number, pageSize: number) {
@@ -84,7 +84,12 @@ export async function listAccounts(page: number, pageSize: number) {
     }),
     prisma.emailAccount.count(),
   ]);
-  return { data, total };
+  return { data: data.map(stripSensitiveFields), total };
+}
+
+function stripSensitiveFields<T extends Record<string, unknown>>(account: T): Omit<T, 'smtpPass' | 'sendgridApiKey'> {
+  const { smtpPass: _smtp, sendgridApiKey: _sg, ...safe } = account;
+  return safe as Omit<T, 'smtpPass' | 'sendgridApiKey'>;
 }
 
 export async function testConnection(id: string): Promise<{ success: boolean; message: string }> {

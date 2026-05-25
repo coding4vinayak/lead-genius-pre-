@@ -10,6 +10,8 @@ const { createWarmupSchedule, pauseWarmup, resumeWarmup, tickWarmup, canSendFrom
 describe('Warmup Service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default $transaction mock passes the mockPrisma itself to the callback
+    mockPrisma.$transaction.mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => fn(mockPrisma));
   });
 
   describe('createWarmupSchedule', () => {
@@ -104,6 +106,8 @@ describe('Warmup Service', () => {
         maxDailyLimit: 50,
       });
       mockPrisma.warmupSchedule.findMany.mockResolvedValue([schedule]);
+      // Inside transaction: findUnique returns the schedule
+      mockPrisma.warmupSchedule.findUnique.mockResolvedValue(schedule);
       mockPrisma.warmupLog.create.mockResolvedValue({});
       mockPrisma.warmupSchedule.update.mockResolvedValue({});
 
@@ -128,6 +132,7 @@ describe('Warmup Service', () => {
         bounceThreshold: 5,
       });
       mockPrisma.warmupSchedule.findMany.mockResolvedValue([schedule]);
+      mockPrisma.warmupSchedule.findUnique.mockResolvedValue(schedule);
       mockPrisma.warmupSchedule.update.mockResolvedValue({});
 
       await tickWarmup();
@@ -151,6 +156,7 @@ describe('Warmup Service', () => {
         maxDailyLimit: 50,
       });
       mockPrisma.warmupSchedule.findMany.mockResolvedValue([schedule]);
+      mockPrisma.warmupSchedule.findUnique.mockResolvedValue(schedule);
       mockPrisma.warmupLog.create.mockResolvedValue({});
       mockPrisma.warmupSchedule.update.mockResolvedValue({});
 
@@ -172,6 +178,7 @@ describe('Warmup Service', () => {
         bouncedToday: 0,
       });
       mockPrisma.warmupSchedule.findMany.mockResolvedValue([schedule]);
+      mockPrisma.warmupSchedule.findUnique.mockResolvedValue(schedule);
       mockPrisma.warmupLog.create.mockResolvedValue({});
       mockPrisma.warmupSchedule.update.mockResolvedValue({});
 
@@ -186,6 +193,22 @@ describe('Warmup Service', () => {
           delivered: 8,
         },
       });
+    });
+
+    it('should use transaction for atomic read-and-reset', async () => {
+      const schedule = buildWarmupSchedule({
+        currentDay: 1,
+        sentToday: 5,
+        bouncedToday: 0,
+      });
+      mockPrisma.warmupSchedule.findMany.mockResolvedValue([schedule]);
+      mockPrisma.warmupSchedule.findUnique.mockResolvedValue(schedule);
+      mockPrisma.warmupLog.create.mockResolvedValue({});
+      mockPrisma.warmupSchedule.update.mockResolvedValue({});
+
+      await tickWarmup();
+
+      expect(mockPrisma.$transaction).toHaveBeenCalledOnce();
     });
   });
 

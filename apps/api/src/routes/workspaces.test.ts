@@ -26,6 +26,8 @@ function createApp() {
 describe('Workspaces API', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default: user is a member with owner role for workspace membership check
+    mockPrisma.workspaceMember.findUnique.mockResolvedValue(buildWorkspaceMember({ role: 'owner' }));
   });
 
   describe('GET /api/workspaces', () => {
@@ -93,6 +95,14 @@ describe('Workspaces API', () => {
 
       expect(res.status).toBe(404);
     });
+
+    it('should return 403 if not a workspace member', async () => {
+      mockPrisma.workspaceMember.findUnique.mockResolvedValue(null);
+
+      const res = await request(createApp()).get('/api/workspaces/ws_1');
+
+      expect(res.status).toBe(403);
+    });
   });
 
   describe('PUT /api/workspaces/:id', () => {
@@ -117,6 +127,16 @@ describe('Workspaces API', () => {
         .send({ name: 'Test' });
 
       expect(res.status).toBe(404);
+    });
+
+    it('should return 403 for non-admin role', async () => {
+      mockPrisma.workspaceMember.findUnique.mockResolvedValue(buildWorkspaceMember({ role: 'member' }));
+
+      const res = await request(createApp())
+        .put('/api/workspaces/ws_1')
+        .send({ name: 'Test' });
+
+      expect(res.status).toBe(403);
     });
   });
 
@@ -144,10 +164,22 @@ describe('Workspaces API', () => {
 
       expect(res.status).toBe(400);
     });
+
+    it('should return 403 for non-admin', async () => {
+      mockPrisma.workspaceMember.findUnique.mockResolvedValue(buildWorkspaceMember({ role: 'member' }));
+
+      const res = await request(createApp())
+        .post('/api/workspaces/ws_1/invite')
+        .send({ email: 'invited@example.com', role: 'member' });
+
+      expect(res.status).toBe(403);
+    });
   });
 
   describe('GET /api/workspaces/:id/members', () => {
     it('should return workspace members', async () => {
+      // First call is for membership check, second is for getMembers
+      mockPrisma.workspaceMember.findUnique.mockResolvedValue(buildWorkspaceMember({ role: 'owner' }));
       const members = [
         { ...buildWorkspaceMember({ role: 'owner' }), user: { id: 'user_1', email: 'owner@test.com', name: 'Owner' } },
       ];
@@ -163,7 +195,10 @@ describe('Workspaces API', () => {
   describe('DELETE /api/workspaces/:id/members/:userId', () => {
     it('should remove a member', async () => {
       const member = buildWorkspaceMember({ role: 'member' });
-      mockPrisma.workspaceMember.findUnique.mockResolvedValue(member);
+      // First call for membership check (returns owner), second for removeMember service
+      mockPrisma.workspaceMember.findUnique.mockResolvedValueOnce(buildWorkspaceMember({ role: 'owner' }));
+      mockPrisma.workspaceMember.findUnique.mockResolvedValueOnce(buildWorkspaceMember({ role: 'owner' }));
+      mockPrisma.workspaceMember.findUnique.mockResolvedValueOnce(member);
       mockPrisma.workspaceMember.delete.mockResolvedValue(member);
 
       const res = await request(createApp()).delete('/api/workspaces/ws_1/members/user_2');
@@ -171,12 +206,12 @@ describe('Workspaces API', () => {
       expect(res.status).toBe(204);
     });
 
-    it('should return 404 for non-member', async () => {
-      mockPrisma.workspaceMember.findUnique.mockResolvedValue(null);
+    it('should return 403 for non-admin trying to remove member', async () => {
+      mockPrisma.workspaceMember.findUnique.mockResolvedValue(buildWorkspaceMember({ role: 'member' }));
 
       const res = await request(createApp()).delete('/api/workspaces/ws_1/members/user_2');
 
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(403);
     });
   });
 

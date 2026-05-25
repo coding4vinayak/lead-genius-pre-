@@ -87,13 +87,14 @@ describe('Email Accounts Service', () => {
   });
 
   describe('getAccount', () => {
-    it('should return an account by id', async () => {
+    it('should return an account by id with sensitive fields stripped', async () => {
       const account = buildEmailAccount();
       mockPrisma.emailAccount.findUnique.mockResolvedValue(account);
 
       const result = await getAccount(account.id);
 
-      expect(result).toEqual(account);
+      const { smtpPass: _smtp, sendgridApiKey: _sg, ...expected } = account;
+      expect(result).toEqual(expected);
     });
 
     it('should throw not found if account does not exist', async () => {

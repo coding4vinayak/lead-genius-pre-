@@ -361,6 +361,9 @@ export async function processSequenceStep(enrollmentId: string): Promise<void> {
 
 /**
  * In-process mutex to prevent overlapping tick executions.
+ * TODO: This in-process mutex does not prevent concurrent ticks across multiple pods.
+ * For multi-instance deployments, replace with a database advisory lock or a BullMQ
+ * repeatable job to ensure only one pod processes enrollments at a time.
  */
 let isTickRunning = false;
 

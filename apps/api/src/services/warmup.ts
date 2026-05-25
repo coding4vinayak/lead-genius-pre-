@@ -59,52 +59,60 @@ export async function tickWarmup() {
 
   for (const schedule of schedules) {
     try {
-      // Check bounce rate
-      const bounceRate = schedule.sentToday > 0
-        ? (schedule.bouncedToday / schedule.sentToday) * 100
-        : 0;
+      // Use a transaction to atomically read and reset sentToday/bouncedToday
+      // to prevent losing increments from recordWarmupSend/recordWarmupBounce
+      await prisma.$transaction(async (tx) => {
+        // Re-read inside transaction to get the latest values
+        const current = await tx.warmupSchedule.findUnique({ where: { id: schedule.id } });
+        if (!current || current.status !== 'warming') return;
 
-      if (bounceRate > schedule.bounceThreshold && schedule.sentToday > 0) {
-        await prisma.warmupSchedule.update({
-          where: { id: schedule.id },
+        // Check bounce rate
+        const bounceRate = current.sentToday > 0
+          ? (current.bouncedToday / current.sentToday) * 100
+          : 0;
+
+        if (bounceRate > current.bounceThreshold && current.sentToday > 0) {
+          await tx.warmupSchedule.update({
+            where: { id: current.id },
+            data: {
+              status: 'paused',
+              pausedReason: `Bounce rate ${bounceRate.toFixed(1)}% exceeded threshold ${current.bounceThreshold}%`,
+            },
+          });
+          logger.info(`Warmup paused for ${current.accountEmail}: bounce rate ${bounceRate.toFixed(1)}%`);
+          return;
+        }
+
+        // Log today's stats
+        await tx.warmupLog.create({
           data: {
-            status: 'paused',
-            pausedReason: `Bounce rate ${bounceRate.toFixed(1)}% exceeded threshold ${schedule.bounceThreshold}%`,
+            scheduleId: current.id,
+            day: current.currentDay,
+            sent: current.sentToday,
+            bounced: current.bouncedToday,
+            delivered: current.sentToday - current.bouncedToday,
           },
         });
-        logger.info(`Warmup paused for ${schedule.accountEmail}: bounce rate ${bounceRate.toFixed(1)}%`);
-        continue;
-      }
 
-      // Log today's stats
-      await prisma.warmupLog.create({
-        data: {
-          scheduleId: schedule.id,
-          day: schedule.currentDay,
-          sent: schedule.sentToday,
-          bounced: schedule.bouncedToday,
-          delivered: schedule.sentToday - schedule.bouncedToday,
-        },
-      });
+        // Increase daily limit by ramp percentage
+        const newLimit = Math.min(
+          Math.ceil(current.currentDailyLimit * (1 + current.rampPercentage / 100)),
+          current.maxDailyLimit,
+        );
 
-      // Increase daily limit by ramp percentage
-      const newLimit = Math.min(
-        Math.ceil(schedule.currentDailyLimit * (1 + schedule.rampPercentage / 100)),
-        schedule.maxDailyLimit,
-      );
+        // Check if warmup is complete
+        const isComplete = newLimit >= current.maxDailyLimit;
 
-      // Check if warmup is complete
-      const isComplete = newLimit >= schedule.maxDailyLimit;
-
-      await prisma.warmupSchedule.update({
-        where: { id: schedule.id },
-        data: {
-          currentDay: schedule.currentDay + 1,
-          currentDailyLimit: newLimit,
-          sentToday: 0,
-          bouncedToday: 0,
-          status: isComplete ? 'completed' : 'warming',
-        },
+        await tx.warmupSchedule.update({
+          where: { id: current.id },
+          data: {
+            currentDay: current.currentDay + 1,
+            currentDailyLimit: newLimit,
+            sentToday: 0,
+            bouncedToday: 0,
+            status: isComplete ? 'completed' : 'warming',
+          },
+        });
       });
     } catch (err) {
       logger.error(`Warmup tick failed for schedule ${schedule.id}`, { error: (err as Error).message });

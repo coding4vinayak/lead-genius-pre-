@@ -36,7 +36,7 @@ export function requireRole(requiredRole: string) {
       return next(new AppError(401, 'Authentication required'));
     }
 
-    const workspaceId = req.params.id || req.params.workspaceId || req.body?.workspaceId;
+    const workspaceId = req.params.id || req.params.workspaceId || req.body?.workspaceId || req.headers['x-workspace-id'] as string;
     if (!workspaceId) {
       return next(new AppError(400, 'Workspace ID is required'));
     }

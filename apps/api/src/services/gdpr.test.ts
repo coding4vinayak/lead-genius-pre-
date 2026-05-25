@@ -88,7 +88,9 @@ describe('GDPR Service', () => {
   });
 
   describe('deleteLeadData', () => {
-    it('should delete all lead data', async () => {
+    it('should delete all lead data including calendar bookings and send time preferences', async () => {
+      mockPrisma.calendarBooking.deleteMany.mockResolvedValue({ count: 1 });
+      mockPrisma.sendTimePreference.deleteMany.mockResolvedValue({ count: 1 });
       mockPrisma.gdprConsent.deleteMany.mockResolvedValue({ count: 1 });
       mockPrisma.unsubscribeRecord.deleteMany.mockResolvedValue({ count: 0 });
       mockPrisma.emailVerification.deleteMany.mockResolvedValue({ count: 1 });
@@ -100,6 +102,8 @@ describe('GDPR Service', () => {
       const result = await deleteLeadData('lead_1');
       expect(result.deleted).toBe(true);
       expect(result.leadId).toBe('lead_1');
+      expect(mockPrisma.calendarBooking.deleteMany).toHaveBeenCalledWith({ where: { leadId: 'lead_1' } });
+      expect(mockPrisma.sendTimePreference.deleteMany).toHaveBeenCalledWith({ where: { leadId: 'lead_1' } });
       expect(mockPrisma.lead.delete).toHaveBeenCalledWith({ where: { id: 'lead_1' } });
     });
   });

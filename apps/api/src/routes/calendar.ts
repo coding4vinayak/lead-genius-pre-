@@ -35,6 +35,9 @@ router.get('/slots', validate(calendarSlotsSchema, 'query'), async (req: Request
 });
 
 // Public endpoint - leads can book without auth
+// TODO: Add rate limiting to prevent abuse (e.g., enumeration of leadIds or spam bookings).
+// Consider requiring a signed token (embedded in the booking link) instead of accepting
+// raw leadId from the request body.
 router.post('/book', validate(calendarBookingSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const bookingData = req.body as { leadId: string; title: string; startTime: string; endTime: string; timezone?: string };

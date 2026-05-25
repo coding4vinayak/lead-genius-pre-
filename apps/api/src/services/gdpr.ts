@@ -77,6 +77,8 @@ export async function exportLeadData(leadId: string) {
 
 export async function deleteLeadData(leadId: string) {
   // Delete related records first (cascading should handle most, but be explicit)
+  await prisma.calendarBooking.deleteMany({ where: { leadId } });
+  await prisma.sendTimePreference.deleteMany({ where: { leadId } });
   await prisma.gdprConsent.deleteMany({ where: { leadId } });
   await prisma.unsubscribeRecord.deleteMany({ where: { leadId } });
   await prisma.emailVerification.deleteMany({ where: { leadId } });

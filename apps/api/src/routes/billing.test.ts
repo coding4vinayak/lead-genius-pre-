@@ -1,14 +1,15 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import crypto from 'crypto';
 import express from 'express';
 import request from 'supertest';
 import { errorHandler } from '../middleware/error-handler.js';
 import { createMockPrisma } from '../test/mockDb.js';
-import { buildWorkspace, buildBillingEvent } from '../test/factories.js';
+import { buildWorkspace, buildBillingEvent, buildWorkspaceMember } from '../test/factories.js';
 
 const mockPrisma = createMockPrisma();
 vi.mock('../db.js', () => ({ prisma: mockPrisma }));
 vi.mock('../config.js', () => ({
-  config: { jwtSecret: 'test-secret', jwtExpiresIn: '7d', port: 3000 },
+  config: { jwtSecret: 'test-secret', jwtExpiresIn: '7d', port: 3000, stripeWebhookSecret: 'whsec_test_secret' },
 }));
 
 const { default: billingRoutes } = await import('./billing.js');
@@ -27,9 +28,18 @@ function authToken() {
   return jwt.sign({ userId: 'user_1', email: 'test@example.com', role: 'user' }, 'test-secret', { expiresIn: '7d' });
 }
 
+function generateStripeSignature(payload: string, secret: string): string {
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const signedPayload = `${timestamp}.${payload}`;
+  const signature = crypto.createHmac('sha256', secret).update(signedPayload).digest('hex');
+  return `t=${timestamp},v1=${signature}`;
+}
+
 describe('Billing API', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default: user is a member of the workspace
+    mockPrisma.workspaceMember.findUnique.mockResolvedValue(buildWorkspaceMember({ role: 'owner' }));
   });
 
   describe('POST /api/billing/checkout', () => {
@@ -57,6 +67,7 @@ describe('Billing API', () => {
     });
 
     it('should return 400 without workspace ID', async () => {
+      // Workspace membership middleware returns 400 when no workspace id
       const res = await request(createApp())
         .post('/api/billing/checkout')
         .set('Authorization', `Bearer ${authToken()}`)
@@ -73,6 +84,18 @@ describe('Billing API', () => {
         .send({ plan: 'invalid' });
 
       expect(res.status).toBe(400);
+    });
+
+    it('should return 403 if not a workspace member', async () => {
+      mockPrisma.workspaceMember.findUnique.mockResolvedValue(null);
+
+      const res = await request(createApp())
+        .post('/api/billing/checkout')
+        .set('Authorization', `Bearer ${authToken()}`)
+        .set('x-workspace-id', 'ws_1')
+        .send({ plan: 'pro' });
+
+      expect(res.status).toBe(403);
     });
   });
 
@@ -121,6 +144,17 @@ describe('Billing API', () => {
 
       expect(res.status).toBe(400);
     });
+
+    it('should return 403 for non-owner', async () => {
+      mockPrisma.workspaceMember.findUnique.mockResolvedValue(buildWorkspaceMember({ role: 'member' }));
+
+      const res = await request(createApp())
+        .post('/api/billing/cancel')
+        .set('Authorization', `Bearer ${authToken()}`)
+        .set('x-workspace-id', 'ws_1');
+
+      expect(res.status).toBe(403);
+    });
   });
 
   describe('GET /api/billing/invoices', () => {
@@ -163,14 +197,18 @@ describe('Billing API', () => {
       mockPrisma.workspace.findFirst.mockResolvedValue(buildWorkspace({ stripeCustomerId: 'cus_123' }));
       mockPrisma.billingEvent.create.mockResolvedValue(buildBillingEvent());
 
+      const payload = JSON.stringify({
+        id: 'evt_test_123',
+        type: 'invoice.paid',
+        data: { object: { customer: 'cus_123', amount_paid: 4900 } },
+      });
+      const signature = generateStripeSignature(payload, 'whsec_test_secret');
+
       const res = await request(createApp())
         .post('/api/billing/stripe')
-        .set('stripe-signature', 'sig_test_123')
-        .send({
-          id: 'evt_test_123',
-          type: 'invoice.paid',
-          data: { object: { customer: 'cus_123', amount_paid: 4900 } },
-        });
+        .set('stripe-signature', signature)
+        .set('Content-Type', 'application/json')
+        .send(payload);
 
       expect(res.status).toBe(200);
       expect(res.body.data.processed).toBe(true);
@@ -184,11 +222,39 @@ describe('Billing API', () => {
       expect(res.status).toBe(400);
     });
 
-    it('should reject invalid webhook payload', async () => {
+    it('should reject invalid webhook signature', async () => {
+      const payload = JSON.stringify({ id: 'evt_test', type: 'invoice.paid', data: { object: {} } });
+
       const res = await request(createApp())
         .post('/api/billing/stripe')
-        .set('stripe-signature', 'sig_test')
-        .send({ invalid: true });
+        .set('stripe-signature', 't=12345,v1=invalidsignature')
+        .set('Content-Type', 'application/json')
+        .send(payload);
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.message).toBe('Invalid webhook signature');
+    });
+
+    it('should reject invalid signature format', async () => {
+      const res = await request(createApp())
+        .post('/api/billing/stripe')
+        .set('stripe-signature', 'bad_format')
+        .set('Content-Type', 'application/json')
+        .send(JSON.stringify({ id: 'evt_test', type: 'invoice.paid', data: { object: {} } }));
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.message).toBe('Invalid stripe-signature format');
+    });
+
+    it('should reject invalid webhook payload', async () => {
+      const payload = JSON.stringify({ invalid: true });
+      const signature = generateStripeSignature(payload, 'whsec_test_secret');
+
+      const res = await request(createApp())
+        .post('/api/billing/stripe')
+        .set('stripe-signature', signature)
+        .set('Content-Type', 'application/json')
+        .send(payload);
 
       expect(res.status).toBe(400);
     });

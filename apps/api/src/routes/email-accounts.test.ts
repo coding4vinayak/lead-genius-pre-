@@ -24,8 +24,11 @@ describe('Email Accounts API', () => {
   });
 
   describe('GET /api/email-accounts', () => {
-    it('should list accounts with pagination', async () => {
-      const accounts = [buildEmailAccount(), buildEmailAccount()];
+    it('should list accounts with pagination and strip sensitive fields', async () => {
+      const accounts = [
+        buildEmailAccount({ smtpPass: 'secret1', sendgridApiKey: 'key1' }),
+        buildEmailAccount({ smtpPass: 'secret2', sendgridApiKey: 'key2' }),
+      ];
       mockPrisma.emailAccount.findMany.mockResolvedValue(accounts);
       mockPrisma.emailAccount.count.mockResolvedValue(2);
 
@@ -34,6 +37,11 @@ describe('Email Accounts API', () => {
       expect(res.status).toBe(200);
       expect(res.body.data).toHaveLength(2);
       expect(res.body.meta).toEqual({ total: 2, page: 1, pageSize: 10, totalPages: 1 });
+      // Verify sensitive fields are stripped
+      for (const account of res.body.data) {
+        expect(account.smtpPass).toBeUndefined();
+        expect(account.sendgridApiKey).toBeUndefined();
+      }
     });
   });
 
@@ -69,14 +77,16 @@ describe('Email Accounts API', () => {
   });
 
   describe('GET /api/email-accounts/:id', () => {
-    it('should return an account by id', async () => {
-      const account = buildEmailAccount();
+    it('should return an account by id without sensitive fields', async () => {
+      const account = buildEmailAccount({ smtpPass: 'secret123', sendgridApiKey: 'sg_key_123' });
       mockPrisma.emailAccount.findUnique.mockResolvedValue(account);
 
       const res = await request(createApp()).get(`/api/email-accounts/${account.id}`);
 
       expect(res.status).toBe(200);
       expect(res.body.data.id).toBe(account.id);
+      expect(res.body.data.smtpPass).toBeUndefined();
+      expect(res.body.data.sendgridApiKey).toBeUndefined();
     });
 
     it('should return 404 for non-existent account', async () => {
