@@ -1,8 +1,11 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { prisma } from '../db.js';
 import { validate } from '../middleware/validate.js';
-import { templateSchema } from '@leadgenius/shared';
+import { templateSchema, spamCheckContentSchema, templatePreviewEnhancedSchema } from '@leadgenius/shared';
 import Handlebars from 'handlebars';
+import { calculateSpamScore } from '../services/spam-checker.js';
+import { extractLinks, validateLinks } from '../services/link-validator.js';
+import { generatePreview } from '../services/email-preview.js';
 
 const router = Router();
 
@@ -46,18 +49,61 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
   } catch (err) { next(err); }
 });
 
-router.post('/:id/preview', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/spam-check-content', validate(spamCheckContentSchema), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { subject, body } = req.body;
+    const result = calculateSpamScore(subject || '', body);
+    res.json({ data: result });
+  } catch (err) { next(err); }
+});
+
+router.post('/:id/preview', validate(templatePreviewEnhancedSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const template = await prisma.template.findUnique({ where: { id: (req.params.id as string) } });
     if (!template) return res.status(404).json({ error: { code: 404, message: 'Template not found' } });
+
+    const variables = req.body.variables || {};
+    const device = req.body.device || 'desktop';
+
     const compiled = Handlebars.compile(template.body);
-    const subject = template.subject ? Handlebars.compile(template.subject) : undefined;
+    const subjectCompiled = template.subject ? Handlebars.compile(template.subject) : undefined;
+
+    const renderedBody = compiled(variables);
+    const renderedSubject = subjectCompiled ? subjectCompiled(variables) : undefined;
+
+    const preview = generatePreview(renderedBody, {}, device);
+
     res.json({
       data: {
-        body: compiled(req.body.variables || {}),
-        subject: subject ? subject(req.body.variables || {}) : undefined,
+        body: renderedBody,
+        subject: renderedSubject,
+        html: preview.html,
+        plainText: preview.plainText,
+        estimatedSize: preview.estimatedSize,
+        device,
       },
     });
+  } catch (err) { next(err); }
+});
+
+router.post('/:id/spam-check', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const template = await prisma.template.findUnique({ where: { id: (req.params.id as string) } });
+    if (!template) return res.status(404).json({ error: { code: 404, message: 'Template not found' } });
+
+    const result = calculateSpamScore(template.subject || '', template.body);
+    res.json({ data: result });
+  } catch (err) { next(err); }
+});
+
+router.post('/:id/link-check', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const template = await prisma.template.findUnique({ where: { id: (req.params.id as string) } });
+    if (!template) return res.status(404).json({ error: { code: 404, message: 'Template not found' } });
+
+    const links = extractLinks(template.body);
+    const results = validateLinks(links);
+    res.json({ data: results });
   } catch (err) { next(err); }
 });
 

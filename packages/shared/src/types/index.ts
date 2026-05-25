@@ -144,3 +144,9 @@ export type NotificationType = (typeof NOTIFICATION_TYPE)[number];
 
 export const NOTIFICATION_CHANNEL = ['in_app', 'email', 'both', 'none'] as const;
 export type NotificationChannel = (typeof NOTIFICATION_CHANNEL)[number];
+
+export const SPAM_SEVERITY = ['high', 'medium', 'low'] as const;
+export type SpamSeverity = (typeof SPAM_SEVERITY)[number];
+
+export const PREVIEW_DEVICE = ['desktop', 'mobile'] as const;
+export type PreviewDevice = (typeof PREVIEW_DEVICE)[number];

@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { PreviewDevice } from '@leadgenius/shared';
 import api from '../lib/api';
 
 export function useLeads(params?: Record<string, unknown>) {
@@ -85,5 +86,21 @@ export function useExportLeads() {
   return useMutation({
     mutationFn: (body: Record<string, unknown>) =>
       api.post('/leads/export', body, { responseType: body.format === 'csv' ? 'blob' : 'json' }).then((r) => r.data),
+  });
+}
+
+export function useSpamCheck(templateId: string) {
+  return useQuery({
+    queryKey: ['spam-check', templateId],
+    queryFn: () => api.post(`/templates/${templateId}/spam-check`).then((r) => r.data),
+    enabled: !!templateId,
+  });
+}
+
+export function useTemplatePreview(templateId: string, variables?: Record<string, string>, device?: PreviewDevice) {
+  return useQuery({
+    queryKey: ['template-preview', templateId, variables, device],
+    queryFn: () => api.post(`/templates/${templateId}/preview`, { variables: variables || {}, device: device || 'desktop' }).then((r) => r.data),
+    enabled: !!templateId,
   });
 }
