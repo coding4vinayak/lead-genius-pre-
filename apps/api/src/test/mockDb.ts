@@ -69,6 +69,12 @@ export interface MockPrismaClient {
   emailAccount: MockModel;
   trackingDomain: MockModel;
   accountRotationConfig: MockModel;
+  workspace: MockModel;
+  workspaceMember: MockModel;
+  workspaceInvite: MockModel;
+  usageRecord: MockModel;
+  billingEvent: MockModel;
+  user: MockModel;
   $connect: MockFn;
   $disconnect: MockFn;
   $transaction: MockFn;
@@ -110,6 +116,12 @@ export function createMockPrisma(): MockPrismaClient {
     emailAccount: mockModel(),
     trackingDomain: mockModel(),
     accountRotationConfig: mockModel(),
+    workspace: mockModel(),
+    workspaceMember: mockModel(),
+    workspaceInvite: mockModel(),
+    usageRecord: mockModel(),
+    billingEvent: mockModel(),
+    user: mockModel(),
     $connect: vi.fn(),
     $disconnect: vi.fn(),
     $transaction: vi.fn().mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => fn(createMockPrisma())),

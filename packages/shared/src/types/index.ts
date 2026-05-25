@@ -99,3 +99,15 @@ export type RotationStrategy = (typeof ROTATION_STRATEGY)[number];
 
 export const TRACKING_DOMAIN_STATUS = ['pending', 'verified', 'failed'] as const;
 export type TrackingDomainStatus = (typeof TRACKING_DOMAIN_STATUS)[number];
+
+export const WORKSPACE_ROLE = ['owner', 'admin', 'member', 'viewer'] as const;
+export type WorkspaceRole = (typeof WORKSPACE_ROLE)[number];
+
+export const WORKSPACE_PLAN = ['free', 'pro', 'enterprise'] as const;
+export type WorkspacePlan = (typeof WORKSPACE_PLAN)[number];
+
+export const USAGE_METRIC = ['emails_sent', 'contacts_stored', 'sequences_active', 'team_members'] as const;
+export type UsageMetric = (typeof USAGE_METRIC)[number];
+
+export const BILLING_EVENT_TYPE = ['checkout.session.completed', 'invoice.paid', 'invoice.payment_failed', 'customer.subscription.created', 'customer.subscription.updated', 'customer.subscription.deleted'] as const;
+export type BillingEventType = (typeof BILLING_EVENT_TYPE)[number];

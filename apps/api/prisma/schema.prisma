@@ -344,10 +344,12 @@ model User {
   role            String    @default("user")
   resetToken      String?
   resetTokenExpires DateTime?
+  currentWorkspaceId String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
   tasks Task[]
+  workspaceMembers WorkspaceMember[]
 
   @@index([email])
   @@index([resetToken])
@@ -887,4 +889,113 @@ model WarmupLog {
 
   @@index([scheduleId])
   @@index([date])
+}
+
+enum WorkspacePlan {
+  free
+  pro
+  enterprise
+}
+
+enum WorkspaceRole {
+  owner
+  admin
+  member
+  viewer
+}
+
+enum UsageMetric {
+  emails_sent
+  contacts_stored
+  sequences_active
+  team_members
+}
+
+enum UsagePeriod {
+  daily
+  monthly
+}
+
+model Workspace {
+  id                     String        @id @default(cuid())
+  name                   String
+  slug                   String        @unique
+  plan                   WorkspacePlan @default(free)
+  stripeCustomerId       String?
+  stripeSubscriptionId   String?
+  physicalAddress        String?
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+
+  members       WorkspaceMember[]
+  invites       WorkspaceInvite[]
+  usageRecords  UsageRecord[]
+  billingEvents BillingEvent[]
+
+  @@index([slug])
+  @@index([plan])
+}
+
+model WorkspaceMember {
+  id          String        @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        WorkspaceRole @default(member)
+  invitedAt   DateTime      @default(now())
+  joinedAt    DateTime?
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([workspaceId])
+  @@index([userId])
+}
+
+model WorkspaceInvite {
+  id          String        @id @default(cuid())
+  workspaceId String
+  email       String
+  role        WorkspaceRole @default(member)
+  token       String        @unique
+  expiresAt   DateTime
+  createdAt   DateTime      @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([email])
+  @@index([token])
+}
+
+model UsageRecord {
+  id          String      @id @default(cuid())
+  workspaceId String
+  metric      UsageMetric
+  value       Int         @default(0)
+  period      UsagePeriod @default(monthly)
+  periodStart DateTime
+  periodEnd   DateTime
+  createdAt   DateTime    @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([metric])
+  @@index([periodStart, periodEnd])
+}
+
+model BillingEvent {
+  id            String   @id @default(cuid())
+  workspaceId   String
+  stripeEventId String   @unique
+  type          String
+  data          Json
+  createdAt     DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([stripeEventId])
+  @@index([type])
 }

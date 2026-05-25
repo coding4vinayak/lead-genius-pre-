@@ -1,0 +1,39 @@
+{
+  "id": "FEAT-004",
+  "type": "feat",
+  "description": "Phase 3: Billing, Auth & Teams - Team workspaces with multi-tenancy, role-based access control (owner/admin/member/viewer), usage metering (emails sent, contacts, sequences, team members), and Stripe billing integration (Free/Pro/Enterprise plans, checkout sessions, webhooks, usage-based overage).",
+  "status": "in_progress",
+  "steps": [
+    "1. Add Prisma models: Workspace (id, name, slug, plan: free/pro/enterprise, stripeCustomerId?, stripeSubscriptionId?, physicalAddress?, createdAt, updatedAt), WorkspaceMember (id, workspaceId, userId, role: owner/admin/member/viewer, invitedAt, joinedAt), WorkspaceInvite (id, workspaceId, email, role, token, expiresAt, createdAt), UsageRecord (id, workspaceId, metric: emails_sent/contacts_stored/sequences_active/team_members, value, period: daily/monthly, periodStart, periodEnd, createdAt), BillingEvent (id, workspaceId, stripeEventId, type, data Json, createdAt).",
+    "2. Update User model to add workspaceId (optional) and currentWorkspaceId fields.",
+    "3. Create migration at apps/api/prisma/migrations/20260529030000_add_billing_auth/migration.sql.",
+    "4. Add shared types: WORKSPACE_ROLE, WORKSPACE_PLAN, USAGE_METRIC, BILLING_EVENT_TYPE in packages/shared/src/types/index.ts.",
+    "5. Add schemas: workspaceSchema, workspaceMemberSchema, workspaceInviteSchema, usageRecordSchema, billingPlanSchema in packages/shared/src/schemas/index.ts.",
+    "6. Create apps/api/src/services/workspace.ts: createWorkspace, getWorkspace, updateWorkspace, switchWorkspace, inviteMember(email, role), acceptInvite(token), removeMember, updateMemberRole.",
+    "7. Create apps/api/src/services/rbac.ts: checkPermission(userId, workspaceId, requiredRole), requireRole middleware factory that checks workspace membership and role. Permissions: owner (all + billing), admin (all except billing), member (use features, no delete), viewer (read-only).",
+    "8. Create apps/api/src/services/usage-metering.ts: trackUsage(workspaceId, metric, increment), getUsage(workspaceId, period), getDailyUsage, getMonthlyUsage, checkQuota(workspaceId, metric) - returns whether usage is within plan limits.",
+    "9. Create apps/api/src/services/billing.ts: createCheckoutSession(workspaceId, plan), handleStripeWebhook(event), getSubscription(workspaceId), cancelSubscription, getInvoices(workspaceId), calculateOverage(workspaceId). Plan limits: Free (100 emails/mo, 500 contacts), Pro (5000 emails/mo, 10000 contacts), Enterprise (unlimited).",
+    "10. Create apps/api/src/routes/workspaces.ts: GET /api/workspaces, POST /api/workspaces, GET /api/workspaces/:id, PUT /api/workspaces/:id, POST /api/workspaces/:id/invite, GET /api/workspaces/:id/members, DELETE /api/workspaces/:id/members/:userId, POST /api/workspaces/switch.",
+    "11. Create apps/api/src/routes/billing.ts: POST /api/billing/checkout, GET /api/billing/subscription, POST /api/billing/cancel, GET /api/billing/invoices, GET /api/billing/usage, POST /webhook/stripe (public - no auth, verify Stripe signature).",
+    "12. Register routes in index.ts. Stripe webhook is public (no auth but signature verified).",
+    "13. Update mockDb.ts with workspace, workspaceMember, workspaceInvite, usageRecord, billingEvent models.",
+    "14. Add factory functions: buildWorkspace, buildWorkspaceMember, buildWorkspaceInvite, buildUsageRecord, buildBillingEvent.",
+    "15. Create service tests: workspace.test.ts, rbac.test.ts, usage-metering.test.ts, billing.test.ts.",
+    "16. Create route tests: workspaces.test.ts, billing.test.ts.",
+    "17. Ensure all tests pass."
+  ],
+  "acceptance_criteria": [
+    "Workspaces can be created with team member invitations",
+    "Role-based access correctly restricts actions (viewer cannot modify, member cannot delete, admin cannot access billing)",
+    "Usage metering tracks emails sent, contacts, sequences, team members",
+    "Billing checkout creates a session, webhook handling processes subscription events",
+    "Plan quotas are enforced (Free: 100 emails/mo, Pro: 5000, Enterprise: unlimited)",
+    "All tests pass"
+  ],
+  "verification": [
+    "Run `npm test` from /projects/sandbox/lead-genius-pre- and confirm all tests pass",
+    "Run `npx tsc --noEmit` in apps/api to confirm no TypeScript errors"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

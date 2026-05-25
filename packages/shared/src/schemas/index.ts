@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LEAD_STATUS, CHANNEL, MESSAGE_STATUS, CAMPAIGN_STATUS, SCHEDULE_TYPE, SEND_STRATEGY, AI_PROVIDER, INTENT_CATEGORY, AUTOMATION_STATUS, AUTOMATION_TRIGGER_TYPE, AUTOMATION_STEP_TYPE, AUTOMATION_EXECUTION_STATUS, WEBHOOK_EVENT, INTEGRATION_TYPE, TASK_STATUS, TASK_PRIORITY, SEQUENCE_STATUS, SEQUENCE_STEP_TYPE, SEQUENCE_ENROLLMENT_STATUS, LEAD_STAGE, CHANNEL_HEALTH_STATUS, WHATSAPP_TEMPLATE_STATUS, WHATSAPP_TEMPLATE_CATEGORY, DOMAIN_AUTH_STATUS, EMAIL_VERIFICATION_STATUS, SUPPRESSION_REASON, GDPR_CONSENT_TYPE, WARMUP_STATUS, ROTATION_STRATEGY, TRACKING_DOMAIN_STATUS } from '../types';
+import { LEAD_STATUS, CHANNEL, MESSAGE_STATUS, CAMPAIGN_STATUS, SCHEDULE_TYPE, SEND_STRATEGY, AI_PROVIDER, INTENT_CATEGORY, AUTOMATION_STATUS, AUTOMATION_TRIGGER_TYPE, AUTOMATION_STEP_TYPE, AUTOMATION_EXECUTION_STATUS, WEBHOOK_EVENT, INTEGRATION_TYPE, TASK_STATUS, TASK_PRIORITY, SEQUENCE_STATUS, SEQUENCE_STEP_TYPE, SEQUENCE_ENROLLMENT_STATUS, LEAD_STAGE, CHANNEL_HEALTH_STATUS, WHATSAPP_TEMPLATE_STATUS, WHATSAPP_TEMPLATE_CATEGORY, DOMAIN_AUTH_STATUS, EMAIL_VERIFICATION_STATUS, SUPPRESSION_REASON, GDPR_CONSENT_TYPE, WARMUP_STATUS, ROTATION_STRATEGY, TRACKING_DOMAIN_STATUS, WORKSPACE_ROLE, WORKSPACE_PLAN, USAGE_METRIC } from '../types';
 
 export const leadSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
@@ -320,3 +320,56 @@ export type EmailAccountInput = z.infer<typeof emailAccountSchema>;
 export type EmailAccountUpdateInput = z.infer<typeof emailAccountUpdateSchema>;
 export type TrackingDomainInput = z.infer<typeof trackingDomainSchema>;
 export type AccountRotationConfigInput = z.infer<typeof accountRotationConfigSchema>;
+
+export const workspaceSchema = z.object({
+  name: z.string().min(1, 'Workspace name is required'),
+  slug: z.string().min(1).regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with dashes'),
+  plan: z.enum(WORKSPACE_PLAN).default('free'),
+});
+
+export const workspaceUpdateSchema = z.object({
+  name: z.string().min(1).optional(),
+  slug: z.string().min(1).regex(/^[a-z0-9-]+$/).optional(),
+  physicalAddress: z.string().optional(),
+});
+
+export const workspaceMemberSchema = z.object({
+  email: z.string().email('Valid email is required'),
+  role: z.enum(WORKSPACE_ROLE).default('member'),
+});
+
+export const workspaceInviteSchema = z.object({
+  email: z.string().email('Valid email is required'),
+  role: z.enum(WORKSPACE_ROLE).default('member'),
+});
+
+export const usageRecordSchema = z.object({
+  metric: z.enum(USAGE_METRIC),
+  value: z.number().int().min(0),
+  period: z.enum(['daily', 'monthly'] as const),
+  periodStart: z.string().datetime(),
+  periodEnd: z.string().datetime(),
+});
+
+export const billingPlanSchema = z.object({
+  plan: z.enum(WORKSPACE_PLAN),
+});
+
+export const switchWorkspaceSchema = z.object({
+  workspaceId: z.string().min(1, 'Workspace ID is required'),
+});
+
+export const billingCheckoutSchema = z.object({
+  plan: z.enum(WORKSPACE_PLAN),
+  successUrl: z.string().url().optional(),
+  cancelUrl: z.string().url().optional(),
+});
+
+export type WorkspaceInput = z.infer<typeof workspaceSchema>;
+export type WorkspaceUpdateInput = z.infer<typeof workspaceUpdateSchema>;
+export type WorkspaceMemberInput = z.infer<typeof workspaceMemberSchema>;
+export type WorkspaceInviteInput = z.infer<typeof workspaceInviteSchema>;
+export type UsageRecordInput = z.infer<typeof usageRecordSchema>;
+export type BillingPlanInput = z.infer<typeof billingPlanSchema>;
+export type SwitchWorkspaceInput = z.infer<typeof switchWorkspaceSchema>;
+export type BillingCheckoutInput = z.infer<typeof billingCheckoutSchema>;

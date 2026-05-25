@@ -542,3 +542,69 @@ export function buildAccountRotationConfig(overrides: Record<string, unknown> = 
     ...overrides,
   };
 }
+
+export function buildWorkspace(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'ws_' + Math.random().toString(36).slice(2, 9),
+    name: 'Test Workspace',
+    slug: 'test-workspace',
+    plan: 'free',
+    stripeCustomerId: null,
+    stripeSubscriptionId: null,
+    physicalAddress: null,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildWorkspaceMember(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'wm_' + Math.random().toString(36).slice(2, 9),
+    workspaceId: 'ws_1',
+    userId: 'user_1',
+    role: 'member',
+    invitedAt: new Date('2025-01-01T00:00:00Z'),
+    joinedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildWorkspaceInvite(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'wi_' + Math.random().toString(36).slice(2, 9),
+    workspaceId: 'ws_1',
+    email: 'invited@example.com',
+    role: 'member',
+    token: 'tok_' + Math.random().toString(36).slice(2, 18),
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildUsageRecord(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'ur_' + Math.random().toString(36).slice(2, 9),
+    workspaceId: 'ws_1',
+    metric: 'emails_sent',
+    value: 50,
+    period: 'monthly',
+    periodStart: new Date('2025-01-01T00:00:00Z'),
+    periodEnd: new Date('2025-01-31T23:59:59Z'),
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildBillingEvent(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'be_' + Math.random().toString(36).slice(2, 9),
+    workspaceId: 'ws_1',
+    stripeEventId: 'evt_' + Math.random().toString(36).slice(2, 18),
+    type: 'invoice.paid',
+    data: { amount: 4900 },
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
