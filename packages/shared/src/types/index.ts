@@ -111,3 +111,21 @@ export type UsageMetric = (typeof USAGE_METRIC)[number];
 
 export const BILLING_EVENT_TYPE = ['checkout.session.completed', 'invoice.paid', 'invoice.payment_failed', 'customer.subscription.created', 'customer.subscription.updated', 'customer.subscription.deleted'] as const;
 export type BillingEventType = (typeof BILLING_EVENT_TYPE)[number];
+
+export const CRM_PROVIDER = ['hubspot', 'salesforce'] as const;
+export type CrmProvider = (typeof CRM_PROVIDER)[number];
+
+export const CRM_SYNC_DIRECTION = ['inbound', 'outbound', 'bidirectional'] as const;
+export type CrmSyncDirection = (typeof CRM_SYNC_DIRECTION)[number];
+
+export const CRM_SYNC_STATUS = ['idle', 'syncing', 'completed', 'failed'] as const;
+export type CrmSyncStatus = (typeof CRM_SYNC_STATUS)[number];
+
+export const BOOKING_STATUS = ['scheduled', 'completed', 'cancelled'] as const;
+export type BookingStatus = (typeof BOOKING_STATUS)[number];
+
+export const SLACK_EVENT_TYPE = ['lead.created', 'lead.converted', 'campaign.completed', 'message.replied', 'daily_digest'] as const;
+export type SlackEventType = (typeof SLACK_EVENT_TYPE)[number];
+
+export const RECIPE_CATEGORY = ['lead_management', 'email_campaigns', 'notifications', 'data_sync', 'reporting'] as const;
+export type RecipeCategory = (typeof RECIPE_CATEGORY)[number];

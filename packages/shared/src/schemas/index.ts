@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LEAD_STATUS, CHANNEL, MESSAGE_STATUS, CAMPAIGN_STATUS, SCHEDULE_TYPE, SEND_STRATEGY, AI_PROVIDER, INTENT_CATEGORY, AUTOMATION_STATUS, AUTOMATION_TRIGGER_TYPE, AUTOMATION_STEP_TYPE, AUTOMATION_EXECUTION_STATUS, WEBHOOK_EVENT, INTEGRATION_TYPE, TASK_STATUS, TASK_PRIORITY, SEQUENCE_STATUS, SEQUENCE_STEP_TYPE, SEQUENCE_ENROLLMENT_STATUS, LEAD_STAGE, CHANNEL_HEALTH_STATUS, WHATSAPP_TEMPLATE_STATUS, WHATSAPP_TEMPLATE_CATEGORY, DOMAIN_AUTH_STATUS, EMAIL_VERIFICATION_STATUS, SUPPRESSION_REASON, GDPR_CONSENT_TYPE, WARMUP_STATUS, ROTATION_STRATEGY, TRACKING_DOMAIN_STATUS, WORKSPACE_ROLE, WORKSPACE_PLAN, USAGE_METRIC } from '../types';
+import { LEAD_STATUS, CHANNEL, MESSAGE_STATUS, CAMPAIGN_STATUS, SCHEDULE_TYPE, SEND_STRATEGY, AI_PROVIDER, INTENT_CATEGORY, AUTOMATION_STATUS, AUTOMATION_TRIGGER_TYPE, AUTOMATION_STEP_TYPE, AUTOMATION_EXECUTION_STATUS, WEBHOOK_EVENT, INTEGRATION_TYPE, TASK_STATUS, TASK_PRIORITY, SEQUENCE_STATUS, SEQUENCE_STEP_TYPE, SEQUENCE_ENROLLMENT_STATUS, LEAD_STAGE, CHANNEL_HEALTH_STATUS, WHATSAPP_TEMPLATE_STATUS, WHATSAPP_TEMPLATE_CATEGORY, DOMAIN_AUTH_STATUS, EMAIL_VERIFICATION_STATUS, SUPPRESSION_REASON, GDPR_CONSENT_TYPE, WARMUP_STATUS, ROTATION_STRATEGY, TRACKING_DOMAIN_STATUS, WORKSPACE_ROLE, WORKSPACE_PLAN, USAGE_METRIC, CRM_PROVIDER, CRM_SYNC_DIRECTION, CRM_SYNC_STATUS, BOOKING_STATUS, SLACK_EVENT_TYPE, RECIPE_CATEGORY } from '../types';
 
 export const leadSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
@@ -373,3 +373,86 @@ export type UsageRecordInput = z.infer<typeof usageRecordSchema>;
 export type BillingPlanInput = z.infer<typeof billingPlanSchema>;
 export type SwitchWorkspaceInput = z.infer<typeof switchWorkspaceSchema>;
 export type BillingCheckoutInput = z.infer<typeof billingCheckoutSchema>;
+
+export const crmSyncSchema = z.object({
+  integrationId: z.string().min(1, 'Integration ID is required'),
+  provider: z.enum(CRM_PROVIDER),
+  direction: z.enum(CRM_SYNC_DIRECTION).default('bidirectional'),
+  fieldMapping: z.record(z.string()).default({}),
+});
+
+export const crmOAuthCallbackSchema = z.object({
+  provider: z.enum(CRM_PROVIDER),
+  code: z.string().min(1, 'OAuth code is required'),
+});
+
+export const crmFieldMappingSchema = z.object({
+  fieldMapping: z.record(z.string()).refine((obj) => Object.keys(obj).length > 0, {
+    message: 'At least one field mapping is required',
+  }),
+});
+
+export const calendarBookingSchema = z.object({
+  leadId: z.string().min(1, 'Lead ID is required'),
+  title: z.string().min(1, 'Title is required'),
+  startTime: z.string().datetime(),
+  endTime: z.string().datetime(),
+  timezone: z.string().default('UTC'),
+});
+
+export const calendarBookingLinkSchema = z.object({
+  leadId: z.string().min(1, 'Lead ID is required'),
+  duration: z.number().int().positive().default(30),
+  title: z.string().optional(),
+});
+
+export const calendarSlotsSchema = z.object({
+  date: z.string().min(1, 'Date is required'),
+  timezone: z.string().default('UTC'),
+});
+
+export const slackNotificationSchema = z.object({
+  integrationId: z.string().min(1, 'Integration ID is required'),
+  channel: z.string().min(1, 'Channel is required'),
+  eventTypes: z.array(z.enum(SLACK_EVENT_TYPE)).min(1, 'At least one event type is required'),
+  isActive: z.boolean().default(true),
+});
+
+export const slackConnectSchema = z.object({
+  code: z.string().min(1, 'OAuth code is required'),
+});
+
+export const webhookTemplateSchema = z.object({
+  name: z.string().min(1, 'Template name is required'),
+  description: z.string().optional(),
+  category: z.enum(RECIPE_CATEGORY),
+  triggerEvents: z.array(z.string()).min(1, 'At least one trigger event is required'),
+  targetUrl: z.string().url('Valid URL is required'),
+  headers: z.record(z.string()).optional(),
+  bodyTemplate: z.string().optional(),
+  isPublic: z.boolean().default(true),
+});
+
+export const recipeSchema = z.object({
+  name: z.string().min(1, 'Recipe name is required'),
+  description: z.string().optional(),
+  category: z.enum(RECIPE_CATEGORY),
+  steps: z.array(z.record(z.unknown())).min(1, 'At least one step is required'),
+  isActive: z.boolean().default(false),
+});
+
+export const recipeActivateSchema = z.object({
+  config: z.record(z.unknown()).default({}),
+});
+
+export type CrmSyncInput = z.infer<typeof crmSyncSchema>;
+export type CrmOAuthCallbackInput = z.infer<typeof crmOAuthCallbackSchema>;
+export type CrmFieldMappingInput = z.infer<typeof crmFieldMappingSchema>;
+export type CalendarBookingInput = z.infer<typeof calendarBookingSchema>;
+export type CalendarBookingLinkInput = z.infer<typeof calendarBookingLinkSchema>;
+export type CalendarSlotsInput = z.infer<typeof calendarSlotsSchema>;
+export type SlackNotificationInput = z.infer<typeof slackNotificationSchema>;
+export type SlackConnectInput = z.infer<typeof slackConnectSchema>;
+export type WebhookTemplateInput = z.infer<typeof webhookTemplateSchema>;
+export type RecipeInput = z.infer<typeof recipeSchema>;
+export type RecipeActivateInput = z.infer<typeof recipeActivateSchema>;

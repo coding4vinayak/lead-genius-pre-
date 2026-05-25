@@ -159,6 +159,7 @@ model Lead {
   emailVerifications  EmailVerification[]
   unsubscribeRecords  UnsubscribeRecord[]
   gdprConsents        GdprConsent[]
+  calendarBookings    CalendarBooking[]
 
   @@index([status])
   @@index([email])
@@ -998,4 +999,76 @@ model BillingEvent {
   @@index([workspaceId])
   @@index([stripeEventId])
   @@index([type])
+}
+
+model CrmSync {
+  id            String   @id @default(cuid())
+  integrationId String
+  provider      String
+  direction     String   @default("bidirectional")
+  lastSyncAt    DateTime?
+  syncStatus    String   @default("idle")
+  fieldMapping  Json     @default("{}")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([integrationId])
+}
+
+model CalendarBooking {
+  id          String   @id @default(cuid())
+  leadId      String
+  title       String
+  startTime   DateTime
+  endTime     DateTime
+  meetingLink String?
+  status      String   @default("scheduled")
+  bookedAt    DateTime?
+  createdAt   DateTime @default(now())
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([status])
+}
+
+model SlackNotification {
+  id            String   @id @default(cuid())
+  integrationId String
+  channel       String
+  eventTypes    String[] @default([])
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([integrationId])
+}
+
+model WebhookTemplate {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  category      String
+  triggerEvents String[] @default([])
+  targetUrl     String
+  headers       Json?
+  bodyTemplate  String?
+  isPublic      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([category])
+}
+
+model Recipe {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  category    String
+  steps       Json     @default("[]")
+  isActive    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
 }

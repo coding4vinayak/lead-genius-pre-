@@ -75,6 +75,11 @@ export interface MockPrismaClient {
   usageRecord: MockModel;
   billingEvent: MockModel;
   user: MockModel;
+  crmSync: MockModel;
+  calendarBooking: MockModel;
+  slackNotification: MockModel;
+  webhookTemplate: MockModel;
+  recipe: MockModel;
   $connect: MockFn;
   $disconnect: MockFn;
   $transaction: MockFn;
@@ -122,6 +127,11 @@ export function createMockPrisma(): MockPrismaClient {
     usageRecord: mockModel(),
     billingEvent: mockModel(),
     user: mockModel(),
+    crmSync: mockModel(),
+    calendarBooking: mockModel(),
+    slackNotification: mockModel(),
+    webhookTemplate: mockModel(),
+    recipe: mockModel(),
     $connect: vi.fn(),
     $disconnect: vi.fn(),
     $transaction: vi.fn().mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => fn(createMockPrisma())),

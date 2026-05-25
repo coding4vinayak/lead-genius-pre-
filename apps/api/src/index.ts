@@ -39,6 +39,10 @@ import trackingDomainRoutes from './routes/tracking-domains.js';
 import reputationRoutes from './routes/reputation.js';
 import workspaceRoutes from './routes/workspaces.js';
 import billingRoutes from './routes/billing.js';
+import crmRoutes from './routes/crm.js';
+import calendarRoutes from './routes/calendar.js';
+import slackRoutes from './routes/slack.js';
+import marketplaceRoutes from './routes/marketplace.js';
 import { sendEmail } from './services/email.js';
 import { sendWhatsApp } from './services/whatsapp.js';
 import { renderTemplate } from './services/template.js';
@@ -85,6 +89,10 @@ app.use('/api/tracking-domains', requireAuth, trackingDomainRoutes);
 app.use('/api/reputation', requireAuth, reputationRoutes);
 app.use('/api/workspaces', requireAuth, workspaceRoutes);
 app.use('/api/billing', billingRoutes);
+app.use('/api/crm', requireAuth, crmRoutes);
+app.use('/api/calendar', calendarRoutes);
+app.use('/api/slack', requireAuth, slackRoutes);
+app.use('/api/marketplace', requireAuth, marketplaceRoutes);
 app.use('/webhook', webhookRoutes);
 
 if (process.env.EMAIL_SANDBOX !== 'false') {

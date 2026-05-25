@@ -608,3 +608,77 @@ export function buildBillingEvent(overrides: Record<string, unknown> = {}) {
     ...overrides,
   };
 }
+
+export function buildCrmSync(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'crmsync_' + Math.random().toString(36).slice(2, 9),
+    integrationId: 'int_1',
+    provider: 'hubspot',
+    direction: 'bidirectional',
+    lastSyncAt: null,
+    syncStatus: 'idle',
+    fieldMapping: {},
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildCalendarBooking(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'booking_' + Math.random().toString(36).slice(2, 9),
+    leadId: 'lead_1',
+    title: 'Demo Meeting',
+    startTime: new Date('2025-01-15T10:00:00Z'),
+    endTime: new Date('2025-01-15T11:00:00Z'),
+    meetingLink: 'https://meet.example.com/abc123',
+    status: 'scheduled',
+    bookedAt: new Date('2025-01-10T00:00:00Z'),
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildSlackNotification(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'slackn_' + Math.random().toString(36).slice(2, 9),
+    integrationId: 'int_1',
+    channel: '#sales',
+    eventTypes: ['lead.created', 'lead.converted'],
+    isActive: true,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildWebhookTemplate(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'wht_' + Math.random().toString(36).slice(2, 9),
+    name: 'New Lead to Slack',
+    description: 'Send new lead notifications to Slack',
+    category: 'notifications',
+    triggerEvents: ['lead.created'],
+    targetUrl: 'https://hooks.slack.com/services/xxx',
+    headers: null,
+    bodyTemplate: null,
+    isPublic: true,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildRecipe(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'recipe_' + Math.random().toString(36).slice(2, 9),
+    name: 'Lead to CRM Pipeline',
+    description: 'Automatically sync new leads to your CRM',
+    category: 'data_sync',
+    steps: [{ action: 'create_contact', target: 'hubspot' }],
+    isActive: false,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
