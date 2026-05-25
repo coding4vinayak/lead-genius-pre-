@@ -150,3 +150,12 @@ export type SpamSeverity = (typeof SPAM_SEVERITY)[number];
 
 export const PREVIEW_DEVICE = ['desktop', 'mobile'] as const;
 export type PreviewDevice = (typeof PREVIEW_DEVICE)[number];
+
+export const ENRICHMENT_STATUS = ['pending', 'completed', 'failed'] as const;
+export type EnrichmentStatus = (typeof ENRICHMENT_STATUS)[number];
+
+export const SENIORITY_LEVEL = ['c_suite', 'vp', 'director', 'manager', 'senior', 'mid', 'junior'] as const;
+export type SeniorityLevel = (typeof SENIORITY_LEVEL)[number];
+
+export const DEPARTMENT = ['engineering', 'marketing', 'sales', 'hr', 'finance', 'operations', 'product', 'design', 'other'] as const;
+export type Department = (typeof DEPARTMENT)[number];

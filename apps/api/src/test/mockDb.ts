@@ -87,6 +87,7 @@ export interface MockPrismaClient {
   performanceBenchmark: MockModel;
   notification: MockModel;
   notificationPreference: MockModel;
+  enrichmentLog: MockModel;
   $connect: MockFn;
   $disconnect: MockFn;
   $transaction: MockFn;
@@ -146,6 +147,7 @@ export function createMockPrisma(): MockPrismaClient {
     performanceBenchmark: mockModel(),
     notification: mockModel(),
     notificationPreference: mockModel(),
+    enrichmentLog: mockModel(),
     $connect: vi.fn(),
     $disconnect: vi.fn(),
     $transaction: vi.fn().mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => fn(createMockPrisma())),

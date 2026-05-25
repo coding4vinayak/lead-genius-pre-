@@ -537,3 +537,21 @@ export const linkCheckResultSchema = z.object({
 export type SpamCheckContentInput = z.infer<typeof spamCheckContentSchema>;
 export type TemplatePreviewEnhancedInput = z.infer<typeof templatePreviewEnhancedSchema>;
 export type LinkCheckResultInput = z.infer<typeof linkCheckResultSchema>;
+
+export const enrichLeadRequestSchema = z.object({
+  providers: z.array(z.string()).optional(),
+});
+
+export const bulkEnrichRequestSchema = z.object({
+  providers: z.array(z.string()).optional(),
+});
+
+export const findEmailRequestSchema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  domain: z.string().min(1, 'Domain is required'),
+});
+
+export type EnrichLeadRequestInput = z.infer<typeof enrichLeadRequestSchema>;
+export type BulkEnrichRequestInput = z.infer<typeof bulkEnrichRequestSchema>;
+export type FindEmailRequestInput = z.infer<typeof findEmailRequestSchema>;

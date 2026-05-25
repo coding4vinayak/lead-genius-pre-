@@ -48,6 +48,7 @@ import sendOptimizationRoutes from './routes/send-optimization.js';
 import advancedAnalyticsRoutes from './routes/advanced-analytics.js';
 import benchmarkRoutes from './routes/benchmarks.js';
 import notificationRoutes from './routes/notifications.js';
+import enrichmentRoutes from './routes/enrichment.js';
 import { sendEmail } from './services/email.js';
 import { sendWhatsApp } from './services/whatsapp.js';
 import { renderTemplate } from './services/template.js';
@@ -106,6 +107,7 @@ app.use('/api/send-optimization', requireAuth, sendOptimizationRoutes);
 app.use('/api/analytics/advanced', requireAuth, advancedAnalyticsRoutes);
 app.use('/api/benchmarks', requireAuth, benchmarkRoutes);
 app.use('/api/notifications', requireAuth, notificationRoutes);
+app.use('/api', requireAuth, enrichmentRoutes);
 app.use('/webhook', webhookRoutes);
 
 if (process.env.EMAIL_SANDBOX !== 'false') {

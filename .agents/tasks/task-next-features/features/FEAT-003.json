@@ -1,0 +1,44 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Contact Enrichment Integration: Build a pluggable enrichment service with built-in domain-based company lookup, role inference from title, email pattern generation + MX verification, bulk enrichment queue, and enrichment history per lead.",
+  "status": "in_progress",
+  "steps": [
+    "Add Prisma models: `EnrichmentLog` (id, leadId, provider:String, requestData:Json, responseData:Json, status: 'pending'|'completed'|'failed', errorMessage?, createdAt, updatedAt). Add to schema.prisma with indexes on leadId and status.",
+    "Create Prisma migration for EnrichmentLog model.",
+    "Create `apps/api/src/services/enrichment/index.ts`: Enrichment service interface. Export `EnrichmentProvider` interface with `enrich(lead)` method. Export `enrichLead(leadId, providers?)` function that runs enabled providers, stores results in lead.enrichmentData, and logs to EnrichmentLog.",
+    "Create `apps/api/src/services/enrichment/domain-lookup.ts`: Provider that extracts domain from email, infers company info (name from domain, industry heuristics). Returns { company, domain, industry?, employeeRange? }.",
+    "Create `apps/api/src/services/enrichment/role-inference.ts`: Provider that analyzes lead title to infer seniority level (c-suite, vp, director, manager, individual), department (engineering, marketing, sales, hr, finance, operations), and decision-making authority score.",
+    "Create `apps/api/src/services/enrichment/email-finder.ts`: Service that given name + domain, generates common email patterns (first@domain, first.last@domain, firstlast@domain, f.last@domain, first_last@domain, etc.) and validates format. Export `findEmail(firstName, lastName, domain)` returning possible patterns with confidence scores. MX check is stubbed (no network) but interface is ready.",
+    "Create `apps/api/src/routes/enrichment.ts`: POST /api/leads/:id/enrich - enrich a single lead, POST /api/groups/:id/enrich - bulk enrich all leads in a group (queues a BullMQ job), GET /api/leads/:id/enrichment-history - get enrichment log for a lead, POST /api/leads/find-email - given name+domain find possible emails.",
+    "Create `apps/api/src/queue/enrichment-queue.ts`: BullMQ queue for bulk enrichment jobs. Worker processes leads in batches of 10 with delay between batches.",
+    "Add enrichment queue exports to apps/api/src/queue/index.ts.",
+    "Add Zod schemas in packages/shared/src/schemas/index.ts: `enrichLeadSchema`, `bulkEnrichSchema`, `findEmailSchema`.",
+    "Add shared types: ENRICHMENT_STATUS, SENIORITY_LEVEL, DEPARTMENT const arrays in packages/shared/src/types/index.ts.",
+    "Update mockDb.ts: Add `enrichmentLog` mock model. Add `buildEnrichmentLog()` factory in factories.ts.",
+    "Create `apps/api/src/services/enrichment/domain-lookup.test.ts`: Test domain extraction, company name inference.",
+    "Create `apps/api/src/services/enrichment/role-inference.test.ts`: Test title parsing for various titles (CEO, VP of Engineering, Sr. Software Engineer, etc.).",
+    "Create `apps/api/src/services/enrichment/email-finder.test.ts`: Test email pattern generation for various name+domain combinations.",
+    "Create `apps/api/src/routes/enrichment.test.ts`: Test all enrichment endpoints (single enrich, bulk enrich, history, find-email).",
+    "Register enrichment routes in apps/api/src/index.ts with requireAuth middleware.",
+    "Frontend: Add hooks in apps/web/src/hooks/index.ts: `useEnrichLead()`, `useEnrichmentHistory(leadId)`, `useFindEmail()`.",
+    "Frontend: Create `apps/web/src/components/ui/EnrichmentPanel.tsx`: Panel shown on lead detail page displaying enrichment data (company info, role inference, confidence scores) with an 'Enrich' button."
+  ],
+  "acceptance_criteria": [
+    "POST /api/leads/:id/enrich enriches lead and stores results in enrichmentData field and EnrichmentLog",
+    "Domain lookup correctly extracts company name from email domain",
+    "Role inference correctly categorizes titles into seniority and department",
+    "Email finder generates valid email patterns for given name+domain",
+    "POST /api/groups/:id/enrich queues a bulk enrichment job",
+    "GET /api/leads/:id/enrichment-history returns enrichment log entries",
+    "All enrichment service tests pass",
+    "All enrichment route tests pass",
+    "TypeScript compiles cleanly"
+  ],
+  "verification": [
+    "cd /projects/sandbox/lead-genius-pre- && npx turbo test",
+    "cd /projects/sandbox/lead-genius-pre- && npx turbo build"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

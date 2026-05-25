@@ -160,6 +160,7 @@ model Lead {
   unsubscribeRecords  UnsubscribeRecord[]
   gdprConsents        GdprConsent[]
   calendarBookings    CalendarBooking[]
+  enrichmentLogs      EnrichmentLog[]
 
   @@index([status])
   @@index([email])
@@ -1179,4 +1180,21 @@ model NotificationPreference {
 
   @@unique([userId, eventType])
   @@index([userId])
+}
+
+model EnrichmentLog {
+  id           String   @id @default(cuid())
+  leadId       String
+  provider     String
+  requestData  Json?
+  responseData Json?
+  status       String   @default("pending")
+  errorMessage String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([status])
 }

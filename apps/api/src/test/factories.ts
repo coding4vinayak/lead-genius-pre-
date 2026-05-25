@@ -783,3 +783,18 @@ export function buildNotificationPreference(overrides: Record<string, unknown> =
     ...overrides,
   };
 }
+
+export function buildEnrichmentLog(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'elog_' + Math.random().toString(36).slice(2, 9),
+    leadId: 'lead_1',
+    provider: 'domain-lookup',
+    requestData: { email: 'test@example.com' },
+    responseData: { company: 'Example', domain: 'example.com', isPersonalEmail: false },
+    status: 'completed',
+    errorMessage: null,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}

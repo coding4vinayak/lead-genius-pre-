@@ -104,3 +104,30 @@ export function useTemplatePreview(templateId: string, variables?: Record<string
     enabled: !!templateId,
   });
 }
+
+export function useEnrichLead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, providers }: { id: string; providers?: string[] }) =>
+      api.post(`/leads/${id}/enrich`, { providers }).then((r) => r.data),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['lead', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['enrichment-history', variables.id] });
+    },
+  });
+}
+
+export function useEnrichmentHistory(leadId: string) {
+  return useQuery({
+    queryKey: ['enrichment-history', leadId],
+    queryFn: () => api.get(`/leads/${leadId}/enrichment-history`).then((r) => r.data),
+    enabled: !!leadId,
+  });
+}
+
+export function useFindEmail() {
+  return useMutation({
+    mutationFn: (body: { firstName: string; lastName: string; domain: string }) =>
+      api.post('/leads/find-email', body).then((r) => r.data),
+  });
+}

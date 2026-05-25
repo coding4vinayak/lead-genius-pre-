@@ -33,3 +33,4 @@ export { eventQueue, createEventWorker } from './event-queue.js';
 export { automationQueue, createAutomationWorker } from './automation-queue.js';
 export { webhookQueue, createWebhookWorker } from './webhook-queue.js';
 export { sequenceQueue, createSequenceWorker } from './sequence-queue.js';
+export { enrichmentQueue, createEnrichmentWorker } from './enrichment-queue.js';
