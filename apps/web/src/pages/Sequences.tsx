@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Play, Pause, GitBranch, Mail, MessageSquare, Clock, Filter, Users } from 'lucide-react';
+import { Plus, Play, Pause, GitBranch, Mail, MessageSquare, Clock, Filter, Users, Workflow } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../lib/api';
 import { Card, Button, Badge, Modal, Input, Select, EmptyState, ErrorBanner, PageHeader, Skeleton, SkeletonCard, Tabs, ProgressBar } from '../components/ui';
@@ -23,6 +24,7 @@ const STEP_ICONS: Record<string, React.ReactNode> = {
 
 export default function Sequences() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
   const [form, setForm] = useState<Record<string, string>>({ name: '', description: '', triggerType: 'manual' });
@@ -136,6 +138,9 @@ export default function Sequences() {
                   </div>
                 )}
                 <div className="flex gap-2">
+                  <Button variant="ghost" size="sm" onClick={() => navigate(`/sequences/${seq.id}/builder`)}>
+                    <Workflow size={14} className="mr-1" />Builder
+                  </Button>
                   {seq.status === 'draft' && (
                     <Button variant="primary" size="sm" onClick={() => activateMutation.mutate(seq.id as string)}>
                       <Play size={14} className="mr-1" />Activate

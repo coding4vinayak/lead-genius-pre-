@@ -12,6 +12,7 @@ import Settings from './pages/Settings';
 import AiInbox from './pages/AiInbox';
 import Agent from './pages/Agent';
 import Sequences from './pages/Sequences';
+import SequenceBuilderPage from './pages/SequenceBuilder';
 import Integrations from './pages/Integrations';
 import Deliverability from './pages/Deliverability';
 import EmailAccounts from './pages/EmailAccounts';
@@ -43,6 +44,7 @@ export default function App() {
               <Route path="/templates" element={<Templates />} />
               <Route path="/campaigns" element={<Campaigns />} />
               <Route path="/sequences" element={<Sequences />} />
+              <Route path="/sequences/:id/builder" element={<SequenceBuilderPage />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/settings" element={<Settings />} />
