@@ -2,7 +2,7 @@
   "id": "FEAT-004",
   "type": "feat",
   "description": "Command Palette (Cmd+K) - a global keyboard-triggered modal overlay with fuzzy search across leads, templates, campaigns, sequences, pages, and actions. Includes recent items, category grouping, keyboard navigation, and highlighted matches.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Create apps/web/src/components/CommandPalette.tsx - modal overlay component. Renders when open state is true. Dark semi-transparent backdrop. Centered modal with search input (auto-focused), results list below with category grouping. Animate in/out with Framer Motion (fade + scale).",
     "Create apps/web/src/hooks/useCommandPalette.ts - hook that manages command palette state: open/close, search query, results, selected index. Registers global keydown listener for Cmd+K / Ctrl+K to toggle. Arrow up/down changes selected index. Enter executes selected item. Escape closes.",
@@ -30,5 +30,5 @@
     "Run `npx turbo test` from /projects/sandbox/lead-genius-pre- and confirm all tests pass"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 9 command palette tests pass. Build compiles cleanly. Text highlighting splits characters across spans, so tests must use textContent on result elements rather than getByText for label assertions."
 }
