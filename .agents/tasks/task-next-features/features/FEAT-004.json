@@ -2,7 +2,7 @@
   "id": "FEAT-004",
   "type": "feat",
   "description": "Public REST API + OpenAPI Docs: Generate OpenAPI 3.0 spec, serve API documentation at /api/docs, implement API key authentication, rate limiting per plan (Free: 100/hr, Pro: 1000/hr, Enterprise: 10000/hr), and API key usage tracking.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Add Prisma models: `ApiKey` (id, workspaceId, name, key:String @unique, prefix:String, permissions:String[], isActive:Boolean, lastUsedAt:DateTime?, requestCount:Int, createdAt, updatedAt) and `ApiKeyUsage` (id, apiKeyId, endpoint:String, method:String, statusCode:Int, responseTimeMs:Int, createdAt). Add indexes.",
     "Create Prisma migration for ApiKey and ApiKeyUsage models.",
@@ -40,5 +40,5 @@
     "cd /projects/sandbox/lead-genius-pre- && npx turbo build"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "Pre-existing build failures in @leadgenius/api (test/simulation.test.ts TypeScript errors) and @leadgenius/workers (rootDir constraint issues) are not related to this feature. All API tests (1145) and web tests (104) pass. The shared package and web app build cleanly."
 }
