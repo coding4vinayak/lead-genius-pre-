@@ -4,16 +4,23 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import Sidebar from './Sidebar';
 import CommandPalette from '../CommandPalette';
+import OnboardingWizard from '../onboarding/OnboardingWizard';
 import { useAppStore } from '../../store';
+import { useAuthStore } from '../../store/auth';
+import { useOnboardingStore } from '../../store/onboarding';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const sidebarCollapsed = useAppStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useAppStore((s) => s.toggleSidebar);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const onboardingComplete = useOnboardingStore((s) => s.isComplete);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
 
   return (
     <div className="flex h-screen overflow-hidden">
+      {/* Onboarding wizard overlay */}
+      {isAuthenticated && !onboardingComplete && <OnboardingWizard />}
       {/* Desktop sidebar */}
       <div className="hidden md:flex">
         <Sidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} />

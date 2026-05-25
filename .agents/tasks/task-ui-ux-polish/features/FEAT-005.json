@@ -1,0 +1,38 @@
+{
+  "id": "FEAT-005",
+  "type": "feat",
+  "description": "Onboarding Wizard - a multi-step first-time setup flow shown when no setup is complete. Steps: Welcome + workspace name, Connect email, Import leads, Create first template, Create first sequence, Launch. Includes progress bar, skip option, dashboard checklist widget, and confetti animation on completion.",
+  "status": "in_progress",
+  "steps": [
+    "Create apps/web/src/components/onboarding/OnboardingWizard.tsx - full-screen overlay wizard component. Multi-step flow with progress bar at top showing step X of 6. Each step renders its own content. Include 'Skip' button and 'Next'/'Back' navigation. On final step completion, show confetti animation and close wizard.",
+    "Create apps/web/src/components/onboarding/steps/WelcomeStep.tsx - Step 1: Welcome message with LeadGenius branding, workspace name input field. User enters their workspace/company name.",
+    "Create apps/web/src/components/onboarding/steps/ConnectEmailStep.tsx - Step 2: Email connection form. Show two options: SMTP configuration (host, port, username, password) or SendGrid API key. Include a 'Send Test Email' button. Show success/failure indicator.",
+    "Create apps/web/src/components/onboarding/steps/ImportLeadsStep.tsx - Step 3: Lead import. Two options: CSV upload (file input with drag-drop zone) or manual entry (simple form with name, email, company fields, add multiple). Show count of leads added.",
+    "Create apps/web/src/components/onboarding/steps/CreateTemplateStep.tsx - Step 4: Create first template. Offer starter templates to choose from (Welcome email, Follow-up, Meeting request). Show editable preview. User can customize subject/body before saving.",
+    "Create apps/web/src/components/onboarding/steps/CreateSequenceStep.tsx - Step 5: Guided sequence creation. Pre-populate with the template they just created. Show a simple 2-3 step sequence: send email -> wait 2 days -> send follow-up. User can adjust delays.",
+    "Create apps/web/src/components/onboarding/steps/LaunchStep.tsx - Step 6: Launch/activation. Summary of what was set up. Big 'Activate Sequence' button. On click, activate the sequence via API. Show confetti animation (create a simple confetti effect using Framer Motion with scattered colored divs animating outward).",
+    "Create apps/web/src/store/onboarding.ts - Zustand store tracking onboarding state: isComplete (persisted), currentStep, completedSteps array, workspaceName, skipOnboarding(). Persist to localStorage.",
+    "Create apps/web/src/components/onboarding/OnboardingChecklist.tsx - dashboard sidebar widget showing remaining setup steps as a checklist. Each item shows checkmark if complete, circle if not. Clicking an incomplete item could re-open that step. Show overall completion percentage.",
+    "Mount OnboardingWizard in apps/web/src/App.tsx or Layout.tsx - show the wizard overlay when onboarding store indicates not complete AND user is authenticated. After wizard completion or skip, mark as complete.",
+    "Add OnboardingChecklist to apps/web/src/pages/Dashboard.tsx - render the checklist card in the dashboard when not all steps are complete.",
+    "Create apps/web/src/components/onboarding/OnboardingWizard.test.tsx - test that the wizard renders step 1 by default, that navigation between steps works, that skip marks onboarding as complete, and that the progress bar updates."
+  ],
+  "acceptance_criteria": [
+    "Wizard shows automatically on first login when onboarding is not complete",
+    "Progress bar shows current step out of 6 total steps",
+    "Each step has appropriate form fields and validation",
+    "Skip button on each step advances without requiring input",
+    "Back/Next navigation works between steps",
+    "Confetti animation plays on final step completion",
+    "Onboarding state persists (wizard does not re-show after completion or skip)",
+    "Dashboard shows onboarding checklist widget when steps remain incomplete",
+    "TypeScript compiles without errors",
+    "Tests pass"
+  ],
+  "verification": [
+    "Run `npx turbo build` from /projects/sandbox/lead-genius-pre- and confirm no TypeScript errors",
+    "Run `npx turbo test` from /projects/sandbox/lead-genius-pre- and confirm all tests pass"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

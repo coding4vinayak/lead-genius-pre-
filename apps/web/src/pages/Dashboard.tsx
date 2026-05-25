@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { BarChart3, Send, Users, TrendingUp } from 'lucide-react';
 import { Card, ErrorBanner, PageHeader, StatCard, Skeleton, SkeletonCard } from '../components/ui';
+import OnboardingChecklist from '../components/onboarding/OnboardingChecklist';
 import api from '../lib/api';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
@@ -97,6 +98,9 @@ export default function Dashboard() {
             </PieChart>
           </ResponsiveContainer>
         </Card>
+      </div>
+      <div className="mt-6">
+        <OnboardingChecklist />
       </div>
     </div>
   );
