@@ -10,6 +10,7 @@ import Messages from './pages/Messages';
 import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 import AiInbox from './pages/AiInbox';
+import UnifiedInbox from './pages/UnifiedInbox';
 import Agent from './pages/Agent';
 import Sequences from './pages/Sequences';
 import SequenceBuilderPage from './pages/SequenceBuilder';
@@ -51,7 +52,7 @@ export default function App() {
               <Route path="/messages" element={<Messages />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/settings" element={<Settings />} />
-              <Route path="/inbox" element={<AiInbox />} />
+              <Route path="/inbox" element={<UnifiedInbox />} />
               <Route path="/agent" element={<Agent />} />
               <Route path="/integrations" element={<Integrations />} />
               <Route path="/deliverability" element={<Deliverability />} />
