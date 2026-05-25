@@ -129,3 +129,12 @@ export type SlackEventType = (typeof SLACK_EVENT_TYPE)[number];
 
 export const RECIPE_CATEGORY = ['lead_management', 'email_campaigns', 'notifications', 'data_sync', 'reporting'] as const;
 export type RecipeCategory = (typeof RECIPE_CATEGORY)[number];
+
+export const AB_TEST_STATUS = ['draft', 'running', 'completed'] as const;
+export type AbTestStatus = (typeof AB_TEST_STATUS)[number];
+
+export const ANALYTICS_SNAPSHOT_TYPE = ['funnel', 'cohort', 'revenue'] as const;
+export type AnalyticsSnapshotType = (typeof ANALYTICS_SNAPSHOT_TYPE)[number];
+
+export const BENCHMARK_METRIC = ['open_rate', 'reply_rate', 'bounce_rate', 'click_rate', 'conversion_rate'] as const;
+export type BenchmarkMetric = (typeof BENCHMARK_METRIC)[number];

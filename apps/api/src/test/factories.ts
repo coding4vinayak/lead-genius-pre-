@@ -682,3 +682,77 @@ export function buildRecipe(overrides: Record<string, unknown> = {}) {
     ...overrides,
   };
 }
+
+export function buildAbTest(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'abtest_' + Math.random().toString(36).slice(2, 9),
+    sequenceStepId: 'seqstep_1',
+    name: 'Subject Line Test',
+    status: 'draft',
+    winnerVariantId: null,
+    startedAt: null,
+    completedAt: null,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildAbTestVariant(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'variant_' + Math.random().toString(36).slice(2, 9),
+    testId: 'abtest_1',
+    name: 'Variant A',
+    subject: 'Hello there',
+    body: '<p>Welcome!</p>',
+    weight: 50,
+    sentCount: 0,
+    openCount: 0,
+    clickCount: 0,
+    replyCount: 0,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildSendTimePreference(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'stp_' + Math.random().toString(36).slice(2, 9),
+    leadId: 'lead_1',
+    timezone: 'America/New_York',
+    preferredHour: 10,
+    preferredDay: 2,
+    openCount: 5,
+    dataPoints: 10,
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildAnalyticsSnapshot(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'snap_' + Math.random().toString(36).slice(2, 9),
+    type: 'funnel',
+    entityId: 'seq_1',
+    entityType: 'sequence',
+    data: { enrolled: 100, opened: 60, clicked: 30, replied: 10, converted: 5 },
+    periodStart: new Date('2025-01-01T00:00:00Z'),
+    periodEnd: new Date('2025-01-31T23:59:59Z'),
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildPerformanceBenchmark(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'bench_' + Math.random().toString(36).slice(2, 9),
+    metric: 'open_rate',
+    industryAverage: 22.5,
+    userValue: 28.3,
+    percentile: 72,
+    suggestions: ['Your open rate is above average. Keep up the good work!'],
+    calculatedAt: new Date('2025-01-01T00:00:00Z'),
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}

@@ -1072,3 +1072,77 @@ model Recipe {
 
   @@index([category])
 }
+
+model AbTest {
+  id               String          @id @default(cuid())
+  sequenceStepId   String
+  name             String
+  status           String          @default("draft")
+  winnerVariantId  String?
+  startedAt        DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  variants         AbTestVariant[]
+
+  @@index([sequenceStepId])
+  @@index([status])
+}
+
+model AbTestVariant {
+  id         String   @id @default(cuid())
+  testId     String
+  name       String
+  subject    String?
+  body       String?
+  weight     Int      @default(50)
+  sentCount  Int      @default(0)
+  openCount  Int      @default(0)
+  clickCount Int      @default(0)
+  replyCount Int      @default(0)
+  createdAt  DateTime @default(now())
+  test       AbTest   @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@index([testId])
+}
+
+model SendTimePreference {
+  id            String   @id @default(cuid())
+  leadId        String
+  timezone      String   @default("UTC")
+  preferredHour Int?
+  preferredDay  Int?
+  openCount     Int      @default(0)
+  dataPoints    Int      @default(0)
+  updatedAt     DateTime @updatedAt
+
+  @@unique([leadId])
+  @@index([timezone])
+}
+
+model AnalyticsSnapshot {
+  id          String   @id @default(cuid())
+  type        String
+  entityId    String
+  entityType  String
+  data        Json     @default("{}")
+  periodStart DateTime
+  periodEnd   DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([type, entityId])
+  @@index([periodStart, periodEnd])
+}
+
+model PerformanceBenchmark {
+  id              String   @id @default(cuid())
+  metric          String
+  industryAverage Float
+  userValue       Float
+  percentile      Float
+  suggestions     String[] @default([])
+  calculatedAt    DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([metric])
+}

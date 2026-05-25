@@ -43,6 +43,10 @@ import crmRoutes from './routes/crm.js';
 import calendarRoutes from './routes/calendar.js';
 import slackRoutes from './routes/slack.js';
 import marketplaceRoutes from './routes/marketplace.js';
+import abTestRoutes from './routes/ab-tests.js';
+import sendOptimizationRoutes from './routes/send-optimization.js';
+import advancedAnalyticsRoutes from './routes/advanced-analytics.js';
+import benchmarkRoutes from './routes/benchmarks.js';
 import { sendEmail } from './services/email.js';
 import { sendWhatsApp } from './services/whatsapp.js';
 import { renderTemplate } from './services/template.js';
@@ -93,6 +97,10 @@ app.use('/api/crm', requireAuth, crmRoutes);
 app.use('/api/calendar', calendarRoutes);
 app.use('/api/slack', requireAuth, slackRoutes);
 app.use('/api/marketplace', requireAuth, marketplaceRoutes);
+app.use('/api/ab-tests', requireAuth, abTestRoutes);
+app.use('/api/send-optimization', requireAuth, sendOptimizationRoutes);
+app.use('/api/analytics/advanced', requireAuth, advancedAnalyticsRoutes);
+app.use('/api/benchmarks', requireAuth, benchmarkRoutes);
 app.use('/webhook', webhookRoutes);
 
 if (process.env.EMAIL_SANDBOX !== 'false') {

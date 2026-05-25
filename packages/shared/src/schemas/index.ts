@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LEAD_STATUS, CHANNEL, MESSAGE_STATUS, CAMPAIGN_STATUS, SCHEDULE_TYPE, SEND_STRATEGY, AI_PROVIDER, INTENT_CATEGORY, AUTOMATION_STATUS, AUTOMATION_TRIGGER_TYPE, AUTOMATION_STEP_TYPE, AUTOMATION_EXECUTION_STATUS, WEBHOOK_EVENT, INTEGRATION_TYPE, TASK_STATUS, TASK_PRIORITY, SEQUENCE_STATUS, SEQUENCE_STEP_TYPE, SEQUENCE_ENROLLMENT_STATUS, LEAD_STAGE, CHANNEL_HEALTH_STATUS, WHATSAPP_TEMPLATE_STATUS, WHATSAPP_TEMPLATE_CATEGORY, DOMAIN_AUTH_STATUS, EMAIL_VERIFICATION_STATUS, SUPPRESSION_REASON, GDPR_CONSENT_TYPE, WARMUP_STATUS, ROTATION_STRATEGY, TRACKING_DOMAIN_STATUS, WORKSPACE_ROLE, WORKSPACE_PLAN, USAGE_METRIC, CRM_PROVIDER, CRM_SYNC_DIRECTION, CRM_SYNC_STATUS, BOOKING_STATUS, SLACK_EVENT_TYPE, RECIPE_CATEGORY } from '../types';
+import { LEAD_STATUS, CHANNEL, MESSAGE_STATUS, CAMPAIGN_STATUS, SCHEDULE_TYPE, SEND_STRATEGY, AI_PROVIDER, INTENT_CATEGORY, AUTOMATION_STATUS, AUTOMATION_TRIGGER_TYPE, AUTOMATION_STEP_TYPE, AUTOMATION_EXECUTION_STATUS, WEBHOOK_EVENT, INTEGRATION_TYPE, TASK_STATUS, TASK_PRIORITY, SEQUENCE_STATUS, SEQUENCE_STEP_TYPE, SEQUENCE_ENROLLMENT_STATUS, LEAD_STAGE, CHANNEL_HEALTH_STATUS, WHATSAPP_TEMPLATE_STATUS, WHATSAPP_TEMPLATE_CATEGORY, DOMAIN_AUTH_STATUS, EMAIL_VERIFICATION_STATUS, SUPPRESSION_REASON, GDPR_CONSENT_TYPE, WARMUP_STATUS, ROTATION_STRATEGY, TRACKING_DOMAIN_STATUS, WORKSPACE_ROLE, WORKSPACE_PLAN, USAGE_METRIC, CRM_PROVIDER, CRM_SYNC_DIRECTION, CRM_SYNC_STATUS, BOOKING_STATUS, SLACK_EVENT_TYPE, RECIPE_CATEGORY, AB_TEST_STATUS, ANALYTICS_SNAPSHOT_TYPE, BENCHMARK_METRIC } from '../types';
 
 export const leadSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
@@ -456,3 +456,55 @@ export type SlackConnectInput = z.infer<typeof slackConnectSchema>;
 export type WebhookTemplateInput = z.infer<typeof webhookTemplateSchema>;
 export type RecipeInput = z.infer<typeof recipeSchema>;
 export type RecipeActivateInput = z.infer<typeof recipeActivateSchema>;
+
+export const abTestSchema = z.object({
+  sequenceStepId: z.string().min(1, 'Sequence step ID is required'),
+  name: z.string().min(1, 'Test name is required'),
+  variants: z.array(z.object({
+    name: z.string().min(1, 'Variant name is required'),
+    subject: z.string().optional(),
+    body: z.string().optional(),
+    weight: z.number().int().min(1).max(100).default(50),
+  })).min(2, 'At least two variants are required'),
+});
+
+export const abTestVariantSchema = z.object({
+  name: z.string().min(1, 'Variant name is required'),
+  subject: z.string().optional(),
+  body: z.string().optional(),
+  weight: z.number().int().min(1).max(100).default(50),
+});
+
+export const sendTimePreferenceSchema = z.object({
+  leadId: z.string().min(1, 'Lead ID is required'),
+  timezone: z.string().default('UTC'),
+  preferredHour: z.number().int().min(0).max(23).optional(),
+  preferredDay: z.number().int().min(0).max(6).optional(),
+});
+
+export const analyticsSnapshotSchema = z.object({
+  type: z.enum(['funnel', 'cohort', 'revenue'] as const),
+  entityId: z.string().min(1),
+  entityType: z.string().min(1),
+  periodStart: z.string().datetime(),
+  periodEnd: z.string().datetime(),
+});
+
+export const sendOptimizationScheduleSchema = z.object({
+  messageId: z.string().min(1, 'Message ID is required'),
+  leadId: z.string().min(1, 'Lead ID is required'),
+});
+
+export const analyticsExportSchema = z.object({
+  type: z.enum(['funnel', 'cohort', 'revenue'] as const),
+  sequenceId: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+});
+
+export type AbTestInput = z.infer<typeof abTestSchema>;
+export type AbTestVariantInput = z.infer<typeof abTestVariantSchema>;
+export type SendTimePreferenceInput = z.infer<typeof sendTimePreferenceSchema>;
+export type AnalyticsSnapshotInput = z.infer<typeof analyticsSnapshotSchema>;
+export type SendOptimizationScheduleInput = z.infer<typeof sendOptimizationScheduleSchema>;
+export type AnalyticsExportInput = z.infer<typeof analyticsExportSchema>;

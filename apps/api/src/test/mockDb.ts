@@ -80,6 +80,11 @@ export interface MockPrismaClient {
   slackNotification: MockModel;
   webhookTemplate: MockModel;
   recipe: MockModel;
+  abTest: MockModel;
+  abTestVariant: MockModel;
+  sendTimePreference: MockModel;
+  analyticsSnapshot: MockModel;
+  performanceBenchmark: MockModel;
   $connect: MockFn;
   $disconnect: MockFn;
   $transaction: MockFn;
@@ -132,6 +137,11 @@ export function createMockPrisma(): MockPrismaClient {
     slackNotification: mockModel(),
     webhookTemplate: mockModel(),
     recipe: mockModel(),
+    abTest: mockModel(),
+    abTestVariant: mockModel(),
+    sendTimePreference: mockModel(),
+    analyticsSnapshot: mockModel(),
+    performanceBenchmark: mockModel(),
     $connect: vi.fn(),
     $disconnect: vi.fn(),
     $transaction: vi.fn().mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => fn(createMockPrisma())),
