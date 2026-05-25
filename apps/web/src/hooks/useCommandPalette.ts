@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { allItems, type CommandPaletteItem } from '../lib/commandPaletteItems';
 
@@ -144,13 +144,26 @@ export function useCommandPalette() {
     }
   }, [displayItems, selectedIndex, executeItem]);
 
-  // Global keyboard handler
+  // Store latest values in refs so the keyboard handler stays stable
+  const displayItemsRef = useRef(displayItems);
+  displayItemsRef.current = displayItems;
+
+  const executeSelectedRef = useRef(executeSelected);
+  executeSelectedRef.current = executeSelected;
+
+  const toggleRef = useRef(toggle);
+  toggleRef.current = toggle;
+
+  const closeRef = useRef(close);
+  closeRef.current = close;
+
+  // Global keyboard handler - only re-registers when isOpen changes
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       // Cmd+K / Ctrl+K to toggle
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        toggle();
+        toggleRef.current();
         return;
       }
 
@@ -158,14 +171,14 @@ export function useCommandPalette() {
 
       if (e.key === 'Escape') {
         e.preventDefault();
-        close();
+        closeRef.current();
         return;
       }
 
       if (e.key === 'ArrowDown') {
         e.preventDefault();
         setSelectedIndex((prev) =>
-          prev < displayItems.length - 1 ? prev + 1 : 0,
+          prev < displayItemsRef.current.length - 1 ? prev + 1 : 0,
         );
         return;
       }
@@ -173,20 +186,20 @@ export function useCommandPalette() {
       if (e.key === 'ArrowUp') {
         e.preventDefault();
         setSelectedIndex((prev) =>
-          prev > 0 ? prev - 1 : displayItems.length - 1,
+          prev > 0 ? prev - 1 : displayItemsRef.current.length - 1,
         );
         return;
       }
 
       if (e.key === 'Enter') {
         e.preventDefault();
-        executeSelected();
+        executeSelectedRef.current();
       }
     }
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, toggle, close, displayItems, executeSelected]);
+  }, [isOpen]);
 
   // Reset selected index when results change
   useEffect(() => {

@@ -11,17 +11,25 @@ import { useSequenceBuilder } from '../../hooks/useSequenceBuilder';
 interface SequenceBuilderProps {
   initialSteps?: SequenceStep[];
   onSave?: (steps: SequenceStep[]) => void;
+  onChange?: (steps: SequenceStep[]) => void;
 }
 
 const NODE_HEIGHT = 80;
 const NODE_GAP = 60;
 
-export default function SequenceBuilder({ initialSteps = [], onSave }: SequenceBuilderProps) {
+export default function SequenceBuilder({ initialSteps = [], onSave, onChange }: SequenceBuilderProps) {
   const { nodes, edges, selectedNodeId, setSelectedNodeId, addStep, removeStep, updateStep, reorderSteps } =
     useSequenceBuilder(initialSteps);
 
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const dragStartY = useRef(0);
+
+  // Report node changes to parent
+  const prevNodesRef = useRef(nodes);
+  if (prevNodesRef.current !== nodes) {
+    prevNodesRef.current = nodes;
+    onChange?.(nodes);
+  }
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId) || null;
 

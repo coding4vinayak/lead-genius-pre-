@@ -43,7 +43,7 @@ export default function MessageThread({ messages, leadName }: MessageThreadProps
 
         return (
           <div key={msg.id} className={`flex ${isInbound ? 'justify-start' : 'justify-end'}`} data-testid={`message-${msg.id}`}>
-            <div className={`max-w-[70%] rounded-lg p-3 ${isInbound ? 'bg-gray-100' : 'bg-blue-500 text-white'}`}>
+            <div className={`max-w-[70%] rounded-lg p-3 ${isInbound ? 'bg-[var(--color-surface-tertiary)]' : 'bg-blue-500 text-white'}`}>
               <div className="flex items-center gap-2 mb-1">
                 {isInbound ? <User size={14} /> : <Bot size={14} />}
                 <span className="text-xs font-medium">{isInbound ? leadName : 'You'}</span>

@@ -58,10 +58,10 @@ export default function CommandPalette() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="relative w-full max-w-lg bg-white rounded-xl shadow-2xl overflow-hidden"
+              className="relative w-full max-w-lg bg-[var(--color-surface)] rounded-xl shadow-2xl overflow-hidden"
             >
               {/* Search input */}
-              <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200">
+              <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--color-border)]">
                 <Search size={18} className="text-gray-400 shrink-0" />
                 <input
                   ref={inputRef}
@@ -72,7 +72,7 @@ export default function CommandPalette() {
                   className="flex-1 text-sm outline-none bg-transparent placeholder:text-gray-400"
                   data-testid="command-palette-input"
                 />
-                <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs text-gray-400 bg-gray-100 rounded border border-gray-200">
+                <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs text-gray-400 bg-[var(--color-surface-secondary)] rounded border border-[var(--color-border)]">
                   Esc
                 </kbd>
               </div>
@@ -93,7 +93,7 @@ export default function CommandPalette() {
 
                 {Object.entries(grouped).map(([category, items]) => (
                   <div key={category}>
-                    <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider bg-gray-50">
+                    <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider bg-[var(--color-surface-secondary)]">
                       {category}
                     </div>
                     {items.map((match) => {
@@ -114,15 +114,15 @@ export default function CommandPalette() {
               </div>
 
               {/* Footer hint */}
-              <div className="flex items-center gap-4 px-4 py-2 border-t border-gray-200 bg-gray-50">
+              <div className="flex items-center gap-4 px-4 py-2 border-t border-[var(--color-border)] bg-[var(--color-surface-secondary)]">
                 <span className="text-xs text-gray-400">
-                  <kbd className="px-1 py-0.5 bg-gray-100 rounded border border-gray-200 text-gray-500">↑↓</kbd> navigate
+                  <kbd className="px-1 py-0.5 bg-[var(--color-surface-tertiary)] rounded border border-[var(--color-border)] text-[var(--color-text-secondary)]">↑↓</kbd> navigate
                 </span>
                 <span className="text-xs text-gray-400">
-                  <kbd className="px-1 py-0.5 bg-gray-100 rounded border border-gray-200 text-gray-500">↵</kbd> select
+                  <kbd className="px-1 py-0.5 bg-[var(--color-surface-tertiary)] rounded border border-[var(--color-border)] text-[var(--color-text-secondary)]">↵</kbd> select
                 </span>
                 <span className="text-xs text-gray-400">
-                  <kbd className="px-1 py-0.5 bg-gray-100 rounded border border-gray-200 text-gray-500">esc</kbd> close
+                  <kbd className="px-1 py-0.5 bg-[var(--color-surface-tertiary)] rounded border border-[var(--color-border)] text-[var(--color-text-secondary)]">esc</kbd> close
                 </span>
               </div>
             </motion.div>

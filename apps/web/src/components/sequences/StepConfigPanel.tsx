@@ -128,11 +128,11 @@ export default function StepConfigPanel({ step, onUpdate, onDelete, onClose }: S
   return (
     <div
       data-testid="step-config-panel"
-      className="fixed top-0 right-0 h-full w-80 bg-white border-l border-gray-200 shadow-xl z-40 flex flex-col"
+      className="fixed top-0 right-0 h-full w-80 bg-[var(--color-surface)] border-l border-[var(--color-border)] shadow-xl z-40 flex flex-col"
     >
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        <h3 className="font-semibold text-gray-900">Configure Step</h3>
-        <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+      <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
+        <h3 className="font-semibold text-[var(--color-text)]">Configure Step</h3>
+        <button onClick={onClose} className="p-1 hover:bg-[var(--color-surface-secondary)] rounded-lg transition-colors">
           <X size={18} />
         </button>
       </div>
@@ -144,7 +144,7 @@ export default function StepConfigPanel({ step, onUpdate, onDelete, onClose }: S
         />
         {renderFields()}
       </div>
-      <div className="p-4 border-t border-gray-200 flex gap-2">
+      <div className="p-4 border-t border-[var(--color-border)] flex gap-2">
         <Button variant="secondary" size="sm" onClick={onClose} className="flex-1">Cancel</Button>
         <Button variant="danger" size="sm" onClick={() => onDelete(step.id)} className="flex-1">Delete</Button>
         <Button variant="primary" size="sm" onClick={onClose} className="flex-1">Save</Button>

@@ -53,18 +53,18 @@ export default function QuickReplyBox({ leadId, lastInboundMessageId, onSendSucc
   };
 
   return (
-    <div className="border-t border-gray-200 p-4" data-testid="quick-reply-box">
+    <div className="border-t border-[var(--color-border)] p-4" data-testid="quick-reply-box">
       <div className="flex items-center gap-2 mb-2">
         <div className="relative">
           <button
             onClick={() => setShowTemplates(!showTemplates)}
-            className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded hover:bg-gray-100 border border-gray-200"
+            className="flex items-center gap-1 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text)] px-2 py-1 rounded hover:bg-[var(--color-surface-secondary)] border border-[var(--color-border)]"
             data-testid="template-picker"
           >
             <FileText size={12} /> Templates <ChevronDown size={10} />
           </button>
           {showTemplates && (
-            <div className="absolute bottom-full left-0 mb-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50 max-h-48 overflow-y-auto" data-testid="template-dropdown">
+            <div className="absolute bottom-full left-0 mb-1 w-64 bg-[var(--color-surface)] rounded-lg shadow-lg border border-[var(--color-border)] py-1 z-50 max-h-48 overflow-y-auto" data-testid="template-dropdown">
               {templates.length === 0 ? (
                 <p className="text-xs text-gray-400 p-2">No templates available</p>
               ) : (
@@ -72,7 +72,7 @@ export default function QuickReplyBox({ leadId, lastInboundMessageId, onSendSucc
                   <button
                     key={t.id}
                     onClick={() => handleTemplateSelect(t.body)}
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 truncate"
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-[var(--color-surface-secondary)] truncate"
                   >
                     {t.name}
                   </button>
@@ -92,7 +92,7 @@ export default function QuickReplyBox({ leadId, lastInboundMessageId, onSendSucc
       </div>
       <div className="flex gap-2">
         <textarea
-          className="flex-1 text-sm p-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+          className="flex-1 text-sm p-2 border border-[var(--color-border)] rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent bg-[var(--color-surface)]"
           rows={3}
           placeholder="Type your reply..."
           value={text}

@@ -56,7 +56,7 @@ export default function ConversationList({ conversations, selectedId, onSelect, 
 
   return (
     <div className="flex flex-col h-full" data-testid="conversation-list">
-      <div className="p-3 border-b border-gray-200 space-y-2">
+      <div className="p-3 border-b border-[var(--color-border)] space-y-2">
         <div className="relative">
           <Search size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
           <input
@@ -64,14 +64,14 @@ export default function ConversationList({ conversations, selectedId, onSelect, 
             placeholder="Search conversations..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+            className="w-full pl-8 pr-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent bg-[var(--color-surface)]"
             data-testid="conversation-search"
           />
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded hover:bg-gray-100"
+            className="flex items-center gap-1 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text)] px-2 py-1 rounded hover:bg-[var(--color-surface-secondary)]"
             data-testid="filter-toggle"
           >
             <Filter size={12} /> Filters <ChevronDown size={10} />
@@ -82,7 +82,7 @@ export default function ConversationList({ conversations, selectedId, onSelect, 
             <select
               value={filterChannel}
               onChange={(e) => setFilterChannel(e.target.value)}
-              className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
+              className="text-xs border border-[var(--color-border)] rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] bg-[var(--color-surface)]"
             >
               <option value="all">All Channels</option>
               <option value="email">Email</option>
@@ -93,7 +93,7 @@ export default function ConversationList({ conversations, selectedId, onSelect, 
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
+      <div className="flex-1 overflow-y-auto divide-y divide-[var(--color-border)]">
         {filtered.map((conv) => {
           const ChannelIcon = CHANNEL_ICONS[conv.channel] || Mail;
           const channelColor = CHANNEL_COLORS[conv.channel] || 'text-gray-400';
@@ -105,7 +105,7 @@ export default function ConversationList({ conversations, selectedId, onSelect, 
               role="button"
               tabIndex={0}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSelect(conv.leadId); }}
-              className={`w-full text-left p-3 hover:bg-gray-50 transition-colors relative cursor-pointer ${
+              className={`w-full text-left p-3 hover:bg-[var(--color-surface-secondary)] transition-colors relative cursor-pointer ${
                 selectedId === conv.leadId ? 'bg-blue-50' : ''
               }`}
               data-testid={`conversation-item-${conv.leadId}`}

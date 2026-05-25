@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../lib/api';
 import { Card, Spinner, EmptyState, ErrorBanner, PageHeader } from '../components/ui';
@@ -65,6 +65,13 @@ export default function UnifiedInbox() {
   const lead = conversationData?.data?.lead || {};
   const lastInboundMessage = [...messages].reverse().find((m) => m.direction === 'inbound');
 
+  // Use refs for keyboard handler to avoid re-registering on every poll cycle
+  const conversationsRef = useRef(conversations);
+  conversationsRef.current = conversations;
+
+  const selectedLeadIdRef = useRef(selectedLeadId);
+  selectedLeadIdRef.current = selectedLeadId;
+
   // Keyboard shortcuts
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     const target = e.target as HTMLElement;
@@ -72,15 +79,16 @@ export default function UnifiedInbox() {
 
     if (e.key === 'j' || e.key === 'k') {
       e.preventDefault();
-      const currentIdx = conversations.findIndex((c) => c.leadId === selectedLeadId);
+      const convs = conversationsRef.current;
+      const currentIdx = convs.findIndex((c) => c.leadId === selectedLeadIdRef.current);
       let newIdx: number;
       if (e.key === 'j') {
-        newIdx = currentIdx < conversations.length - 1 ? currentIdx + 1 : currentIdx;
+        newIdx = currentIdx < convs.length - 1 ? currentIdx + 1 : currentIdx;
       } else {
         newIdx = currentIdx > 0 ? currentIdx - 1 : 0;
       }
-      if (conversations[newIdx]) {
-        setSelectedLeadId(conversations[newIdx].leadId);
+      if (convs[newIdx]) {
+        setSelectedLeadId(convs[newIdx].leadId);
       }
     }
 
@@ -90,16 +98,16 @@ export default function UnifiedInbox() {
       textarea?.focus();
     }
 
-    if (e.key === 's' && selectedLeadId) {
+    if (e.key === 's' && selectedLeadIdRef.current) {
       e.preventDefault();
-      starMutation.mutate(selectedLeadId);
+      starMutation.mutate(selectedLeadIdRef.current);
     }
 
-    if (e.key === 'a' && selectedLeadId) {
+    if (e.key === 'a' && selectedLeadIdRef.current) {
       e.preventDefault();
-      markReadMutation.mutate(selectedLeadId);
+      markReadMutation.mutate(selectedLeadIdRef.current);
     }
-  }, [conversations, selectedLeadId, starMutation, markReadMutation]);
+  }, [starMutation, markReadMutation]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
@@ -126,9 +134,9 @@ export default function UnifiedInbox() {
   return (
     <div data-testid="unified-inbox">
       <PageHeader title="Inbox" description="Unified conversations across all channels" />
-      <div className="flex h-[calc(100vh-12rem)] rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm">
+      <div className="flex h-[calc(100vh-12rem)] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden shadow-sm">
         {/* Left Panel - Conversation List */}
-        <div className="w-80 shrink-0 border-r border-gray-200">
+        <div className="w-80 shrink-0 border-r border-[var(--color-border)]">
           {convLoading ? (
             <Spinner />
           ) : conversations.length === 0 ? (
@@ -154,9 +162,9 @@ export default function UnifiedInbox() {
             <Spinner />
           ) : (
             <>
-              <div className="p-4 border-b border-gray-200">
+              <div className="p-4 border-b border-[var(--color-border)]">
                 <h2 className="font-semibold text-sm">{lead.name || lead.email || 'Unknown'}</h2>
-                {lead.company && <p className="text-xs text-gray-500">{lead.company}</p>}
+                {lead.company && <p className="text-xs text-[var(--color-text-secondary)]">{lead.company}</p>}
               </div>
               <MessageThread messages={messages} leadName={lead.name || 'Lead'} />
               <QuickReplyBox

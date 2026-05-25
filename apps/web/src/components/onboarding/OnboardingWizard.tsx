@@ -39,18 +39,18 @@ export default function OnboardingWizard() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-white flex flex-col" data-testid="onboarding-wizard">
+    <div className="fixed inset-0 z-50 bg-[var(--color-surface)] flex flex-col" data-testid="onboarding-wizard">
       {/* Progress header */}
-      <div className="shrink-0 px-6 py-4 border-b border-gray-200">
+      <div className="shrink-0 px-6 py-4 border-b border-[var(--color-border)]">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700" data-testid="step-indicator">
+            <span className="text-sm font-medium text-[var(--color-text-secondary)]" data-testid="step-indicator">
               Step {currentStep + 1} of {totalSteps}
             </span>
             {!isLastStep && (
               <button
                 onClick={handleSkip}
-                className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                className="flex items-center gap-1 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text)] transition-colors"
                 data-testid="skip-button"
               >
                 <SkipForward size={14} />
@@ -78,7 +78,7 @@ export default function OnboardingWizard() {
       </div>
 
       {/* Navigation footer */}
-      <div className="shrink-0 px-6 py-4 border-t border-gray-200">
+      <div className="shrink-0 px-6 py-4 border-t border-[var(--color-border)]">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <Button
             variant="ghost"

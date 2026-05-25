@@ -51,22 +51,21 @@ export function checkSpam(text: string): SpamCheckResult {
   let totalWeight = 0;
 
   for (const entry of SPAM_WORDS) {
-    let searchFrom = 0;
     const lowerWord = entry.word.toLowerCase();
+    // Escape special regex characters in the word, then use word boundaries
+    const escaped = lowerWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`\\b${escaped}\\b`, 'gi');
+    let match: RegExpExecArray | null;
 
-    while (searchFrom < lowerText.length) {
-      const idx = lowerText.indexOf(lowerWord, searchFrom);
-      if (idx === -1) break;
-
+    while ((match = regex.exec(lowerText)) !== null) {
       flaggedWords.push({
-        word: text.slice(idx, idx + entry.word.length),
-        index: idx,
+        word: text.slice(match.index, match.index + entry.word.length),
+        index: match.index,
         length: entry.word.length,
         reason: entry.reason,
         weight: entry.weight,
       });
       totalWeight += entry.weight;
-      searchFrom = idx + entry.word.length;
     }
   }
 

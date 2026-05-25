@@ -51,7 +51,7 @@ export default function LeadContextSidebar({ leadId, lead, collapsed, onToggle }
   if (collapsed) {
     return (
       <div className="flex items-start pt-4" data-testid="sidebar-collapsed">
-        <button onClick={onToggle} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" data-testid="sidebar-toggle">
+        <button onClick={onToggle} className="p-2 hover:bg-[var(--color-surface-secondary)] rounded-lg transition-colors" data-testid="sidebar-toggle">
           <PanelRightOpen size={18} className="text-gray-500" />
         </button>
       </div>
@@ -61,10 +61,10 @@ export default function LeadContextSidebar({ leadId, lead, collapsed, onToggle }
   const scoreVariant = (lead.score ?? 0) >= 70 ? 'success' : (lead.score ?? 0) >= 40 ? 'warning' : 'default';
 
   return (
-    <div className="w-[300px] shrink-0 border-l border-gray-200 overflow-y-auto flex flex-col" data-testid="lead-context-sidebar">
-      <div className="flex items-center justify-between p-3 border-b border-gray-200">
-        <span className="text-sm font-medium text-gray-700">Lead Info</span>
-        <button onClick={onToggle} className="p-1 hover:bg-gray-100 rounded transition-colors" data-testid="sidebar-toggle">
+    <div className="w-[300px] shrink-0 border-l border-[var(--color-border)] overflow-y-auto flex flex-col" data-testid="lead-context-sidebar">
+      <div className="flex items-center justify-between p-3 border-b border-[var(--color-border)]">
+        <span className="text-sm font-medium text-[var(--color-text-secondary)]">Lead Info</span>
+        <button onClick={onToggle} className="p-1 hover:bg-[var(--color-surface-secondary)] rounded transition-colors" data-testid="sidebar-toggle">
           <PanelRightClose size={16} className="text-gray-500" />
         </button>
       </div>

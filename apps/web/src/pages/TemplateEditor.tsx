@@ -170,7 +170,7 @@ export default function TemplateEditor() {
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
       {/* Top bar */}
-      <div className="flex items-center gap-3 p-4 border-b border-gray-200 bg-white shrink-0">
+      <div className="flex items-center gap-3 p-4 border-b border-[var(--color-border)] bg-[var(--color-surface)] shrink-0">
         <Button variant="ghost" size="sm" onClick={() => navigate('/templates')} type="button">
           <ArrowLeft size={16} />
         </Button>
@@ -199,7 +199,7 @@ export default function TemplateEditor() {
       {/* Split pane */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left pane - Editor */}
-        <div className="flex-1 flex flex-col border-r border-gray-200 min-w-0">
+        <div className="flex-1 flex flex-col border-r border-[var(--color-border)] min-w-0">
           {/* Toolbar row */}
           <div className="flex items-center gap-2 px-4 pt-3">
             <VariableInsertMenu onInsert={insertAtCursor} />
@@ -237,7 +237,7 @@ export default function TemplateEditor() {
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 placeholder="Write your template body here... Use {{variables}} for personalization."
-                className="w-full h-full resize-none px-3 py-3 border border-t-0 border-gray-300 rounded-b-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+                className="w-full h-full resize-none px-3 py-3 border border-t-0 border-[var(--color-border)] rounded-b-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent bg-[var(--color-surface)]"
                 data-testid="template-body-input"
               />
             </div>
@@ -246,7 +246,7 @@ export default function TemplateEditor() {
           {/* Footer: word/char count + spam score */}
           <div className="px-4 pb-3 flex items-start gap-4 shrink-0">
             <div className="flex-1">
-              <div className="text-xs text-gray-500 mb-2">
+              <div className="text-xs text-[var(--color-text-secondary)] mb-2">
                 {charCount} characters &middot; {wordCount} words
               </div>
               {/* Spam word highlights list */}
