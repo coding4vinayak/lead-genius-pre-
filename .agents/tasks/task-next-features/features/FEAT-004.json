@@ -1,0 +1,44 @@
+{
+  "id": "FEAT-004",
+  "type": "feat",
+  "description": "Public REST API + OpenAPI Docs: Generate OpenAPI 3.0 spec, serve API documentation at /api/docs, implement API key authentication, rate limiting per plan (Free: 100/hr, Pro: 1000/hr, Enterprise: 10000/hr), and API key usage tracking.",
+  "status": "in_progress",
+  "steps": [
+    "Add Prisma models: `ApiKey` (id, workspaceId, name, key:String @unique, prefix:String, permissions:String[], isActive:Boolean, lastUsedAt:DateTime?, requestCount:Int, createdAt, updatedAt) and `ApiKeyUsage` (id, apiKeyId, endpoint:String, method:String, statusCode:Int, responseTimeMs:Int, createdAt). Add indexes.",
+    "Create Prisma migration for ApiKey and ApiKeyUsage models.",
+    "Create `apps/api/src/middleware/api-key-auth.ts`: Middleware that checks for X-API-Key header, validates against DB, checks if active, updates lastUsedAt. Attaches workspace context to request. Falls through to requireAuth if no API key present.",
+    "Create `apps/api/src/middleware/rate-limiter.ts`: In-memory rate limiter (using a Map with sliding window). Rate limits based on plan: free=100 req/hr, pro=1000 req/hr, enterprise=10000 req/hr. Returns 429 with Retry-After header when exceeded. Adds X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset headers.",
+    "Create `apps/api/src/services/api-keys.ts`: Service for managing API keys. Functions: `generateApiKey(workspaceId, name, permissions)`, `revokeApiKey(keyId)`, `listApiKeys(workspaceId)`, `validateApiKey(key)`, `trackUsage(apiKeyId, endpoint, method, statusCode, responseTimeMs)`, `getUsageStats(apiKeyId, startDate, endDate)`.",
+    "Create `apps/api/src/routes/api-keys.ts`: POST /api/api-keys (create new key - returns full key only once), GET /api/api-keys (list keys for workspace, masked), DELETE /api/api-keys/:id (revoke), GET /api/api-keys/:id/usage (usage stats).",
+    "Create `apps/api/src/services/openapi-spec.ts`: Define the OpenAPI 3.0 spec as a TypeScript object covering the main public API endpoints (leads, campaigns, templates, groups, messages, sequences). Include request/response schemas, authentication (Bearer + API Key), pagination, error format.",
+    "Create `apps/api/src/routes/docs.ts`: Serve the OpenAPI spec as JSON at GET /api/docs/openapi.json. Serve a simple HTML page at GET /api/docs that renders the spec using Swagger UI CDN (inline HTML with script tag pointing to CDN).",
+    "Register docs routes (no auth required) and api-keys routes (requireAuth) in apps/api/src/index.ts. Apply rate-limiter middleware to all /api/* routes when API key auth is used.",
+    "Add Zod schemas in packages/shared/src/schemas/index.ts: `apiKeyCreateSchema`, `apiKeyUsageQuerySchema`.",
+    "Add shared types: API_KEY_PERMISSION const array in packages/shared/src/types/index.ts.",
+    "Update mockDb.ts: Add `apiKey` and `apiKeyUsage` mock models. Add `buildApiKey()` and `buildApiKeyUsage()` factories.",
+    "Create `apps/api/src/middleware/api-key-auth.test.ts`: Test API key validation, rejection of invalid/inactive keys.",
+    "Create `apps/api/src/middleware/rate-limiter.test.ts`: Test rate limiting logic, correct headers, 429 response when exceeded.",
+    "Create `apps/api/src/routes/api-keys.test.ts`: Test CRUD operations for API keys, usage stats endpoint.",
+    "Create `apps/api/src/services/api-keys.test.ts`: Test key generation, validation, usage tracking.",
+    "Frontend: Create `apps/web/src/pages/ApiKeys.tsx`: Page to manage API keys (create, list, revoke, view usage). Show key only once on creation. Copy-to-clipboard button.",
+    "Frontend: Add link to API Docs page in sidebar under a 'Developer' section."
+  ],
+  "acceptance_criteria": [
+    "API keys can be created, listed (masked), and revoked",
+    "X-API-Key header authentication works as alternative to Bearer token",
+    "Rate limiting enforces plan-based limits (100/1000/10000 per hour)",
+    "Rate limit headers (X-RateLimit-*) are present on responses when using API key",
+    "429 response returned when rate limit exceeded",
+    "GET /api/docs/openapi.json returns valid OpenAPI 3.0 spec",
+    "GET /api/docs serves documentation page",
+    "API key usage is tracked per request",
+    "All tests pass",
+    "TypeScript compiles cleanly"
+  ],
+  "verification": [
+    "cd /projects/sandbox/lead-genius-pre- && npx turbo test",
+    "cd /projects/sandbox/lead-genius-pre- && npx turbo build"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

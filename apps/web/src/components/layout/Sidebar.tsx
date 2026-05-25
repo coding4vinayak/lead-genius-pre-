@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, FolderOpen, FileText, Send, MessageSquare,
   BarChart3, Settings, Inbox, Bot, ChevronLeft, ChevronRight, LogOut,
   GitBranch, Plug, ChevronDown, ShieldCheck, Flame, Mail, CreditCard,
-  Building2, Link2, FlaskConical, TrendingUp, Target,
+  Building2, Link2, FlaskConical, TrendingUp, Target, Key,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/auth';
 import { Avatar } from '../ui';
@@ -76,6 +76,12 @@ const navSections: NavSection[] = [
       { path: '/crm-integrations', label: 'CRM', icon: Link2 },
       { path: '/groups', label: 'Groups', icon: FolderOpen },
       { path: '/settings', label: 'Settings', icon: Settings },
+    ],
+  },
+  {
+    title: 'Developer',
+    items: [
+      { path: '/api-keys', label: 'API Keys', icon: Key },
     ],
   },
 ];

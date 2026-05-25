@@ -159,3 +159,6 @@ export type SeniorityLevel = (typeof SENIORITY_LEVEL)[number];
 
 export const DEPARTMENT = ['engineering', 'marketing', 'sales', 'hr', 'finance', 'operations', 'product', 'design', 'other'] as const;
 export type Department = (typeof DEPARTMENT)[number];
+
+export const API_KEY_PERMISSION = ['read:leads', 'write:leads', 'read:campaigns', 'write:campaigns', 'read:templates', 'write:templates', 'read:messages', 'read:analytics'] as const;
+export type ApiKeyPermission = (typeof API_KEY_PERMISSION)[number];

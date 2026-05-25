@@ -798,3 +798,33 @@ export function buildEnrichmentLog(overrides: Record<string, unknown> = {}) {
     ...overrides,
   };
 }
+
+export function buildApiKey(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'apikey_' + Math.random().toString(36).slice(2, 9),
+    workspaceId: 'ws_1',
+    name: 'Test API Key',
+    key: 'hashed_key_' + Math.random().toString(36).slice(2, 18),
+    prefix: 'lg_abcd1234',
+    permissions: ['read:leads', 'write:leads'],
+    isActive: true,
+    lastUsedAt: null,
+    requestCount: 0,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildApiKeyUsage(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'akusage_' + Math.random().toString(36).slice(2, 9),
+    apiKeyId: 'apikey_1',
+    endpoint: '/api/leads',
+    method: 'GET',
+    statusCode: 200,
+    responseTimeMs: 45,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}

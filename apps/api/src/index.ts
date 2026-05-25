@@ -49,6 +49,10 @@ import advancedAnalyticsRoutes from './routes/advanced-analytics.js';
 import benchmarkRoutes from './routes/benchmarks.js';
 import notificationRoutes from './routes/notifications.js';
 import enrichmentRoutes from './routes/enrichment.js';
+import docsRoutes from './routes/docs.js';
+import apiKeyRoutes from './routes/api-keys.js';
+import { apiKeyAuth } from './middleware/api-key-auth.js';
+import { rateLimiter } from './middleware/rate-limiter.js';
 import { sendEmail } from './services/email.js';
 import { sendWhatsApp } from './services/whatsapp.js';
 import { renderTemplate } from './services/template.js';
@@ -65,11 +69,15 @@ const app = express();
 app.use(helmet());
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+app.use(apiKeyAuth);
+app.use(rateLimiter);
 
 app.get('/api/health', (_req, res) => res.json({ data: { status: 'ok', timestamp: new Date().toISOString() } }));
 
+app.use('/api/docs', docsRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/hooks', hooksRoutes);
+app.use('/api/api-keys', requireAuth, apiKeyRoutes);
 app.use('/api/leads', requireAuth, leadRoutes);
 app.use('/api/groups', requireAuth, groupRoutes);
 app.use('/api/templates', requireAuth, templateRoutes);
