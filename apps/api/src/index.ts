@@ -30,6 +30,9 @@ import eventRoutes from './routes/events.js';
 import sequenceRoutes from './routes/sequences.js';
 import channelHealthRoutes from './routes/channel-health.js';
 import whatsappTemplateRoutes from './routes/whatsapp-templates.js';
+import emailVerificationRoutes from './routes/email-verification.js';
+import suppressionRoutes from './routes/suppression.js';
+import complianceRoutes from './routes/compliance.js';
 import { sendEmail } from './services/email.js';
 import { sendWhatsApp } from './services/whatsapp.js';
 import { renderTemplate } from './services/template.js';
@@ -67,6 +70,9 @@ app.use('/api/events', requireAuth, eventRoutes);
 app.use('/api/sequences', requireAuth, sequenceRoutes);
 app.use('/api/channel-health', requireAuth, channelHealthRoutes);
 app.use('/api/whatsapp-templates', requireAuth, whatsappTemplateRoutes);
+app.use('/api/email-verification', requireAuth, emailVerificationRoutes);
+app.use('/api/suppression', requireAuth, suppressionRoutes);
+app.use('/api/compliance', complianceRoutes);
 app.use('/webhook', webhookRoutes);
 
 if (process.env.EMAIL_SANDBOX !== 'false') {

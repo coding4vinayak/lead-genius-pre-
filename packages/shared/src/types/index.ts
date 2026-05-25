@@ -78,3 +78,12 @@ export type DomainAuthStatus = (typeof DOMAIN_AUTH_STATUS)[number];
 
 export const REVIEW_STATUS = ['pending_review', 'approved', 'rejected', 'auto_sent'] as const;
 export type ReviewStatus = (typeof REVIEW_STATUS)[number];
+
+export const EMAIL_VERIFICATION_STATUS = ['valid', 'invalid', 'risky', 'unknown'] as const;
+export type EmailVerificationStatus = (typeof EMAIL_VERIFICATION_STATUS)[number];
+
+export const SUPPRESSION_REASON = ['bounce', 'unsubscribe', 'complaint'] as const;
+export type SuppressionReason = (typeof SUPPRESSION_REASON)[number];
+
+export const GDPR_CONSENT_TYPE = ['marketing_email', 'marketing_sms', 'data_processing', 'third_party_sharing'] as const;
+export type GdprConsentType = (typeof GDPR_CONSENT_TYPE)[number];

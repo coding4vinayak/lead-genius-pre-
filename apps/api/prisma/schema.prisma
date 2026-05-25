@@ -111,36 +111,129 @@ enum SequenceStepExecutionStatus {
   skipped
 }
 
+enum EmailVerificationStatus {
+  valid
+  invalid
+  risky
+  unknown
+}
+
+enum SuppressionReason {
+  bounce
+  unsubscribe
+  complaint
+}
+
+enum GdprConsentType {
+  marketing_email
+  marketing_sms
+  data_processing
+  third_party_sharing
+}
+
 model Lead {
-  id              String     @id @default(cuid())
-  email           String?
-  phone           String?
-  name            String?
-  company         String?
-  title           String?
-  source          String?
-  status          LeadStatus @default(active)
-  tags            String[]
-  customFields    Json?
-  score           Int?
-  stage           LeadStage  @default(new)
-  enrichmentData  Json?
-  intentAnalysis  Json?
-  currentStep     String?
-  nextActionAt    DateTime?
-  lastContactedAt DateTime?
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  id                 String                   @id @default(cuid())
+  email              String?
+  phone              String?
+  name               String?
+  company            String?
+  title              String?
+  source             String?
+  status             LeadStatus               @default(active)
+  tags               String[]
+  customFields       Json?
+  score              Int?
+  stage              LeadStage                @default(new)
+  verificationStatus EmailVerificationStatus?
+  enrichmentData     Json?
+  intentAnalysis     Json?
+  currentStep        String?
+  nextActionAt       DateTime?
+  lastContactedAt    DateTime?
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
 
   groupMembers        GroupMember[]
   messages            Message[]
   sequenceEnrollments SequenceEnrollment[]
+  emailVerifications  EmailVerification[]
+  unsubscribeRecords  UnsubscribeRecord[]
+  gdprConsents        GdprConsent[]
 
   @@index([status])
   @@index([email])
   @@index([tags])
   @@index([score])
   @@index([stage])
+  @@index([verificationStatus])
+}
+
+model EmailVerification {
+  id         String                  @id @default(cuid())
+  leadId     String?
+  email      String
+  status     EmailVerificationStatus @default(unknown)
+  mxValid    Boolean                 @default(false)
+  smtpValid  Boolean                 @default(false)
+  verifiedAt DateTime                @default(now())
+  createdAt  DateTime                @default(now())
+  updatedAt  DateTime                @updatedAt
+
+  lead Lead? @relation(fields: [leadId], references: [id], onDelete: SetNull)
+
+  @@index([email])
+  @@index([leadId])
+  @@index([status])
+}
+
+model SuppressionEntry {
+  id         String           @id @default(cuid())
+  email      String
+  reason     SuppressionReason
+  source     String?
+  campaignId String?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@unique([email, reason])
+  @@index([email])
+  @@index([reason])
+  @@index([campaignId])
+}
+
+model UnsubscribeRecord {
+  id             String   @id @default(cuid())
+  leadId         String?
+  email          String
+  reason         String?
+  unsubscribedAt DateTime @default(now())
+  ipAddress      String?
+  token          String?  @unique
+  messageId      String?
+  createdAt      DateTime @default(now())
+
+  lead Lead? @relation(fields: [leadId], references: [id], onDelete: SetNull)
+
+  @@index([email])
+  @@index([leadId])
+  @@index([token])
+}
+
+model GdprConsent {
+  id          String          @id @default(cuid())
+  leadId      String
+  consentType GdprConsentType
+  source      String?
+  givenAt     DateTime        @default(now())
+  revokedAt   DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@unique([leadId, consentType])
+  @@index([leadId])
+  @@index([consentType])
 }
 
 model LeadGroup {
@@ -274,6 +367,7 @@ model Settings {
   fromName           String?
   dailyGlobalLimit   Int?
   defaultMinDelayMs  Int?
+  physicalAddress    String?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 }

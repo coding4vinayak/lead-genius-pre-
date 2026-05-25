@@ -60,6 +60,10 @@ export interface MockPrismaClient {
   channelHealth: MockModel;
   whatsAppTemplate: MockModel;
   emailDomainAuth: MockModel;
+  emailVerification: MockModel;
+  suppressionEntry: MockModel;
+  unsubscribeRecord: MockModel;
+  gdprConsent: MockModel;
   $connect: MockFn;
   $disconnect: MockFn;
   $transaction: MockFn;
@@ -92,6 +96,10 @@ export function createMockPrisma(): MockPrismaClient {
     channelHealth: mockModel(),
     whatsAppTemplate: mockModel(),
     emailDomainAuth: mockModel(),
+    emailVerification: mockModel(),
+    suppressionEntry: mockModel(),
+    unsubscribeRecord: mockModel(),
+    gdprConsent: mockModel(),
     $connect: vi.fn(),
     $disconnect: vi.fn(),
     $transaction: vi.fn().mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => fn(createMockPrisma())),

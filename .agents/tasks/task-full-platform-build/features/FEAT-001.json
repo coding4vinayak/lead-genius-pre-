@@ -1,0 +1,42 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Phase 1A: Email Verification, Suppression Lists, and Unsubscribe/CAN-SPAM Compliance. Add Prisma models for email verification status, suppression lists, unsubscribe records, and GDPR consent. Build services for email validation (format + MX lookup + SMTP verify), global/per-campaign suppression list management, one-click unsubscribe (RFC 8058), and CAN-SPAM compliance (physical address in settings, auto-injected unsubscribe links). Add API routes and tests.",
+  "status": "in_progress",
+  "steps": [
+    "1. Add new Prisma models to apps/api/prisma/schema.prisma: EmailVerification (leadId, email, status: valid/invalid/risky/unknown, mxValid, smtpValid, verifiedAt), SuppressionEntry (email, reason: bounce/unsubscribe/complaint, source, campaignId?), UnsubscribeRecord (leadId, email, reason, unsubscribedAt, ipAddress?), GdprConsent (leadId, consentType, source, givenAt, revokedAt?). Add verificationStatus field to Lead model (valid/invalid/risky/unknown).",
+    "2. Create migration file at apps/api/prisma/migrations/20260529000000_add_deliverability_compliance/migration.sql with the SQL for the new models.",
+    "3. Add shared types to packages/shared/src/types/index.ts: EMAIL_VERIFICATION_STATUS, SUPPRESSION_REASON, GDPR_CONSENT_TYPE constants and types.",
+    "4. Add Zod schemas to packages/shared/src/schemas/index.ts: emailVerificationSchema, suppressionEntrySchema, unsubscribeSchema, gdprConsentSchema, complianceSettingsSchema (physicalAddress field).",
+    "5. Create apps/api/src/services/email-verification.ts: verifyEmail(email) function that checks format (regex), MX records (dns.resolveMx), and optionally SMTP verification. Also bulkVerify(emails[]) for list imports. Return {status, mxValid, smtpValid}.",
+    "6. Create apps/api/src/services/suppression-list.ts: addToSuppression(email, reason, source), removeFromSuppression(email), isEmailSuppressed(email), importSuppressionList(entries[]), exportSuppressionList(). Auto-add on bounce/complaint events.",
+    "7. Create apps/api/src/services/unsubscribe.ts: processUnsubscribe(email, leadId, reason), generateUnsubscribeLink(leadId, messageId), injectUnsubscribeHeaders(email, headers) for RFC 8058 List-Unsubscribe-Post header, getUnsubscribeLandingPage(token).",
+    "8. Create apps/api/src/services/gdpr.ts: recordConsent(leadId, type, source), revokeConsent(leadId, type), checkConsent(leadId), exportLeadData(leadId) for right-to-access, deleteLeadData(leadId) for right-to-be-forgotten.",
+    "9. Create apps/api/src/routes/email-verification.ts: POST /api/email-verification/verify (single), POST /api/email-verification/bulk-verify (batch), GET /api/email-verification/status/:email.",
+    "10. Create apps/api/src/routes/suppression.ts: GET /api/suppression (list with pagination), POST /api/suppression (add), DELETE /api/suppression/:id, POST /api/suppression/import, GET /api/suppression/export, GET /api/suppression/check/:email.",
+    "11. Create apps/api/src/routes/compliance.ts: POST /api/compliance/unsubscribe/:token (public endpoint - no auth), GET /api/compliance/unsubscribe/:token (landing page data - no auth), GET /api/compliance/gdpr/export/:leadId, DELETE /api/compliance/gdpr/:leadId, GET /api/compliance/consent/:leadId, POST /api/compliance/consent.",
+    "12. Update apps/api/src/routes/settings.ts to include physicalAddress field for CAN-SPAM compliance.",
+    "13. Register new routes in apps/api/src/index.ts. The unsubscribe endpoint should NOT require auth (public link). GDPR and suppression routes require auth.",
+    "14. Update apps/api/src/test/mockDb.ts to add new model mocks: emailVerification, suppressionEntry, unsubscribeRecord, gdprConsent.",
+    "15. Add factory functions to apps/api/src/test/factories.ts: buildEmailVerification, buildSuppressionEntry, buildUnsubscribeRecord, buildGdprConsent.",
+    "16. Create test files: apps/api/src/services/email-verification.test.ts, apps/api/src/services/suppression-list.test.ts, apps/api/src/services/unsubscribe.test.ts, apps/api/src/services/gdpr.test.ts.",
+    "17. Create route test files: apps/api/src/routes/email-verification.test.ts, apps/api/src/routes/suppression.test.ts, apps/api/src/routes/compliance.test.ts.",
+    "18. Ensure all tests pass with `npm test` from root."
+  ],
+  "acceptance_criteria": [
+    "Prisma schema has EmailVerification, SuppressionEntry, UnsubscribeRecord, GdprConsent models with proper indexes",
+    "Email verification service validates format, MX records, and returns status",
+    "Suppression list blocks sending to suppressed emails",
+    "Unsubscribe endpoint works without authentication (public link)",
+    "RFC 8058 List-Unsubscribe-Post header generation works",
+    "GDPR export returns all lead data, delete removes all lead data",
+    "All new route and service tests pass",
+    "Shared types and schemas are exported correctly"
+  ],
+  "verification": [
+    "Run `npm test` from /projects/sandbox/lead-genius-pre- and confirm all tests pass including new ones",
+    "Run `npx tsc --noEmit` in apps/api to confirm no TypeScript errors"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

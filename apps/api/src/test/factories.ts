@@ -399,3 +399,60 @@ export function buildEmailDomainAuth(overrides: Record<string, unknown> = {}) {
     ...overrides,
   };
 }
+
+export function buildEmailVerification(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'ev_' + Math.random().toString(36).slice(2, 9),
+    leadId: 'lead_1',
+    email: 'test@example.com',
+    status: 'valid',
+    mxValid: true,
+    smtpValid: true,
+    verifiedAt: new Date('2025-01-01T00:00:00Z'),
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildSuppressionEntry(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'sup_' + Math.random().toString(36).slice(2, 9),
+    email: 'suppressed@example.com',
+    reason: 'bounce',
+    source: 'system',
+    campaignId: null,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildUnsubscribeRecord(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'unsub_' + Math.random().toString(36).slice(2, 9),
+    leadId: 'lead_1',
+    email: 'user@example.com',
+    reason: 'user_request',
+    unsubscribedAt: new Date('2025-01-01T00:00:00Z'),
+    ipAddress: '127.0.0.1',
+    token: 'tok_' + Math.random().toString(36).slice(2, 18),
+    messageId: null,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildGdprConsent(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'gdpr_' + Math.random().toString(36).slice(2, 9),
+    leadId: 'lead_1',
+    consentType: 'marketing_email',
+    source: 'signup_form',
+    givenAt: new Date('2025-01-01T00:00:00Z'),
+    revokedAt: null,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
