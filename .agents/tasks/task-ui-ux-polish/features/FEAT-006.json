@@ -2,7 +2,7 @@
   "id": "FEAT-006",
   "type": "feat",
   "description": "Dark Mode + Micro-interactions - dark mode toggle using Tailwind dark class strategy with CSS variables, optimistic updates on mutations with rollback, undo toast on destructive actions, smooth list item enter/exit animations, button loading states, success/error shake animations, number count-up on dashboard KPIs, and hover card lift effects.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Update apps/web/src/styles/app.css - add dark mode CSS variables under a .dark class or [data-theme='dark'] selector. Define dark variants of all existing CSS variables (--color-surface, --color-text, --color-border, --color-sidebar, etc.). Add dark background/text defaults.",
     "Create apps/web/src/store/theme.ts - Zustand store for theme: mode ('light'|'dark'|'system'), resolvedTheme ('light'|'dark'), toggle(), setMode(). Persist to localStorage. On init, apply 'dark' class to document.documentElement based on preference. Listen for system prefers-color-scheme changes when mode is 'system'.",
@@ -40,5 +40,5 @@
     "Run `npx turbo test` from /projects/sandbox/lead-genius-pre- and confirm all tests pass"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "Card.test.tsx had to be updated to check for bg-[var(--color-surface)] instead of bg-white due to the dark mode CSS variable migration. The workers build has pre-existing TS errors unrelated to this feature. All 159 web tests pass."
 }
