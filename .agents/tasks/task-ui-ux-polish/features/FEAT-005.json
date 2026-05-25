@@ -2,7 +2,7 @@
   "id": "FEAT-005",
   "type": "feat",
   "description": "Onboarding Wizard - a multi-step first-time setup flow shown when no setup is complete. Steps: Welcome + workspace name, Connect email, Import leads, Create first template, Create first sequence, Launch. Includes progress bar, skip option, dashboard checklist widget, and confetti animation on completion.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Create apps/web/src/components/onboarding/OnboardingWizard.tsx - full-screen overlay wizard component. Multi-step flow with progress bar at top showing step X of 6. Each step renders its own content. Include 'Skip' button and 'Next'/'Back' navigation. On final step completion, show confetti animation and close wizard.",
     "Create apps/web/src/components/onboarding/steps/WelcomeStep.tsx - Step 1: Welcome message with LeadGenius branding, workspace name input field. User enters their workspace/company name.",
@@ -34,5 +34,5 @@
     "Run `npx turbo test` from /projects/sandbox/lead-genius-pre- and confirm all tests pass"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 7 onboarding wizard tests pass. Build and full test suite (150 tests) pass. Wizard is mounted in Layout.tsx behind isAuthenticated check. Checklist widget added to Dashboard. Zustand store persists isComplete and completedSteps to localStorage."
 }
