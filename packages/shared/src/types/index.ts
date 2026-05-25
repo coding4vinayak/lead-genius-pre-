@@ -87,3 +87,6 @@ export type SuppressionReason = (typeof SUPPRESSION_REASON)[number];
 
 export const GDPR_CONSENT_TYPE = ['marketing_email', 'marketing_sms', 'data_processing', 'third_party_sharing'] as const;
 export type GdprConsentType = (typeof GDPR_CONSENT_TYPE)[number];
+
+export const WARMUP_STATUS = ['warming', 'paused', 'completed'] as const;
+export type WarmupStatus = (typeof WARMUP_STATUS)[number];

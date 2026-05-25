@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LEAD_STATUS, CHANNEL, MESSAGE_STATUS, CAMPAIGN_STATUS, SCHEDULE_TYPE, SEND_STRATEGY, AI_PROVIDER, INTENT_CATEGORY, AUTOMATION_STATUS, AUTOMATION_TRIGGER_TYPE, AUTOMATION_STEP_TYPE, AUTOMATION_EXECUTION_STATUS, WEBHOOK_EVENT, INTEGRATION_TYPE, TASK_STATUS, TASK_PRIORITY, SEQUENCE_STATUS, SEQUENCE_STEP_TYPE, SEQUENCE_ENROLLMENT_STATUS, LEAD_STAGE, CHANNEL_HEALTH_STATUS, WHATSAPP_TEMPLATE_STATUS, WHATSAPP_TEMPLATE_CATEGORY, DOMAIN_AUTH_STATUS, EMAIL_VERIFICATION_STATUS, SUPPRESSION_REASON, GDPR_CONSENT_TYPE } from '../types';
+import { LEAD_STATUS, CHANNEL, MESSAGE_STATUS, CAMPAIGN_STATUS, SCHEDULE_TYPE, SEND_STRATEGY, AI_PROVIDER, INTENT_CATEGORY, AUTOMATION_STATUS, AUTOMATION_TRIGGER_TYPE, AUTOMATION_STEP_TYPE, AUTOMATION_EXECUTION_STATUS, WEBHOOK_EVENT, INTEGRATION_TYPE, TASK_STATUS, TASK_PRIORITY, SEQUENCE_STATUS, SEQUENCE_STEP_TYPE, SEQUENCE_ENROLLMENT_STATUS, LEAD_STAGE, CHANNEL_HEALTH_STATUS, WHATSAPP_TEMPLATE_STATUS, WHATSAPP_TEMPLATE_CATEGORY, DOMAIN_AUTH_STATUS, EMAIL_VERIFICATION_STATUS, SUPPRESSION_REASON, GDPR_CONSENT_TYPE, WARMUP_STATUS } from '../types';
 
 export const leadSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
@@ -262,3 +262,19 @@ export type SuppressionEntryInput = z.infer<typeof suppressionEntrySchema>;
 export type UnsubscribeInput = z.infer<typeof unsubscribeSchema>;
 export type GdprConsentInput = z.infer<typeof gdprConsentSchema>;
 export type ComplianceSettingsInput = z.infer<typeof complianceSettingsSchema>;
+
+export const warmupScheduleSchema = z.object({
+  accountEmail: z.string().email('Valid email is required'),
+  maxDailyLimit: z.number().int().positive().default(50),
+  rampPercentage: z.number().min(1).max(100).default(20),
+  bounceThreshold: z.number().min(0).max(100).default(5),
+});
+
+export const warmupScheduleUpdateSchema = z.object({
+  maxDailyLimit: z.number().int().positive().optional(),
+  rampPercentage: z.number().min(1).max(100).optional(),
+  bounceThreshold: z.number().min(0).max(100).optional(),
+});
+
+export type WarmupScheduleInput = z.infer<typeof warmupScheduleSchema>;
+export type WarmupScheduleUpdateInput = z.infer<typeof warmupScheduleUpdateSchema>;

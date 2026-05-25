@@ -1,0 +1,33 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Phase 1B: Email Warm-up System. Add warm-up scheduling, gradual volume ramping (start 5/day, increase 20% daily), per-account warm-up tracking, auto-throttle on high bounce rates. Includes Prisma model, service, queue worker, API routes, and tests.",
+  "status": "in_progress",
+  "steps": [
+    "1. Add WarmupSchedule model to apps/api/prisma/schema.prisma: id, accountEmail, status (warming/paused/completed), startDate, currentDay, currentDailyLimit, maxDailyLimit, rampPercentage (default 20), sentToday, bouncedToday, bounceThreshold (default 5%), pausedReason?, createdAt, updatedAt. Add WarmupLog model: id, scheduleId, day, sent, bounced, delivered, date.",
+    "2. Create migration at apps/api/prisma/migrations/20260529010000_add_warmup_system/migration.sql.",
+    "3. Add shared types: WARMUP_STATUS = ['warming', 'paused', 'completed'] in packages/shared/src/types/index.ts.",
+    "4. Add warmupScheduleSchema to packages/shared/src/schemas/index.ts.",
+    "5. Create apps/api/src/services/warmup.ts: createWarmupSchedule(accountEmail, config), pauseWarmup(scheduleId), resumeWarmup(scheduleId), getWarmupProgress(scheduleId), tickWarmup() - called by cron to advance daily limits (increase by rampPercentage), auto-pause if bounceRate > threshold, recordWarmupSend(scheduleId), recordWarmupBounce(scheduleId), canSendFromAccount(accountEmail) - checks if warm-up limit allows more sends today.",
+    "6. Create apps/api/src/routes/warmup.ts: GET /api/warmup (list schedules), POST /api/warmup (create schedule), GET /api/warmup/:id (get with progress), PUT /api/warmup/:id (update config), POST /api/warmup/:id/pause, POST /api/warmup/:id/resume, GET /api/warmup/:id/logs (daily logs).",
+    "7. Register warmup routes in apps/api/src/index.ts behind requireAuth.",
+    "8. Update mockDb.ts with warmupSchedule and warmupLog models.",
+    "9. Add buildWarmupSchedule and buildWarmupLog to factories.ts.",
+    "10. Create apps/api/src/services/warmup.test.ts with tests for: schedule creation sets initial limit to 5, daily tick increases limit by 20%, auto-pause on high bounce rate, canSendFromAccount returns false when limit reached.",
+    "11. Create apps/api/src/routes/warmup.test.ts with full route test coverage.",
+    "12. Ensure all tests pass."
+  ],
+  "acceptance_criteria": [
+    "Warm-up schedule starts at 5 emails/day and increases by configurable percentage",
+    "Auto-pause triggers when bounce rate exceeds threshold",
+    "canSendFromAccount correctly limits sending during warm-up",
+    "Daily warm-up logs track sent/bounced/delivered per day",
+    "All route and service tests pass"
+  ],
+  "verification": [
+    "Run `npm test` from /projects/sandbox/lead-genius-pre- and confirm all tests pass",
+    "Run `npx tsc --noEmit` in apps/api to confirm no TypeScript errors"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

@@ -456,3 +456,37 @@ export function buildGdprConsent(overrides: Record<string, unknown> = {}) {
     ...overrides,
   };
 }
+
+export function buildWarmupSchedule(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'ws_' + Math.random().toString(36).slice(2, 9),
+    accountEmail: 'sender@example.com',
+    status: 'warming',
+    startDate: new Date('2025-01-01T00:00:00Z'),
+    currentDay: 1,
+    currentDailyLimit: 5,
+    maxDailyLimit: 50,
+    rampPercentage: 20,
+    sentToday: 0,
+    bouncedToday: 0,
+    bounceThreshold: 5,
+    pausedReason: null,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildWarmupLog(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'wl_' + Math.random().toString(36).slice(2, 9),
+    scheduleId: 'ws_1',
+    day: 1,
+    sent: 5,
+    bounced: 0,
+    delivered: 5,
+    date: new Date('2025-01-01T00:00:00Z'),
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}

@@ -782,3 +782,47 @@ model EmailDomainAuth {
 
   @@index([domain])
 }
+
+enum WarmupStatus {
+  warming
+  paused
+  completed
+}
+
+model WarmupSchedule {
+  id              String       @id @default(cuid())
+  accountEmail    String
+  status          WarmupStatus @default(warming)
+  startDate       DateTime     @default(now())
+  currentDay      Int          @default(1)
+  currentDailyLimit Int        @default(5)
+  maxDailyLimit   Int          @default(50)
+  rampPercentage  Float        @default(20)
+  sentToday       Int          @default(0)
+  bouncedToday    Int          @default(0)
+  bounceThreshold Float        @default(5)
+  pausedReason    String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  logs WarmupLog[]
+
+  @@index([accountEmail])
+  @@index([status])
+}
+
+model WarmupLog {
+  id         String   @id @default(cuid())
+  scheduleId String
+  day        Int
+  sent       Int      @default(0)
+  bounced    Int      @default(0)
+  delivered  Int      @default(0)
+  date       DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  schedule WarmupSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+
+  @@index([scheduleId])
+  @@index([date])
+}
