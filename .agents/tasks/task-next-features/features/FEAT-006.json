@@ -2,7 +2,7 @@
   "id": "FEAT-006",
   "type": "feat",
   "description": "Team Collaboration: Add lead assignment rules (round-robin, territory-based, load-balanced), internal notes on leads with @mentions and notifications, activity feed per lead, and task assignment between team members with due dates.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Add Prisma models: `LeadNote` (id, leadId, authorId, body, mentions:String[], isInternal:Boolean @default(true), createdAt, updatedAt). `LeadActivity` (id, leadId, userId?, activityType:String, description:String, metadata:Json?, createdAt). `AssignmentRule` (id, workspaceId, name, type: 'round_robin'|'territory'|'load_balanced', config:Json, isActive:Boolean, priority:Int, createdAt, updatedAt). Add `assignedToId` field to Lead model (String?, foreign key to User). Add indexes.",
     "Create Prisma migration for the new models and Lead.assignedToId field.",
@@ -37,5 +37,5 @@
     "cd /projects/sandbox/lead-genius-pre- && npx turbo build"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 34 new collaboration tests pass (10 assignment, 9 notes, 15 routes). All 1208 API tests and 104 web tests pass. The pre-existing tsc build failures (smtp-server.test.ts, simulation.test.ts, websocket.ts, api-keys.ts, linkedin.ts) are not caused by this feature. Shared package and web package build cleanly. Prisma client regenerated successfully with new models."
 }
