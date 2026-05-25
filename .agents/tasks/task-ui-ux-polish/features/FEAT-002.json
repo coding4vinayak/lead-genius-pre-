@@ -1,0 +1,38 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Template Editor with Live Preview and Real-time Spam Score - a split-pane editor with rich text toolbar, variable insertion menu, live preview (desktop/mobile toggle), real-time spam score indicator, spam word highlighting, character/word count, and save as draft/template functionality. Replaces the basic textarea modal in Templates.tsx with a full-page editor.",
+  "status": "in_progress",
+  "steps": [
+    "Create apps/web/src/pages/TemplateEditor.tsx - full page with split-pane layout (left=editor, right=preview). Use URL params for template ID (edit mode) or no ID (create mode). Fetch template data on edit. Include top toolbar with template name input, channel selector, save draft button, save template button, and back navigation.",
+    "Create apps/web/src/components/templates/RichTextToolbar.tsx - toolbar above the editor area with buttons: Bold (B), Italic (I), Link (chain icon), Image (image icon), Align left/center/right. Each button wraps selected text in appropriate tags/formatting. Uses contentEditable or textarea with insertion helpers.",
+    "Create apps/web/src/components/templates/VariableInsertMenu.tsx - dropdown button labeled 'Insert Variable' that shows available variables: {{name}}, {{company}}, {{title}}, {{email}}, {{phone}}, {{booking_link}}. Clicking a variable inserts it at cursor position in the editor.",
+    "Create apps/web/src/components/templates/TemplatePreview.tsx - right pane showing rendered preview. Replace {{variables}} with sample data. Include a device toggle (desktop/mobile) that changes preview width (desktop=full, mobile=375px centered). Include a sample lead data picker dropdown to switch between different preview datasets.",
+    "Create apps/web/src/components/templates/SpamScoreIndicator.tsx - real-time spam score display (0-100). Color: green (0-30), yellow (31-60), red (61-100). Show numeric score + progress bar + label (e.g., 'Low Risk', 'Medium Risk', 'High Risk'). Calculate client-side by checking for spam trigger words.",
+    "Create apps/web/src/lib/spamChecker.ts - utility that scores template text. Check for common spam words (free, urgent, act now, limited time, click here, etc.). Return score (0-100) and array of flagged words with positions. Used by SpamScoreIndicator and for highlighting.",
+    "Add spam word highlighting in the editor - underline/highlight words flagged by spamChecker in red. Show tooltip on hover explaining why it is flagged.",
+    "Add character count and word count below the editor textarea, updating in real-time as user types.",
+    "Update apps/web/src/App.tsx - add routes '/templates/new' and '/templates/:id/edit' pointing to TemplateEditor page.",
+    "Update apps/web/src/pages/Templates.tsx - change 'New Template' button to navigate to /templates/new. Change card 'Edit' button to navigate to /templates/:id/edit.",
+    "Create apps/web/src/components/templates/TemplateEditor.test.tsx - test that the editor renders split pane, that typing updates preview, that variable insertion works, that spam score updates, and that device toggle changes preview width."
+  ],
+  "acceptance_criteria": [
+    "Routes /templates/new and /templates/:id/edit render the full template editor page",
+    "Split-pane layout shows editor on left and live preview on right",
+    "Rich text toolbar provides bold, italic, link, image, alignment controls",
+    "Variable insertion menu lists all variables and inserts at cursor on click",
+    "Preview updates in real-time as user types in the editor",
+    "Desktop/mobile toggle changes the preview container width",
+    "Spam score (0-100) displays and updates in real-time with color coding",
+    "Spam trigger words are highlighted in the editor",
+    "Character and word counts display below the editor",
+    "TypeScript compiles without errors",
+    "Tests pass"
+  ],
+  "verification": [
+    "Run `npx turbo build` from /projects/sandbox/lead-genius-pre- and confirm no TypeScript errors",
+    "Run `npx turbo test` from /projects/sandbox/lead-genius-pre- and confirm all tests pass"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
