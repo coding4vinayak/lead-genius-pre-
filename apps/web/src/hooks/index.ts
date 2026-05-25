@@ -169,3 +169,50 @@ export function useSendLinkedInMessage() {
     },
   });
 }
+
+export function useLeadNotes(leadId: string, params?: Record<string, unknown>) {
+  return useQuery({
+    queryKey: ['lead-notes', leadId, params],
+    queryFn: () => api.get(`/leads/${leadId}/notes`, { params }).then((r) => r.data),
+    enabled: !!leadId,
+  });
+}
+
+export function useCreateNote() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ leadId, body }: { leadId: string; body: string }) =>
+      api.post(`/leads/${leadId}/notes`, { body }).then((r) => r.data),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['lead-notes', variables.leadId] });
+      queryClient.invalidateQueries({ queryKey: ['lead-activity', variables.leadId] });
+    },
+  });
+}
+
+export function useLeadActivity(leadId: string, params?: Record<string, unknown>) {
+  return useQuery({
+    queryKey: ['lead-activity', leadId, params],
+    queryFn: () => api.get(`/leads/${leadId}/activity`, { params }).then((r) => r.data),
+    enabled: !!leadId,
+  });
+}
+
+export function useAssignLead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ leadId, userId }: { leadId: string; userId: string }) =>
+      api.post(`/leads/${leadId}/assign`, { userId }).then((r) => r.data),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['lead', variables.leadId] });
+      queryClient.invalidateQueries({ queryKey: ['lead-activity', variables.leadId] });
+    },
+  });
+}
+
+export function useAssignmentRules() {
+  return useQuery({
+    queryKey: ['assignment-rules'],
+    queryFn: () => api.get('/assignment-rules').then((r) => r.data),
+  });
+}

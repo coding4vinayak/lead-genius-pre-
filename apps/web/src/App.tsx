@@ -24,6 +24,7 @@ import AdvancedAnalytics from './pages/AdvancedAnalytics';
 import Benchmarks from './pages/Benchmarks';
 import ApiKeys from './pages/ApiKeys';
 import LinkedIn from './pages/LinkedIn';
+import AssignmentRules from './pages/AssignmentRules';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 
@@ -59,6 +60,7 @@ export default function App() {
               <Route path="/benchmarks" element={<Benchmarks />} />
               <Route path="/api-keys" element={<ApiKeys />} />
               <Route path="/linkedin" element={<LinkedIn />} />
+              <Route path="/assignment-rules" element={<AssignmentRules />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Layout>

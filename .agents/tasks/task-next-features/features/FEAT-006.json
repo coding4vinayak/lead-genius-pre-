@@ -1,0 +1,41 @@
+{
+  "id": "FEAT-006",
+  "type": "feat",
+  "description": "Team Collaboration: Add lead assignment rules (round-robin, territory-based, load-balanced), internal notes on leads with @mentions and notifications, activity feed per lead, and task assignment between team members with due dates.",
+  "status": "in_progress",
+  "steps": [
+    "Add Prisma models: `LeadNote` (id, leadId, authorId, body, mentions:String[], isInternal:Boolean @default(true), createdAt, updatedAt). `LeadActivity` (id, leadId, userId?, activityType:String, description:String, metadata:Json?, createdAt). `AssignmentRule` (id, workspaceId, name, type: 'round_robin'|'territory'|'load_balanced', config:Json, isActive:Boolean, priority:Int, createdAt, updatedAt). Add `assignedToId` field to Lead model (String?, foreign key to User). Add indexes.",
+    "Create Prisma migration for the new models and Lead.assignedToId field.",
+    "Create `apps/api/src/services/lead-assignment.ts`: Assignment service. Functions: `assignLead(leadId, userId?)` - manual assignment. `autoAssignLead(leadId, workspaceId)` - runs active assignment rules in priority order. `roundRobinAssign(workspaceId)` - rotates through team members. `territoryAssign(leadId, workspaceId)` - assigns based on lead country/state matching rule config. `loadBalancedAssign(workspaceId)` - assigns to member with fewest active leads.",
+    "Create `apps/api/src/services/lead-notes.ts`: Notes service. Functions: `createNote(leadId, authorId, body)` - creates note, extracts @mentions, notifies mentioned users. `getNotes(leadId)` - returns notes for a lead. `updateNote(noteId, body)`. `deleteNote(noteId)`. Mention detection: parse @username patterns from body text.",
+    "Create `apps/api/src/services/lead-activity.ts`: Activity feed service. Functions: `logActivity(leadId, userId, type, description, metadata?)` - logs activity. `getActivityFeed(leadId, page, pageSize)` - paginated feed. Activity types: 'note_added', 'assigned', 'stage_changed', 'message_sent', 'message_received', 'enriched', 'tag_added', 'tag_removed'.",
+    "Create `apps/api/src/routes/collaboration.ts`: POST /api/leads/:id/notes - create note. GET /api/leads/:id/notes - list notes. PUT /api/notes/:id - update note. DELETE /api/notes/:id - delete note. GET /api/leads/:id/activity - activity feed. POST /api/leads/:id/assign - assign lead to user. GET /api/assignment-rules - list rules. POST /api/assignment-rules - create rule. PUT /api/assignment-rules/:id - update rule. DELETE /api/assignment-rules/:id - delete rule.",
+    "Add Zod schemas in packages/shared/src/schemas/index.ts: `leadNoteSchema`, `leadAssignSchema`, `assignmentRuleSchema`, `activityQuerySchema`.",
+    "Add shared types: ASSIGNMENT_RULE_TYPE, ACTIVITY_TYPE const arrays in packages/shared/src/types/index.ts.",
+    "Update mockDb.ts: Add `leadNote`, `leadActivity`, `assignmentRule` mock models. Add builder factories for each.",
+    "Create `apps/api/src/services/lead-assignment.test.ts`: Test round-robin cycling, territory matching, load-balanced assignment.",
+    "Create `apps/api/src/services/lead-notes.test.ts`: Test note creation, @mention extraction, note CRUD.",
+    "Create `apps/api/src/routes/collaboration.test.ts`: Test all collaboration endpoints.",
+    "Register collaboration routes in apps/api/src/index.ts with requireAuth middleware.",
+    "Hook activity logging into existing operations: When a lead is assigned, note is added, stage changes, or message sent/received - call logActivity(). Add to relevant routes/services (leads.ts route for assign, event-bus subscriber for message events).",
+    "Frontend: Create `apps/web/src/components/ui/LeadNotes.tsx`: Notes panel with rich text input, @mention autocomplete (searches team members), and notes list.",
+    "Frontend: Create `apps/web/src/components/ui/ActivityFeed.tsx`: Timeline component showing lead activities with icons per type, timestamps, and user avatars.",
+    "Frontend: Create `apps/web/src/pages/AssignmentRules.tsx`: Page to manage assignment rules (create, edit, delete, toggle active, set priority order)."
+  ],
+  "acceptance_criteria": [
+    "Lead assignment works with round-robin, territory, and load-balanced strategies",
+    "Notes can be created with @mentions that notify mentioned users",
+    "Activity feed captures key lead events (assignment, notes, messages, stage changes)",
+    "Assignment rules can be CRUD managed and prioritized",
+    "POST /api/leads/:id/assign assigns lead and logs activity",
+    "GET /api/leads/:id/activity returns paginated activity feed",
+    "All collaboration tests pass",
+    "TypeScript compiles cleanly"
+  ],
+  "verification": [
+    "cd /projects/sandbox/lead-genius-pre- && npx turbo test",
+    "cd /projects/sandbox/lead-genius-pre- && npx turbo build"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

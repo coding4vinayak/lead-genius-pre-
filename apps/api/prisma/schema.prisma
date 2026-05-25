@@ -161,6 +161,7 @@ model Lead {
   currentStep        String?
   nextActionAt       DateTime?
   lastContactedAt    DateTime?
+  assignedToId       String?
   createdAt          DateTime                 @default(now())
   updatedAt          DateTime                 @updatedAt
 
@@ -173,6 +174,9 @@ model Lead {
   calendarBookings    CalendarBooking[]
   enrichmentLogs      EnrichmentLog[]
   linkedInProfile     LinkedInProfile?
+  leadNotes           LeadNote[]
+  leadActivities      LeadActivity[]
+  assignedTo          User?                    @relation("AssignedLeads", fields: [assignedToId], references: [id], onDelete: SetNull)
 
   @@index([status])
   @@index([email])
@@ -180,6 +184,7 @@ model Lead {
   @@index([score])
   @@index([stage])
   @@index([verificationStatus])
+  @@index([assignedToId])
 }
 
 model EmailVerification {
@@ -366,6 +371,8 @@ model User {
   workspaceMembers WorkspaceMember[]
   notifications Notification[]
   notificationPreferences NotificationPreference[]
+  leadNotes LeadNote[]
+  assignedLeads Lead[] @relation("AssignedLeads")
 
   @@index([email])
   @@index([resetToken])
@@ -943,11 +950,12 @@ model Workspace {
   createdAt              DateTime      @default(now())
   updatedAt              DateTime      @updatedAt
 
-  members       WorkspaceMember[]
-  invites       WorkspaceInvite[]
-  usageRecords  UsageRecord[]
-  billingEvents BillingEvent[]
-  apiKeys       ApiKey[]
+  members        WorkspaceMember[]
+  invites        WorkspaceInvite[]
+  usageRecords   UsageRecord[]
+  billingEvents  BillingEvent[]
+  apiKeys        ApiKey[]
+  assignmentRules AssignmentRule[]
 
   @@index([slug])
   @@index([plan])
@@ -1282,4 +1290,55 @@ model LinkedInMessage {
   @@index([leadId])
   @@index([profileId])
   @@index([status])
+}
+
+model LeadNote {
+  id         String   @id @default(cuid())
+  leadId     String
+  authorId   String
+  body       String
+  mentions   String[] @default([])
+  isInternal Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  lead   Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([authorId])
+}
+
+model LeadActivity {
+  id           String   @id @default(cuid())
+  leadId       String
+  userId       String?
+  activityType String
+  description  String
+  metadata     Json?
+  createdAt    DateTime @default(now())
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([activityType])
+  @@index([createdAt])
+}
+
+model AssignmentRule {
+  id          String   @id @default(cuid())
+  workspaceId String
+  name        String
+  type        String
+  config      Json     @default("{}")
+  isActive    Boolean  @default(true)
+  priority    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([isActive])
+  @@index([priority])
 }

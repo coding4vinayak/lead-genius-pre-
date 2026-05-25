@@ -5,6 +5,7 @@ import {
   BarChart3, Settings, Inbox, Bot, ChevronLeft, ChevronRight, LogOut,
   GitBranch, Plug, ChevronDown, ShieldCheck, Flame, Mail, CreditCard,
   Building2, Link2, FlaskConical, TrendingUp, Target, Key, Linkedin,
+  UserCog,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/auth';
 import { Avatar } from '../ui';
@@ -80,6 +81,7 @@ const navSections: NavSection[] = [
     items: [
       { path: '/integrations', label: 'Integrations', icon: Plug },
       { path: '/crm-integrations', label: 'CRM', icon: Link2 },
+      { path: '/assignment-rules', label: 'Assignment Rules', icon: UserCog },
       { path: '/groups', label: 'Groups', icon: FolderOpen },
       { path: '/settings', label: 'Settings', icon: Settings },
     ],

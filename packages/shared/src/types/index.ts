@@ -168,3 +168,9 @@ export type Department = (typeof DEPARTMENT)[number];
 
 export const API_KEY_PERMISSION = ['read:leads', 'write:leads', 'read:campaigns', 'write:campaigns', 'read:templates', 'write:templates', 'read:messages', 'read:analytics'] as const;
 export type ApiKeyPermission = (typeof API_KEY_PERMISSION)[number];
+
+export const ASSIGNMENT_RULE_TYPE = ['round_robin', 'territory', 'load_balanced'] as const;
+export type AssignmentRuleType = (typeof ASSIGNMENT_RULE_TYPE)[number];
+
+export const ACTIVITY_TYPE = ['note_added', 'assigned', 'unassigned', 'stage_changed', 'message_sent', 'message_received', 'enriched', 'tag_added', 'tag_removed', 'created'] as const;
+export type ActivityType = (typeof ACTIVITY_TYPE)[number];

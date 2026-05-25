@@ -858,3 +858,45 @@ export function buildLinkedInMessage(overrides: Record<string, unknown> = {}) {
     ...overrides,
   };
 }
+
+export function buildLeadNote(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'note_' + Math.random().toString(36).slice(2, 9),
+    leadId: 'lead_1',
+    authorId: 'user_1',
+    body: 'This is a test note',
+    mentions: [],
+    isInternal: true,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildLeadActivity(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'activity_' + Math.random().toString(36).slice(2, 9),
+    leadId: 'lead_1',
+    userId: 'user_1',
+    activityType: 'note_added',
+    description: 'Note added to lead',
+    metadata: null,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildAssignmentRule(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'rule_' + Math.random().toString(36).slice(2, 9),
+    workspaceId: 'ws_1',
+    name: 'Round Robin Rule',
+    type: 'round_robin',
+    config: {},
+    isActive: true,
+    priority: 0,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
