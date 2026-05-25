@@ -66,6 +66,9 @@ export interface MockPrismaClient {
   gdprConsent: MockModel;
   warmupSchedule: MockModel;
   warmupLog: MockModel;
+  emailAccount: MockModel;
+  trackingDomain: MockModel;
+  accountRotationConfig: MockModel;
   $connect: MockFn;
   $disconnect: MockFn;
   $transaction: MockFn;
@@ -104,6 +107,9 @@ export function createMockPrisma(): MockPrismaClient {
     gdprConsent: mockModel(),
     warmupSchedule: mockModel(),
     warmupLog: mockModel(),
+    emailAccount: mockModel(),
+    trackingDomain: mockModel(),
+    accountRotationConfig: mockModel(),
     $connect: vi.fn(),
     $disconnect: vi.fn(),
     $transaction: vi.fn().mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => fn(createMockPrisma())),

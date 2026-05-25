@@ -90,3 +90,12 @@ export type GdprConsentType = (typeof GDPR_CONSENT_TYPE)[number];
 
 export const WARMUP_STATUS = ['warming', 'paused', 'completed'] as const;
 export type WarmupStatus = (typeof WARMUP_STATUS)[number];
+
+export const EMAIL_ACCOUNT_STATUS = ['active', 'inactive', 'warming', 'suspended'] as const;
+export type EmailAccountStatus = (typeof EMAIL_ACCOUNT_STATUS)[number];
+
+export const ROTATION_STRATEGY = ['round_robin', 'weighted', 'failover'] as const;
+export type RotationStrategy = (typeof ROTATION_STRATEGY)[number];
+
+export const TRACKING_DOMAIN_STATUS = ['pending', 'verified', 'failed'] as const;
+export type TrackingDomainStatus = (typeof TRACKING_DOMAIN_STATUS)[number];

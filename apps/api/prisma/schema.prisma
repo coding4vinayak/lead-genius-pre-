@@ -789,6 +789,68 @@ enum WarmupStatus {
   completed
 }
 
+enum RotationStrategy {
+  round_robin
+  weighted
+  failover
+}
+
+enum TrackingDomainStatus {
+  pending
+  verified
+  failed
+}
+
+model EmailAccount {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  name            String?
+  smtpHost        String?
+  smtpPort        Int?
+  smtpUser        String?
+  smtpPass        String?
+  sendgridApiKey  String?
+  dailyLimit      Int      @default(100)
+  sentToday       Int      @default(0)
+  warmupStatus    WarmupStatus @default(warming)
+  isActive        Boolean  @default(true)
+  reputationScore Float    @default(100)
+  bounceRate      Float    @default(0)
+  lastResetAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([email])
+  @@index([isActive])
+  @@index([warmupStatus])
+}
+
+model TrackingDomain {
+  id            String               @id @default(cuid())
+  domain        String               @unique
+  cnameTarget   String
+  cnameVerified Boolean              @default(false)
+  status        TrackingDomainStatus @default(pending)
+  verifiedAt    DateTime?
+  isDefault     Boolean              @default(false)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  @@index([domain])
+  @@index([isDefault])
+}
+
+model AccountRotationConfig {
+  id               String           @id @default(cuid())
+  strategy         RotationStrategy @default(round_robin)
+  weights          Json?
+  skipOnDailyLimit Boolean          @default(true)
+  skipOnHighBounce Boolean          @default(true)
+  bounceThreshold  Float            @default(10)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+}
+
 model WarmupSchedule {
   id              String       @id @default(cuid())
   accountEmail    String

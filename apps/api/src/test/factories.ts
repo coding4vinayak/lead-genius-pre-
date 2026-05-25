@@ -490,3 +490,55 @@ export function buildWarmupLog(overrides: Record<string, unknown> = {}) {
     ...overrides,
   };
 }
+
+export function buildEmailAccount(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'ea_' + Math.random().toString(36).slice(2, 9),
+    email: 'sender@example.com',
+    name: 'Main Sender',
+    smtpHost: 'smtp.example.com',
+    smtpPort: 587,
+    smtpUser: 'user',
+    smtpPass: 'pass',
+    sendgridApiKey: null,
+    dailyLimit: 100,
+    sentToday: 0,
+    warmupStatus: 'completed',
+    isActive: true,
+    reputationScore: 95,
+    bounceRate: 2,
+    lastResetAt: new Date('2025-01-01T00:00:00Z'),
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildTrackingDomain(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'td_' + Math.random().toString(36).slice(2, 9),
+    domain: 'track.example.com',
+    cnameTarget: 'tracking.leadgenius.io',
+    cnameVerified: false,
+    status: 'pending',
+    verifiedAt: null,
+    isDefault: false,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+export function buildAccountRotationConfig(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'arc_' + Math.random().toString(36).slice(2, 9),
+    strategy: 'round_robin',
+    weights: null,
+    skipOnDailyLimit: true,
+    skipOnHighBounce: true,
+    bounceThreshold: 10,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+    updatedAt: new Date('2025-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LEAD_STATUS, CHANNEL, MESSAGE_STATUS, CAMPAIGN_STATUS, SCHEDULE_TYPE, SEND_STRATEGY, AI_PROVIDER, INTENT_CATEGORY, AUTOMATION_STATUS, AUTOMATION_TRIGGER_TYPE, AUTOMATION_STEP_TYPE, AUTOMATION_EXECUTION_STATUS, WEBHOOK_EVENT, INTEGRATION_TYPE, TASK_STATUS, TASK_PRIORITY, SEQUENCE_STATUS, SEQUENCE_STEP_TYPE, SEQUENCE_ENROLLMENT_STATUS, LEAD_STAGE, CHANNEL_HEALTH_STATUS, WHATSAPP_TEMPLATE_STATUS, WHATSAPP_TEMPLATE_CATEGORY, DOMAIN_AUTH_STATUS, EMAIL_VERIFICATION_STATUS, SUPPRESSION_REASON, GDPR_CONSENT_TYPE, WARMUP_STATUS } from '../types';
+import { LEAD_STATUS, CHANNEL, MESSAGE_STATUS, CAMPAIGN_STATUS, SCHEDULE_TYPE, SEND_STRATEGY, AI_PROVIDER, INTENT_CATEGORY, AUTOMATION_STATUS, AUTOMATION_TRIGGER_TYPE, AUTOMATION_STEP_TYPE, AUTOMATION_EXECUTION_STATUS, WEBHOOK_EVENT, INTEGRATION_TYPE, TASK_STATUS, TASK_PRIORITY, SEQUENCE_STATUS, SEQUENCE_STEP_TYPE, SEQUENCE_ENROLLMENT_STATUS, LEAD_STAGE, CHANNEL_HEALTH_STATUS, WHATSAPP_TEMPLATE_STATUS, WHATSAPP_TEMPLATE_CATEGORY, DOMAIN_AUTH_STATUS, EMAIL_VERIFICATION_STATUS, SUPPRESSION_REASON, GDPR_CONSENT_TYPE, WARMUP_STATUS, ROTATION_STRATEGY, TRACKING_DOMAIN_STATUS } from '../types';
 
 export const leadSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
@@ -278,3 +278,45 @@ export const warmupScheduleUpdateSchema = z.object({
 
 export type WarmupScheduleInput = z.infer<typeof warmupScheduleSchema>;
 export type WarmupScheduleUpdateInput = z.infer<typeof warmupScheduleUpdateSchema>;
+
+export const emailAccountSchema = z.object({
+  email: z.string().email('Valid email is required'),
+  name: z.string().optional(),
+  smtpHost: z.string().optional(),
+  smtpPort: z.number().int().positive().optional(),
+  smtpUser: z.string().optional(),
+  smtpPass: z.string().optional(),
+  sendgridApiKey: z.string().optional(),
+  dailyLimit: z.number().int().positive().default(100),
+  isActive: z.boolean().default(true),
+});
+
+export const emailAccountUpdateSchema = z.object({
+  name: z.string().optional(),
+  smtpHost: z.string().optional(),
+  smtpPort: z.number().int().positive().optional(),
+  smtpUser: z.string().optional(),
+  smtpPass: z.string().optional(),
+  sendgridApiKey: z.string().optional(),
+  dailyLimit: z.number().int().positive().optional(),
+  isActive: z.boolean().optional(),
+});
+
+export const trackingDomainSchema = z.object({
+  domain: z.string().min(1, 'Domain is required'),
+  cnameTarget: z.string().min(1, 'CNAME target is required'),
+  isDefault: z.boolean().default(false),
+});
+
+export const accountRotationConfigSchema = z.object({
+  strategy: z.enum(ROTATION_STRATEGY).default('round_robin'),
+  weights: z.record(z.number()).optional(),
+  skipOnDailyLimit: z.boolean().default(true),
+  skipOnHighBounce: z.boolean().default(true),
+  bounceThreshold: z.number().min(0).max(100).default(10),
+});
+
+export type EmailAccountInput = z.infer<typeof emailAccountSchema>;
+export type EmailAccountUpdateInput = z.infer<typeof emailAccountUpdateSchema>;
+export type TrackingDomainInput = z.infer<typeof trackingDomainSchema>;
+export type AccountRotationConfigInput = z.infer<typeof accountRotationConfigSchema>;

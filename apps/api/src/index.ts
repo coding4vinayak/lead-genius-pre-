@@ -34,6 +34,9 @@ import emailVerificationRoutes from './routes/email-verification.js';
 import suppressionRoutes from './routes/suppression.js';
 import complianceRoutes from './routes/compliance.js';
 import warmupRoutes from './routes/warmup.js';
+import emailAccountRoutes from './routes/email-accounts.js';
+import trackingDomainRoutes from './routes/tracking-domains.js';
+import reputationRoutes from './routes/reputation.js';
 import { sendEmail } from './services/email.js';
 import { sendWhatsApp } from './services/whatsapp.js';
 import { renderTemplate } from './services/template.js';
@@ -75,6 +78,9 @@ app.use('/api/email-verification', requireAuth, emailVerificationRoutes);
 app.use('/api/suppression', requireAuth, suppressionRoutes);
 app.use('/api/compliance', complianceRoutes);
 app.use('/api/warmup', requireAuth, warmupRoutes);
+app.use('/api/email-accounts', requireAuth, emailAccountRoutes);
+app.use('/api/tracking-domains', requireAuth, trackingDomainRoutes);
+app.use('/api/reputation', requireAuth, reputationRoutes);
 app.use('/webhook', webhookRoutes);
 
 if (process.env.EMAIL_SANDBOX !== 'false') {
