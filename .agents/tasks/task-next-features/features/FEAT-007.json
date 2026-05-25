@@ -1,0 +1,40 @@
+{
+  "id": "FEAT-007",
+  "type": "feat",
+  "description": "Production Infrastructure: Add comprehensive health checks (basic + readiness), graceful shutdown with queue draining, request correlation IDs propagated through logs, structured logging enhancements, error tracking service interface (Sentry-compatible), and request/response timing middleware.",
+  "status": "in_progress",
+  "steps": [
+    "Enhance `apps/api/src/index.ts` health check: Replace the inline `/api/health` handler with a proper route file. Create `apps/api/src/routes/health.ts` with two endpoints: GET /health (basic liveness - always returns {status:'ok'}), GET /ready (readiness - checks DB connection via prisma.$queryRaw`SELECT 1` and Redis via ioredis ping).",
+    "Create `apps/api/src/middleware/correlation-id.ts`: Middleware that reads X-Request-Id header from incoming request (or generates a UUID if not present), attaches it to req object (req.correlationId), sets X-Request-Id on response headers, and stores in AsyncLocalStorage for access throughout the request lifecycle.",
+    "Update `apps/api/src/lib/logger.ts`: Enhance Winston logger to include correlation ID in every log entry. Create a `getCorrelationId()` helper that reads from AsyncLocalStorage. Add a Winston format that injects correlationId into log metadata automatically.",
+    "Create `apps/api/src/middleware/request-timing.ts`: Middleware that records request start time, and on response finish logs the request method, path, status code, and duration in ms. Log slow requests (>1000ms) at warn level, others at info level.",
+    "Create `apps/api/src/services/error-tracking.ts`: Error tracking service interface. Functions: `captureException(error, context?)` - logs error with full context (correlationId, userId, endpoint, request body). `captureMessage(message, level, context?)`. `setUser(userId)`. Interface is Sentry-compatible but implementation uses the logger (no actual Sentry SDK needed). Designed so swapping in real Sentry is a one-file change.",
+    "Enhance graceful shutdown in `apps/api/src/index.ts`: On SIGTERM/SIGINT: (1) stop accepting new connections (server.close()), (2) set health endpoint to return 503, (3) wait for in-flight requests to complete (max 30s timeout), (4) close BullMQ workers gracefully (worker.close()), (5) disconnect Redis, (6) disconnect Prisma, (7) exit. Export server reference for testing.",
+    "Update `apps/api/src/middleware/error-handler.ts`: Integrate with error-tracking service. On 500 errors, call captureException with full request context including correlationId.",
+    "Apply correlation-id middleware and request-timing middleware in apps/api/src/index.ts (before routes, after body parser).",
+    "Create `apps/api/src/middleware/correlation-id.test.ts`: Test that correlation ID is generated when not present, preserved when provided, and set on response.",
+    "Create `apps/api/src/middleware/request-timing.test.ts`: Test that timing header/log is produced, slow requests logged at warn.",
+    "Create `apps/api/src/routes/health.test.ts` (replace existing): Test /health returns 200 always. Test /ready returns 200 when DB+Redis ok, 503 when DB fails, 503 when Redis fails.",
+    "Create `apps/api/src/services/error-tracking.test.ts`: Test captureException logs correctly with context.",
+    "Add correlation ID type declaration to Express Request interface in apps/api/src/middleware/auth.ts (extend the global declaration).",
+    "Update the existing SIGTERM handler to use the new graceful shutdown logic."
+  ],
+  "acceptance_criteria": [
+    "GET /health returns 200 with {status: 'ok'} always (liveness probe)",
+    "GET /ready returns 200 when DB and Redis are reachable, 503 otherwise",
+    "Every request gets a correlation ID (from header or auto-generated UUID)",
+    "Correlation ID appears in all log entries for that request",
+    "X-Request-Id response header is set on every response",
+    "Slow requests (>1000ms) are logged at warn level with timing",
+    "Error tracking captures 500 errors with full context",
+    "Graceful shutdown drains connections and closes resources in order",
+    "All infrastructure tests pass",
+    "TypeScript compiles cleanly"
+  ],
+  "verification": [
+    "cd /projects/sandbox/lead-genius-pre- && npx turbo test",
+    "cd /projects/sandbox/lead-genius-pre- && npx turbo build"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

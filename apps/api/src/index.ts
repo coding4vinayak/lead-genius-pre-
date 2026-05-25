@@ -6,6 +6,9 @@ import { prisma } from './db.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { requireAuth } from './middleware/auth.js';
 import { logger } from './lib/logger.js';
+import { correlationIdMiddleware } from './middleware/correlation-id.js';
+import { requestTimingMiddleware } from './middleware/request-timing.js';
+import healthRoutes, { setShuttingDown } from './routes/health.js';
 import { createCampaignWorker, createSendWorker, createAiWorker, createEventWorker, createAutomationWorker, createWebhookWorker, createSequenceWorker, campaignQueue, sendQueue } from './queue/index.js';
 
 import authRoutes from './routes/auth.js';
@@ -65,16 +68,21 @@ import { createEtherealAccount } from './services/external-email-test.js';
 import { initWebSocket } from './services/websocket.js';
 import { subscribeToEvent } from './services/event-bus.js';
 import { createNotification } from './services/notification.js';
+import type { Server } from 'node:http';
 
 const app = express();
 
+// Core middleware
 app.use(helmet());
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+app.use(correlationIdMiddleware);
+app.use(requestTimingMiddleware);
 app.use(apiKeyAuth);
 app.use(rateLimiter);
 
-app.get('/api/health', (_req, res) => res.json({ data: { status: 'ok', timestamp: new Date().toISOString() } }));
+// Health routes (no auth required)
+app.use('/', healthRoutes);
 
 app.use('/api/docs', docsRoutes);
 app.use('/api/auth', authRoutes);
@@ -128,6 +136,41 @@ if (process.env.EMAIL_SANDBOX !== 'false') {
 
 app.use(errorHandler);
 
+let server: Server | undefined;
+const workers: Array<{ close: () => Promise<void> }> = [];
+
+async function shutdown() {
+  logger.info('Shutting down gracefully...');
+  setShuttingDown(true);
+
+  // Stop accepting new connections
+  if (server) {
+    await new Promise<void>((resolve) => {
+      server!.close(() => resolve());
+      // Timeout for in-flight requests
+      setTimeout(() => resolve(), 30000);
+    });
+  }
+
+  // Close BullMQ workers
+  for (const worker of workers) {
+    try {
+      await worker.close();
+    } catch {
+      // ignore worker close errors during shutdown
+    }
+  }
+
+  // Stop SMTP server
+  await stopSmtpServer().catch(() => {});
+
+  // Disconnect Prisma
+  await prisma.$disconnect().catch(() => {});
+
+  logger.info('Shutdown complete');
+  process.exit(0);
+}
+
 async function start() {
   await prisma.$connect();
   logger.info('Database connected');
@@ -141,7 +184,7 @@ async function start() {
     }
   }
 
-  await createCampaignWorker(async (job) => {
+  const campaignWorker = await createCampaignWorker(async (job) => {
     const { campaignId } = job.data;
     logger.info(`Executing campaign ${campaignId}`);
 
@@ -224,14 +267,16 @@ async function start() {
     await db.campaign.update({ where: { id: campaignId }, data: { sentCount: { increment: queued } } });
     logger.info(`Campaign ${campaignId}: queued ${queued} messages`);
   });
+  if (campaignWorker) workers.push(campaignWorker);
 
-  await createSendWorker(async (job) => {
+  const sendWorker = await createSendWorker(async (job) => {
     const { messageId, channel, to, subject, body } = job.data;
     if (channel === 'email') await sendEmail(to, subject || '', body, messageId);
     else if (channel === 'whatsapp') await sendWhatsApp(to, body, messageId);
   });
+  if (sendWorker) workers.push(sendWorker);
 
-  await createAiWorker(async (job) => {
+  const aiWorker = await createAiWorker(async (job) => {
     const { name, data } = job;
     const { analyzeMessageIntent, generateReplyDraft, enrichLeadData, generateCampaignSequence } = await import('./services/ai/index.js');
 
@@ -245,14 +290,16 @@ async function start() {
       await generateCampaignSequence(data.name, data.industry, data.product, data.channel, data.targetCount);
     }
   });
+  if (aiWorker) workers.push(aiWorker);
 
-  await createAutomationWorker(async (job) => {
+  const automationWorker = await createAutomationWorker(async (job) => {
     const { processAutomationStep } = await import('./services/automation-engine.js');
     const { executionId, stepId, payload } = job.data;
     await processAutomationStep(executionId, stepId, payload);
   });
+  if (automationWorker) workers.push(automationWorker);
 
-  await createEventWorker(async (job) => {
+  const eventWorker = await createEventWorker(async (job) => {
     const { executeAutomation } = await import('./services/automation-engine.js');
     const { type, payload } = job.data;
     const automations = await db.automation.findMany({
@@ -276,18 +323,21 @@ async function start() {
         .map((webhook) => createDelivery(webhook.id, type, payload || {}))
     );
   });
+  if (eventWorker) workers.push(eventWorker);
 
-  await createWebhookWorker(async (job) => {
+  const webhookWorker = await createWebhookWorker(async (job) => {
     const { deliverWebhook } = await import('./services/webhook-delivery.js');
     const { deliveryId } = job.data;
     await deliverWebhook(deliveryId);
   });
+  if (webhookWorker) workers.push(webhookWorker);
 
-  await createSequenceWorker(async (job) => {
+  const sequenceWorker = await createSequenceWorker(async (job) => {
     const { processSequenceStep } = await import('./services/sequence-engine.js');
     const { enrollmentId } = job.data;
     await processSequenceStep(enrollmentId);
   });
+  if (sequenceWorker) workers.push(sequenceWorker);
 
   // Sequence ticker - runs every 60 seconds
   setInterval(async () => {
@@ -328,7 +378,7 @@ async function start() {
     }
   });
 
-  const server = app.listen(config.port, () => {
+  server = app.listen(config.port, () => {
     logger.info(`API server running on port ${config.port}`);
   });
 
@@ -341,10 +391,7 @@ start().catch((err) => {
   process.exit(1);
 });
 
-process.on('SIGTERM', async () => {
-  await stopSmtpServer();
-  await prisma.$disconnect();
-  process.exit(0);
-});
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
 
 export default app;
