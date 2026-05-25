@@ -2,7 +2,7 @@
   "id": "FEAT-007",
   "type": "feat",
   "description": "Frontend UI pages for all 5 phases: Deliverability dashboard, Email Accounts management, Warm-up progress, Billing/Plans page, Workspace settings, CRM integrations page, A/B test manager, and Advanced Analytics with funnels and cohorts. Add new pages and navigation items to the sidebar.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "1. Add new pages to apps/web/src/pages/: Deliverability.tsx (verification status, suppression lists, compliance), EmailAccounts.tsx (account CRUD, rotation config, connection test), Warmup.tsx (schedules, progress charts, daily logs), Billing.tsx (current plan, upgrade/downgrade, usage meters, invoice history), Workspace.tsx (team members, invites, roles), CrmIntegrations.tsx (HubSpot connect, sync status, field mapping), AbTesting.tsx (test list, variant editor, results), AdvancedAnalytics.tsx (funnel viz, cohort charts, revenue attribution, CSV export), Benchmarks.tsx (metrics vs industry, suggestions).",
     "2. Update apps/web/src/components/layout/Sidebar.tsx to add new navigation items grouped by section: Deliverability (Email Verification, Warm-up, Accounts), Billing (Plans, Workspace), Intelligence (A/B Tests, Analytics, Benchmarks).",
@@ -26,5 +26,5 @@
     "Run `npm run build` from /projects/sandbox/lead-genius-pre- and confirm build succeeds (including web)"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "Fixed pre-existing TS error in Sequences.tsx line 111 by changing `{seq.description && (...)}` to ternary `{seq.description ? (...) : null}` since `unknown` type from Record<string, unknown> is not assignable to ReactNode. The workers package has pre-existing build errors (unrelated to web) but the web build passes cleanly. All 104 web tests pass and all 996 API tests pass."
 }
