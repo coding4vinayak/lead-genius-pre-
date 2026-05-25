@@ -2,7 +2,7 @@
   "id": "FEAT-003",
   "type": "feat",
   "description": "Unified Inbox with Conversation Threads - a three-panel inbox (conversation list, message thread, lead context sidebar) with channel indicators, quick reply with template picker and AI suggest, keyboard shortcuts, search/filter, and read/star/assign actions. Replaces the existing AiInbox.tsx with a richer unified experience.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Create apps/web/src/pages/UnifiedInbox.tsx - main page with three-panel layout: left (conversation list, 320px), center (message thread, flex-1), right (lead context sidebar, 300px collapsible). Use existing /inbox API endpoints. Add keyboard shortcut listener (j/k navigate, r reply, a archive, s star).",
     "Create apps/web/src/components/inbox/ConversationList.tsx - left panel showing conversations sorted by recency with unread at top. Each item shows: lead name, last message preview, timestamp, unread indicator (bold + dot), channel badge (Mail/MessageSquare/Linkedin icon). Include search input at top and filter dropdown (by channel, date range, intent).",
@@ -32,5 +32,5 @@
     "Run `npx turbo test` from /projects/sandbox/lead-genius-pre- and confirm all tests pass"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 134 tests pass (9 new tests for UnifiedInbox). Web build succeeds. Workers build has pre-existing TS errors (unrelated). Fixed nested button HTML warning by converting outer button to div with role=button. The /inbox route now renders UnifiedInbox; AiInbox.tsx file preserved for reference."
 }
