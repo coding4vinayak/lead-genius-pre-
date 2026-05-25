@@ -1,19 +1,22 @@
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Sun, Moon } from 'lucide-react';
 import Sidebar from './Sidebar';
 import CommandPalette from '../CommandPalette';
 import OnboardingWizard from '../onboarding/OnboardingWizard';
 import { useAppStore } from '../../store';
 import { useAuthStore } from '../../store/auth';
 import { useOnboardingStore } from '../../store/onboarding';
+import { useThemeStore } from '../../store/theme';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const sidebarCollapsed = useAppStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useAppStore((s) => s.toggleSidebar);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const onboardingComplete = useOnboardingStore((s) => s.isComplete);
+  const resolvedTheme = useThemeStore((s) => s.resolvedTheme);
+  const toggleTheme = useThemeStore((s) => s.toggle);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
 
@@ -38,7 +41,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="h-14 border-b border-gray-200 bg-white flex items-center justify-between px-4 md:px-6 shrink-0">
+        <header className="h-14 border-b border-[var(--color-border)] bg-[var(--color-surface)] flex items-center justify-between px-4 md:px-6 shrink-0">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileOpen(true)}
@@ -47,16 +50,25 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             >
               <Menu size={20} />
             </button>
-            <nav className="text-sm text-gray-500 hidden sm:block">
-              <span className="text-gray-900 font-medium">
+            <nav className="text-sm text-[var(--color-text-secondary)] hidden sm:block">
+              <span className="text-[var(--color-text)] font-medium">
                 {location.pathname === '/' ? 'Dashboard' : location.pathname.slice(1).charAt(0).toUpperCase() + location.pathname.slice(2)}
               </span>
             </nav>
           </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg hover:bg-[var(--color-surface-tertiary)] transition-colors text-[var(--color-text-secondary)]"
+              aria-label="Toggle dark mode"
+            >
+              {resolvedTheme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+          </div>
         </header>
 
         {/* Main content with page transition */}
-        <main className="flex-1 overflow-auto bg-gray-50">
+        <main className="flex-1 overflow-auto bg-[var(--color-surface-secondary)]">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}

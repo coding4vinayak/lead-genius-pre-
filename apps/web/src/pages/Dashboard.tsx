@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { BarChart3, Send, Users, TrendingUp } from 'lucide-react';
 import { Card, ErrorBanner, PageHeader, StatCard, Skeleton, SkeletonCard } from '../components/ui';
+import { CountUp } from '../components/ui/CountUp';
+import { AnimatedList } from '../components/ui/AnimatedList';
 import OnboardingChecklist from '../components/onboarding/OnboardingChecklist';
 import api from '../lib/api';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -12,7 +14,7 @@ function DashboardSkeleton() {
     <div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+          <div key={i} className="bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] p-4 space-y-3">
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-8 w-16" />
           </div>
@@ -49,31 +51,35 @@ export default function Dashboard() {
   return (
     <div>
       <PageHeader title="Dashboard" description="Real-time overview of your communication engine" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <AnimatedList className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard
+          key="total-leads"
           icon={<Users size={20} />}
           label="Total Leads"
-          value={d.totalLeads}
+          value={<CountUp value={d.totalLeads} />}
         />
         <StatCard
+          key="active-campaigns"
           icon={<BarChart3 size={20} />}
           label="Active Campaigns"
-          value={d.activeCampaigns}
+          value={<CountUp value={d.activeCampaigns} />}
         />
         <StatCard
+          key="sent-today"
           icon={<Send size={20} />}
           label="Sent Today"
-          value={d.totalSent}
+          value={<CountUp value={d.totalSent} />}
         />
         <StatCard
+          key="delivery-rate"
           icon={<TrendingUp size={20} />}
           label="Delivery Rate"
-          value={`${d.deliveryRate}%`}
+          value={<CountUp value={d.deliveryRate} suffix="%" />}
         />
-      </div>
+      </AnimatedList>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="p-4">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Sends (Last 7 Days)</h3>
+          <h3 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-4">Sends (Last 7 Days)</h3>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={timeline.data || []}>
               <XAxis dataKey="date" tick={{ fontSize: 12 }} />
@@ -85,7 +91,7 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </Card>
         <Card className="p-4">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Channel Breakdown</h3>
+          <h3 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-4">Channel Breakdown</h3>
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie data={[
