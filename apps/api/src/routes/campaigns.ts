@@ -4,6 +4,7 @@ import { AppError } from '../lib/errors.js';
 import { validate } from '../middleware/validate.js';
 import { campaignSchema, paginationSchema } from '@leadgenius/shared';
 import { campaignQueue } from '../queue/index.js';
+import { dispatchWebhookEvent } from '../services/webhook-delivery.js';
 
 const router = Router();
 
@@ -72,6 +73,7 @@ router.post('/:id/activate', async (req: Request, res: Response, next: NextFunct
     });
 
     await campaignQueue.add('execute-campaign', { campaignId: updated.id });
+    dispatchWebhookEvent('campaign.started', { campaignId: updated.id, campaign: updated });
     res.json({ data: updated });
   } catch (err) { next(err); }
 });
@@ -82,6 +84,7 @@ router.post('/:id/pause', async (req: Request, res: Response, next: NextFunction
       where: { id: (req.params.id as string) },
       data: { status: 'paused' },
     });
+    dispatchWebhookEvent('campaign.paused', { campaignId: data.id, campaign: data });
     res.json({ data });
   } catch (err) { next(err); }
 });
@@ -103,6 +106,7 @@ router.post('/:id/stop', async (req: Request, res: Response, next: NextFunction)
       where: { id: (req.params.id as string) },
       data: { status: 'completed' },
     });
+    dispatchWebhookEvent('campaign.completed', { campaignId: data.id, campaign: data });
     res.json({ data });
   } catch (err) { next(err); }
 });

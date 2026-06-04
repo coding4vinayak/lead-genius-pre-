@@ -3,6 +3,8 @@ import { prisma } from '../db.js';
 import { AppError } from '../lib/errors.js';
 import { validate } from '../middleware/validate.js';
 import { leadSchema, paginationSchema, exportSchema } from '@leadgenius/shared';
+import { z } from 'zod';
+import { dispatchWebhookEvent } from '../services/webhook-delivery.js';
 
 const router = Router();
 
@@ -54,6 +56,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
 router.post('/', validate(leadSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = await prisma.lead.create({ data: req.body });
+    dispatchWebhookEvent('lead.created', { leadId: data.id, lead: data });
     res.status(201).json({ data });
   } catch (err) { next(err); }
 });
@@ -62,6 +65,7 @@ router.put('/:id', validate(leadSchema), async (req: Request, res: Response, nex
   try {
     const id = req.params.id as string;
     const data = await prisma.lead.update({ where: { id }, data: req.body });
+    dispatchWebhookEvent('lead.updated', { leadId: id, lead: data });
     res.json({ data });
   } catch (err) { next(err); }
 });
@@ -70,6 +74,7 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
   try {
     const id = req.params.id as string;
     await prisma.lead.delete({ where: { id } });
+    dispatchWebhookEvent('lead.deleted', { leadId: id });
     res.json({ data: { id } });
   } catch (err) { next(err); }
 });
@@ -149,6 +154,59 @@ router.post('/export', validate(exportSchema), async (req: Request, res: Respons
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename="leads-export.csv"');
     res.send(csv);
+  } catch (err) { next(err); }
+});
+
+const leadStageSchema = z.object({
+  stage: z.enum(['new', 'contacted', 'qualified', 'demo', 'proposal', 'negotiation', 'closed_won', 'closed_lost']),
+});
+
+const leadNotesSchema = z.object({
+  notes: z.string().optional(),
+});
+
+router.put('/:id/stage', validate(leadStageSchema), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = req.params.id as string;
+    const { stage } = req.body;
+    const data = await prisma.lead.update({ where: { id }, data: { stage } });
+    await prisma.leadTimeline.create({
+      data: { leadId: id, action: 'stage_change', detail: `Stage changed to ${stage}` },
+    });
+    dispatchWebhookEvent('lead.stage_changed', { leadId: id, stage, lead: data });
+    res.json({ data });
+  } catch (err) { next(err); }
+});
+
+router.put('/:id/notes', validate(leadNotesSchema), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = req.params.id as string;
+    const { notes } = req.body;
+    const data = await prisma.lead.update({ where: { id }, data: { notes } });
+    res.json({ data });
+  } catch (err) { next(err); }
+});
+
+router.get('/:id/timeline', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = req.params.id as string;
+    const data = await prisma.leadTimeline.findMany({
+      where: { leadId: id },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+    res.json({ data });
+  } catch (err) { next(err); }
+});
+
+router.post('/:id/timeline', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = req.params.id as string;
+    const { action, detail, metadata } = req.body as { action: string; detail?: string; metadata?: any };
+    const data = await prisma.leadTimeline.create({
+      data: { leadId: id, action, detail, metadata },
+    });
+    res.status(201).json({ data });
   } catch (err) { next(err); }
 });
 

@@ -1,6 +1,9 @@
 export const LEAD_STATUS = ['active', 'unsubscribed', 'bounced', 'invalid'] as const;
 export type LeadStatus = (typeof LEAD_STATUS)[number];
 
+export const LEAD_STAGE = ['new', 'contacted', 'qualified', 'demo', 'proposal', 'negotiation', 'closed_won', 'closed_lost'] as const;
+export type LeadStage = (typeof LEAD_STAGE)[number];
+
 export const CHANNEL = ['email', 'whatsapp'] as const;
 export type Channel = (typeof CHANNEL)[number];
 

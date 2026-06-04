@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, FolderOpen, FileText, Send, MessageSquare,
-  BarChart3, Settings, Inbox, Bot, ChevronLeft, ChevronRight, LogOut,
+  BarChart3, Settings, Inbox, Bot, Key, Globe, ChevronLeft, ChevronRight, LogOut,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/auth';
 
@@ -15,6 +15,8 @@ const navItems = [
   { path: '/analytics', label: 'Analytics', icon: BarChart3 },
   { path: '/inbox', label: 'AI Inbox', icon: Inbox },
   { path: '/agent', label: 'AI Agent', icon: Bot },
+  { path: '/api-keys', label: 'API Keys', icon: Key },
+  { path: '/webhooks', label: 'Webhooks', icon: Globe },
   { path: '/settings', label: 'Settings', icon: Settings },
 ];
 

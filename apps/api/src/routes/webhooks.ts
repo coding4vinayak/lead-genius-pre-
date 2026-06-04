@@ -36,6 +36,9 @@ router.post('/email', verifyWebhook, async (req: Request, res: Response, next: N
         },
       });
       await prisma.lead.update({ where: { id: lead.id }, data: { lastContactedAt: new Date() } });
+      await prisma.leadTimeline.create({
+        data: { leadId: lead.id, action: 'email_reply', detail: `Inbound email reply: ${subject || 'no subject'}`, metadata: { messageId: inboundMsg.id } },
+      });
 
       await aiQueue.add('analyze-intent', { messageId: inboundMsg.id });
     }
@@ -57,6 +60,9 @@ router.post('/whatsapp', verifyWebhook, async (req: Request, res: Response, next
       },
     });
     await prisma.lead.update({ where: { id: lead.id }, data: { lastContactedAt: new Date() } });
+    await prisma.leadTimeline.create({
+      data: { leadId: lead.id, action: 'whatsapp_reply', detail: `Inbound WhatsApp message`, metadata: { messageId: inboundMsg.id } },
+    });
 
     await aiQueue.add('analyze-intent', { messageId: inboundMsg.id });
     res.json({ data: { processed: true } });

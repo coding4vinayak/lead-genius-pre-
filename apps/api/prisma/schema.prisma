@@ -59,6 +59,17 @@ enum AiProvider {
   anthropic
 }
 
+enum LeadStage {
+  new
+  contacted
+  qualified
+  demo
+  proposal
+  negotiation
+  closed_won
+  closed_lost
+}
+
 enum IntentCategory {
   interested
   not_interested
@@ -80,9 +91,11 @@ model Lead {
   title           String?
   source          String?
   status          LeadStatus @default(active)
+  stage           LeadStage  @default(new)
   tags            String[]
   customFields    Json?
   score           Int?
+  notes           String?
   enrichmentData  Json?
   intentAnalysis  Json?
   currentStep     String?
@@ -93,11 +106,27 @@ model Lead {
 
   groupMembers GroupMember[]
   messages     Message[]
+  timeline     LeadTimeline[]
 
   @@index([status])
   @@index([email])
   @@index([tags])
   @@index([score])
+  @@index([stage])
+}
+
+model LeadTimeline {
+  id        String   @id @default(cuid())
+  leadId    String
+  action    String
+  detail    String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([createdAt])
 }
 
 model LeadGroup {
@@ -211,6 +240,55 @@ model User {
 
   @@index([email])
   @@index([resetToken])
+}
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  name        String
+  keyPrefix   String
+  keyHash     String    @unique
+  userId      String
+  active      Boolean   @default(true)
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([keyHash])
+  @@index([userId])
+}
+
+model WebhookEndpoint {
+  id        String   @id @default(cuid())
+  name      String
+  url       String
+  events    String[]
+  secret    String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  deliveries WebhookDelivery[]
+
+  @@index([active])
+}
+
+model WebhookDelivery {
+  id           String   @id @default(cuid())
+  endpointId   String
+  event        String
+  payload      Json
+  status       String   @default("pending")
+  responseCode Int?
+  responseBody String?
+  deliveredAt  DateTime?
+  errorMessage String?
+  createdAt    DateTime @default(now())
+
+  endpoint WebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+
+  @@index([endpointId])
+  @@index([status])
 }
 
 model Settings {

@@ -1,0 +1,30 @@
+module.exports = {
+  apps: [
+    {
+      name: 'leadgenius-api',
+      cwd: './apps/api',
+      script: 'src/index.ts',
+      interpreter: 'npx',
+      interpreterArgs: 'tsx',
+      env: { PORT: '3001' },
+      watch: false,
+      max_memory_restart: '500M',
+      error_file: './logs/api-error.log',
+      out_file: './logs/api-out.log',
+      merge_logs: true,
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+    },
+    {
+      name: 'leadgenius-web',
+      cwd: './apps/web',
+      script: 'node_modules/.bin/vite',
+      args: '--port 3000 --host',
+      watch: false,
+      max_memory_restart: '500M',
+      error_file: './logs/web-error.log',
+      out_file: './logs/web-out.log',
+      merge_logs: true,
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+    },
+  ],
+};

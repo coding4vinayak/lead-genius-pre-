@@ -55,6 +55,9 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
 router.post('/', validate(messageSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = await prisma.message.create({ data: req.body });
+    await prisma.leadTimeline.create({
+      data: { leadId: req.body.leadId, action: 'message_sent', detail: `${req.body.channel} ${req.body.direction}: ${req.body.subject || 'no subject'}`, metadata: { messageId: data.id } },
+    });
     res.status(201).json({ data });
   } catch (err) { next(err); }
 });

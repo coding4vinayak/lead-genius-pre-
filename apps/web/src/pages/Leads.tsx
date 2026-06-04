@@ -1,25 +1,79 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Plus, Trash2, Tags, ChevronRight, X, Phone, Building2, Briefcase, Target, Calendar, Bot, MessageSquare, Activity } from 'lucide-react';
+import { Search, Plus, Trash2, Tags, ChevronRight, X, Phone, Building2, Briefcase, Target, Calendar, Bot, MessageSquare, Activity, History, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../lib/api';
 import { Card, Button, Input, Select, Badge, Spinner, EmptyState, ErrorBanner, PageHeader, Modal } from '../components/ui';
+import { LEAD_STAGE } from '@leadgenius/shared';
 
-function LeadDetailDrawer({ leadId, onClose }: { leadId: string | null; onClose: () => void }) {
+function LeadDetailDrawer({ leadId, onClose, onEdit, onDelete }: { leadId: string | null; onClose: () => void; onEdit?: (lead: any) => void; onDelete?: (id: string) => void }) {
+  const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ['lead-detail', leadId],
     queryFn: () => api.get(`/leads/${leadId}`).then((r) => r.data),
     enabled: !!leadId,
   });
 
+  const { data: timelineData } = useQuery({
+    queryKey: ['lead-timeline', leadId],
+    queryFn: () => api.get(`/leads/${leadId}/timeline`).then((r) => r.data),
+    enabled: !!leadId,
+  });
+
+  const updateStage = useMutation({
+    mutationFn: (stage: string) => api.put(`/leads/${leadId}/stage`, { stage }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lead-detail', leadId] });
+      queryClient.invalidateQueries({ queryKey: ['lead-timeline', leadId] });
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      toast.success('Stage updated');
+    },
+  });
+
+  const saveNotes = useMutation({
+    mutationFn: (notes: string) => api.put(`/leads/${leadId}/notes`, { notes }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lead-detail', leadId] });
+      toast.success('Notes saved');
+    },
+  });
+
+  const addTimelineEntry = useMutation({
+    mutationFn: (params: { action: string; detail?: string; metadata?: any }) => api.post(`/leads/${leadId}/timeline`, params),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lead-timeline', leadId] });
+      toast.success('Note added');
+    },
+  });
+
   const lead = data?.data;
+  const timeline = timelineData?.data || [];
+
+  const stageColors: Record<string, string> = {
+    new: 'bg-gray-100 text-gray-700',
+    contacted: 'bg-blue-100 text-blue-700',
+    qualified: 'bg-indigo-100 text-indigo-700',
+    demo: 'bg-purple-100 text-purple-700',
+    proposal: 'bg-amber-100 text-amber-700',
+    negotiation: 'bg-orange-100 text-orange-700',
+    closed_won: 'bg-green-100 text-green-700',
+    closed_lost: 'bg-red-100 text-red-700',
+  };
 
   return (
     <div className={`fixed inset-y-0 right-0 z-40 w-full max-w-xl bg-white shadow-2xl border-l border-gray-200 transform transition-transform duration-300 ${leadId ? 'translate-x-0' : 'translate-x-full'}`}>
       <div className="h-full flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold">Lead Details</h2>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg"><X size={20} /></button>
+          <div className="flex items-center gap-2">
+            {lead && (
+              <>
+                <button onClick={() => onEdit?.(lead)} className="text-sm text-blue-600 hover:text-blue-800 font-medium">Edit</button>
+                <button onClick={() => { if (confirm('Delete this lead?')) onDelete?.(lead.id); }} className="text-sm text-red-600 hover:text-red-800 font-medium">Delete</button>
+              </>
+            )}
+            <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg"><X size={20} /></button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
@@ -44,6 +98,81 @@ function LeadDetailDrawer({ leadId, onClose }: { leadId: string | null; onClose:
                   <div className="flex gap-1 flex-wrap mt-1">{lead.tags.map((t: string) => <Badge key={t}>{t}</Badge>)}</div>
                 </div>
               )}
+            </Card>
+
+            <Card className="p-4">
+              <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2"><Target size={16} /> Pipeline Stage</h3>
+              <div className="flex flex-wrap gap-2">
+                {LEAD_STAGE.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => updateStage.mutate(s)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${lead.stage === s ? 'ring-2 ring-blue-500 ' + stageColors[s] : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
+                  >
+                    {s.replace('_', ' ')}
+                  </button>
+                ))}
+              </div>
+            </Card>
+
+            <Card className="p-4">
+              <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2"><FileText size={16} /> Notes</h3>
+              <textarea
+                className="w-full border border-gray-300 rounded-lg p-2 text-sm resize-none"
+                rows={3}
+                defaultValue={lead.notes || ''}
+                placeholder="Write notes about this lead..."
+                onBlur={(e) => {
+                  const val = e.target.value.trim();
+                  if (val !== (lead.notes || '').trim()) saveNotes.mutate(val);
+                }}
+              />
+            </Card>
+
+            <Card className="p-4">
+              <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2"><History size={16} /> Timeline ({timeline.length})</h3>
+              <div className="space-y-2 max-h-60 overflow-y-auto mb-3">
+                {timeline.length === 0 ? (
+                  <p className="text-xs text-gray-400">No activity yet</p>
+                ) : (
+                  timeline.map((entry: any) => (
+                    <div key={entry.id} className="flex gap-3 text-sm border-l-2 border-gray-200 pl-3 py-1">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-xs capitalize">{entry.action.replace(/_/g, ' ')}</p>
+                        {entry.detail && <p className="text-xs text-gray-500">{entry.detail}</p>}
+                      </div>
+                      <span className="text-xs text-gray-400 whitespace-nowrap">{new Date(entry.createdAt).toLocaleDateString()}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm"
+                  placeholder="Add a note to timeline..."
+                  id="timeline-note-input"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const input = e.currentTarget;
+                      const val = input.value.trim();
+                      if (val) {
+                        addTimelineEntry.mutate({ action: 'note', detail: val });
+                        input.value = '';
+                      }
+                    }
+                  }}
+                />
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    const input = document.getElementById('timeline-note-input') as HTMLInputElement;
+                    if (input?.value.trim()) {
+                      addTimelineEntry.mutate({ action: 'note', detail: input.value.trim() });
+                      input.value = '';
+                    }
+                  }}
+                >Add</Button>
+              </div>
             </Card>
 
             {lead.groupMembers?.length > 0 && (
@@ -241,7 +370,7 @@ export default function Leads() {
           )}
         </div>
 
-        <LeadDetailDrawer leadId={detailLeadId} onClose={() => setDetailLeadId(null)} />
+        <LeadDetailDrawer leadId={detailLeadId} onClose={() => setDetailLeadId(null)} onEdit={(lead) => { setEditing(lead); setDetailLeadId(null); setShowModal(true); }} onDelete={(id) => { api.delete(`/leads/${id}`).then(() => { queryClient.invalidateQueries({ queryKey: ['leads'] }); setDetailLeadId(null); toast.success('Lead deleted'); }).catch((e) => toast.error(e.message)); }} />
         {detailLeadId && <div className="fixed inset-0 z-30 bg-black/20" onClick={() => setDetailLeadId(null)} />}
       </div>
 

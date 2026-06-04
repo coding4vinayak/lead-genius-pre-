@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LEAD_STATUS, CHANNEL, MESSAGE_STATUS, CAMPAIGN_STATUS, SCHEDULE_TYPE, SEND_STRATEGY, AI_PROVIDER, INTENT_CATEGORY } from '../types';
+import { LEAD_STATUS, LEAD_STAGE, CHANNEL, MESSAGE_STATUS, CAMPAIGN_STATUS, SCHEDULE_TYPE, SEND_STRATEGY, AI_PROVIDER, INTENT_CATEGORY } from '../types/index.js';
 
 export const leadSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
@@ -9,7 +9,9 @@ export const leadSchema = z.object({
   title: z.string().optional(),
   source: z.string().optional(),
   status: z.enum(LEAD_STATUS).default('active'),
+  stage: z.enum(LEAD_STAGE).default('new'),
   tags: z.array(z.string()).default([]),
+  notes: z.string().optional(),
   customFields: z.record(z.string()).optional(),
 });
 

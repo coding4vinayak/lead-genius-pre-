@@ -133,6 +133,10 @@ router.post('/:messageId/send-draft', async (req: Request, res: Response, next: 
       },
     });
 
+    await prisma.leadTimeline.create({
+      data: { leadId: original.leadId, action: 'ai_reply', detail: `AI-generated ${original.channel} reply: ${draftSubject || 'Re: Your message'}`, metadata: { messageId: reply.id } },
+    });
+
     res.json({ data: reply });
   } catch (err) { next(err); }
 });

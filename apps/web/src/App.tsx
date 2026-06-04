@@ -11,6 +11,8 @@ import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 import AiInbox from './pages/AiInbox';
 import Agent from './pages/Agent';
+import ApiKeys from './pages/ApiKeys';
+import Webhooks from './pages/Webhooks';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 
@@ -31,6 +33,8 @@ export default function App() {
               <Route path="/messages" element={<Messages />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/api-keys" element={<ApiKeys />} />
+              <Route path="/webhooks" element={<Webhooks />} />
               <Route path="/inbox" element={<AiInbox />} />
               <Route path="/agent" element={<Agent />} />
               <Route path="*" element={<Navigate to="/" replace />} />

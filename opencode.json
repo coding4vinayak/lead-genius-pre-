@@ -1,18 +1,20 @@
 {
-  "mcpServers": {
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
     "leadgenius": {
-      "command": "npx",
-      "args": ["tsx", "apps/mcp/src/index.ts"],
-      "env": {
+      "type": "local",
+      "enabled": true,
+      "command": ["npx", "tsx", "apps/mcp/src/index.ts"],
+      "environment": {
         "LEADGENIUS_API_URL": "http://localhost:3001/api",
         "LEADGENIUS_API_TOKEN": ""
       }
     }
   },
-  "agents": {
+  "agent": {
     "leadgenius-agent": {
       "description": "AI sales agent for LeadGenius — manages leads, campaigns, analytics, and auto-pilot replies",
-      "mcpServers": ["leadgenius"],
+      "mcp": ["leadgenius"],
       "instructions": "You are an AI sales agent for LeadGenius, a communication engine for lead management and outreach. You can list, create, update, and delete leads; manage campaigns and templates; view analytics; analyze message intents; generate reply drafts; and toggle the auto-pilot mode. Always ask the user before creating or deleting data."
     }
   }
