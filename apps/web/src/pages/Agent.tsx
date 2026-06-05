@@ -84,7 +84,7 @@ export default function Agent() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <Card className="p-6">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4 flex items-center gap-2">
               <Bot size={20} /> AI Model Configuration
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -121,7 +121,7 @@ export default function Agent() {
           </Card>
 
           <Card className="p-6">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4 flex items-center gap-2">
               <Sparkles size={20} /> Reply Settings
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -169,35 +169,35 @@ export default function Agent() {
 
         <div className="space-y-6">
           <Card className="p-6">
-            <h2 className="text-lg font-semibold mb-4">Auto-pilot Status</h2>
+            <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4">Auto-pilot Status</h2>
             <div className="flex flex-col items-center text-center">
-              <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-4 ${form.isAutoPilotActive ? 'bg-green-100' : 'bg-gray-100'}`}>
-                <Bot size={36} className={form.isAutoPilotActive ? 'text-green-600' : 'text-gray-400'} />
+              <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-4 ${form.isAutoPilotActive ? 'bg-[var(--color-success-bg)]' : 'bg-[var(--color-surface-secondary)]'}`}>
+                <Bot size={36} className={form.isAutoPilotActive ? 'text-[var(--color-success)]' : 'text-[var(--color-text-tertiary)]'} />
               </div>
               <Badge variant={form.isAutoPilotActive ? 'success' : 'default'}>
                 {form.isAutoPilotActive ? 'Active' : 'Inactive'}
               </Badge>
-              <p className="text-sm text-gray-500 mt-3">
+              <p className="text-sm text-[var(--color-text-secondary)] mt-3">
                 {form.isAutoPilotActive
                   ? 'Auto-pilot will automatically analyze intent and reply to leads within configured thresholds.'
                   : 'Auto-pilot is disabled. AI features work in manual mode.'}
               </p>
-              <div className="w-full mt-4 pt-4 border-t border-gray-200">
+              <div className="w-full mt-4 pt-4 border-t border-[var(--color-border)]">
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-500">Model</span>
-                  <span className="font-medium">{form.aiModel}</span>
+                  <span className="text-[var(--color-text-secondary)]">Model</span>
+                  <span className="font-medium text-[var(--color-text)]">{form.aiModel}</span>
                 </div>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-500">Provider</span>
-                  <span className="font-medium capitalize">{form.aiProvider}</span>
+                  <span className="text-[var(--color-text-secondary)]">Provider</span>
+                  <span className="font-medium text-[var(--color-text)] capitalize">{form.aiProvider}</span>
                 </div>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-500">Max Replies/Day</span>
-                  <span className="font-medium">{form.maxDailyReplies}</span>
+                  <span className="text-[var(--color-text-secondary)]">Max Replies/Day</span>
+                  <span className="font-medium text-[var(--color-text)]">{form.maxDailyReplies}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Threshold</span>
-                  <span className="font-medium">{form.autoReplyThreshold}%</span>
+                  <span className="text-[var(--color-text-secondary)]">Threshold</span>
+                  <span className="font-medium text-[var(--color-text)]">{form.autoReplyThreshold}%</span>
                 </div>
               </div>
             </div>

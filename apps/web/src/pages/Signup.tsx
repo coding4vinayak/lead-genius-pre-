@@ -34,21 +34,21 @@ export default function Signup() {
   });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
       <Card className="w-full max-w-md p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">LeadGenius</h1>
-          <p className="text-sm text-gray-500 mt-1">Create your account</p>
+          <h1 className="text-2xl font-bold text-[var(--color-text)]">LeadGenius</h1>
+          <p className="text-sm text-[var(--color-text-secondary)] mt-1">Create your account</p>
         </div>
         <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-4">
-          <Input label="Name" {...register('name')} error={errors.name?.message} placeholder="Your name (optional)" />
+          <Input label="Name" {...register('name')} error={errors.name?.message} placeholder="Your name" />
           <Input label="Email" type="email" {...register('email')} error={errors.email?.message} placeholder="you@example.com" />
           <Input label="Password" type="password" {...register('password')} error={errors.password?.message} placeholder="Min 8 characters" />
           <Button type="submit" className="w-full" disabled={mutation.isPending}>
             {mutation.isPending ? 'Creating account...' : 'Create account'}
           </Button>
         </form>
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-sm text-[var(--color-text-secondary)] mt-6">
           Already have an account? <Link to="/login" className="text-[var(--color-primary)] font-medium hover:underline">Sign in</Link>
         </p>
       </Card>

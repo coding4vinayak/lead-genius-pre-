@@ -37,11 +37,11 @@ export default function Groups() {
             <Card key={group.id} className="p-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => setViewGroup(group)}>
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center"><Users size={20} className="text-indigo-600" /></div>
-                  <div><h3 className="font-semibold">{group.name}</h3><p className="text-xs text-gray-500">{group._count?.members || 0} leads</p></div>
+                  <div className="w-10 h-10 bg-[var(--color-primary)]/10 rounded-lg flex items-center justify-center"><Users size={20} className="text-[var(--color-primary)]" /></div>
+                  <div><h3 className="font-semibold text-[var(--color-text)]">{group.name}</h3><p className="text-xs text-[var(--color-text-secondary)]">{group._count?.members || 0} leads</p></div>
                 </div>
               </div>
-              {group.description && <p className="text-sm text-gray-500">{group.description}</p>}
+              {group.description && <p className="text-sm text-[var(--color-text-secondary)]">{group.description}</p>}
             </Card>
           ))}
         </div>

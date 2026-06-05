@@ -52,14 +52,14 @@ export default function Campaigns() {
           {campaigns.map((c: any) => (
             <Card key={c.id} className="p-4">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold">{c.name}</h3>
+                <h3 className="font-semibold text-[var(--color-text)]">{c.name}</h3>
                 <Badge variant={STATUS_COLORS[c.status] || 'default'}>{c.status}</Badge>
               </div>
-              <p className="text-xs text-gray-400 mb-3">{c.template?.name} · {c.channel}</p>
+              <p className="text-xs text-[var(--color-text-tertiary)] mb-3">{c.template?.name} · {c.channel}</p>
               <div className="grid grid-cols-3 gap-2 mb-3 text-center text-xs">
-                <div><p className="font-semibold text-gray-900">{c.sentCount}</p><p className="text-gray-500">Sent</p></div>
-                <div><p className="font-semibold text-green-600">{c.replyCount}</p><p className="text-gray-500">Replies</p></div>
-                <div><p className="font-semibold text-red-500">{c.failedCount}</p><p className="text-gray-500">Failed</p></div>
+                <div><p className="font-semibold text-[var(--color-text)]">{c.sentCount}</p><p className="text-[var(--color-text-secondary)]">Sent</p></div>
+                <div><p className="font-semibold text-[var(--color-success)]">{c.replyCount}</p><p className="text-[var(--color-text-secondary)]">Replies</p></div>
+                <div><p className="font-semibold text-[var(--color-error)]">{c.failedCount}</p><p className="text-[var(--color-text-secondary)]">Failed</p></div>
               </div>
               <div className="flex gap-2">
                 {c.status === 'running' && <Button variant="secondary" size="sm" onClick={() => updateStatus.mutate({ id: c.id, action: 'pause' })}><Pause size={14} className="mr-1" />Pause</Button>}

@@ -45,15 +45,15 @@ export default function Templates() {
           {data?.map((tpl: any) => (
             <Card key={tpl.id} className="p-4">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold">{tpl.name}</h3>
+                <h3 className="font-semibold text-[var(--color-text)]">{tpl.name}</h3>
                 <Badge variant={tpl.channel === 'email' ? 'info' : 'warning'}>{tpl.channel}</Badge>
               </div>
-              {tpl.category && <p className="text-xs text-gray-400 mb-2">{tpl.category}</p>}
-              <p className="text-sm text-gray-500 line-clamp-2 mb-3">{tpl.body}</p>
+              {tpl.category && <p className="text-xs text-[var(--color-text-tertiary)] mb-2">{tpl.category}</p>}
+              <p className="text-sm text-[var(--color-text-secondary)] line-clamp-2 mb-3">{tpl.body}</p>
               <div className="flex gap-2">
                 <Button variant="ghost" size="sm" onClick={() => api.post(`/templates/${tpl.id}/preview`, { variables: { name: 'John', email: 'john@test.com' } }).then((r) => setPreview(r.data.data))}><Eye size={14} className="mr-1" />Preview</Button>
                 <Button variant="ghost" size="sm" onClick={() => { setEditing(tpl); setShowModal(true); }}>Edit</Button>
-                <Button variant="ghost" size="sm" className="text-red-500" onClick={() => deleteTemplate.mutate(tpl.id)}>Delete</Button>
+                <Button variant="ghost" size="sm" className="text-[var(--color-error)]" onClick={() => deleteTemplate.mutate(tpl.id)}>Delete</Button>
               </div>
             </Card>
           ))}
@@ -62,8 +62,8 @@ export default function Templates() {
 
       {preview && (
         <Modal isOpen={true} onClose={() => setPreview(null)} title="Template Preview">
-          {preview.subject && <p className="text-sm font-medium mb-2">Subject: {preview.subject}</p>}
-          <div className="p-3 bg-gray-50 rounded-lg text-sm whitespace-pre-wrap">{preview.body}</div>
+          {preview.subject && <p className="text-sm font-medium text-[var(--color-text)] mb-2">Subject: {preview.subject}</p>}
+          <div className="p-3 bg-[var(--color-surface-secondary)] rounded-lg text-sm text-[var(--color-text)] whitespace-pre-wrap">{preview.body}</div>
         </Modal>
       )}
 
@@ -74,9 +74,9 @@ export default function Templates() {
           <Input label="Category (e.g. festival, offer, followup)" name="category" defaultValue={editing?.category || ''} />
           <Input label="Subject (email only)" name="subject" defaultValue={editing?.subject || ''} />
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">Body (Handlebars)</label>
-            <p className="text-xs text-gray-400">{variableHelp}</p>
-            <textarea name="body" rows={8} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]" defaultValue={editing?.body || ''} required />
+            <label className="block text-sm font-medium text-[var(--color-text-secondary)]">Body (Handlebars)</label>
+            <p className="text-xs text-[var(--color-text-tertiary)]">{variableHelp}</p>
+            <textarea name="body" rows={8} className="w-full px-3 py-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg text-sm font-mono text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]" defaultValue={editing?.body || ''} required />
           </div>
           <div className="flex justify-end gap-2"><Button variant="secondary" type="button" onClick={() => { setShowModal(false); setEditing(null); }}>Cancel</Button><Button type="submit">Save</Button></div>
         </form>

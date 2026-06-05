@@ -18,20 +18,20 @@ export default function Analytics() {
       <PageHeader title="Analytics" description="Detailed metrics and reports" />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { label: 'Total Sent', value: d.totalSent, color: 'text-indigo-600' },
-          { label: 'Delivered', value: d.totalDelivered, color: 'text-green-600' },
-          { label: 'Failed', value: d.totalFailed, color: 'text-red-500' },
-          { label: 'Replies', value: d.totalReplied, color: 'text-blue-600' },
+          { label: 'Total Sent', value: d.totalSent, color: 'text-[var(--color-primary)]' },
+          { label: 'Delivered', value: d.totalDelivered, color: 'text-[var(--color-success)]' },
+          { label: 'Failed', value: d.totalFailed, color: 'text-[var(--color-error)]' },
+          { label: 'Replies', value: d.totalReplied, color: 'text-[var(--color-info)]' },
         ].map((kpi) => (
           <Card key={kpi.label} className="p-4">
-            <p className="text-sm text-gray-500">{kpi.label}</p>
+            <p className="text-sm text-[var(--color-text-secondary)]">{kpi.label}</p>
             <p className={`text-2xl font-bold ${kpi.color}`}>{kpi.value}</p>
           </Card>
         ))}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="p-4">
-          <h3 className="text-sm font-semibold mb-4">Sends (Last 30 Days)</h3>
+          <h3 className="text-sm font-semibold text-[var(--color-text)] mb-4">Sends (Last 30 Days)</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={timeline.data || []}>
               <XAxis dataKey="date" tick={{ fontSize: 11 }} />
@@ -43,15 +43,15 @@ export default function Analytics() {
           </ResponsiveContainer>
         </Card>
         <Card className="p-4">
-          <h3 className="text-sm font-semibold mb-4">Per Campaign</h3>
+          <h3 className="text-sm font-semibold text-[var(--color-text)] mb-4">Per Campaign</h3>
           <div className="space-y-3 max-h-[300px] overflow-y-auto">
             {byCampaign.data?.map((c: any) => (
-              <div key={c.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                <span className="text-sm font-medium">{c.name}</span>
+              <div key={c.id} className="flex items-center justify-between p-2 bg-[var(--color-surface-secondary)] rounded-lg">
+                <span className="text-sm font-medium text-[var(--color-text)]">{c.name}</span>
                 <div className="flex gap-3 text-xs">
-                  <span>Sent: <strong>{c.sentCount}</strong></span>
-                  <span className="text-green-600">Replies: <strong>{c.replyCount}</strong></span>
-                  <span className="text-red-500">Failed: <strong>{c.failedCount}</strong></span>
+                  <span className="text-[var(--color-text-secondary)]">Sent: <strong className="text-[var(--color-text)]">{c.sentCount}</strong></span>
+                  <span className="text-[var(--color-success)]">Replies: <strong>{c.replyCount}</strong></span>
+                  <span className="text-[var(--color-error)]">Failed: <strong>{c.failedCount}</strong></span>
                 </div>
               </div>
             ))}

@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import Layout from './components/layout/Layout';
 import AuthGuard from './components/auth/AuthGuard';
 import Dashboard from './pages/Dashboard';
@@ -16,32 +17,65 @@ import Webhooks from './pages/Webhooks';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 
-export default function App() {
+const pageVariants = {
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+};
+
+const pageTransition = {
+  type: 'spring' as const,
+  stiffness: 300,
+  damping: 30,
+  mass: 0.8,
+};
+
+function AnimatedPage({ children }: { children: React.ReactNode }) {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/*" element={
-        <AuthGuard>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/leads" element={<Leads />} />
-              <Route path="/groups" element={<Groups />} />
-              <Route path="/templates" element={<Templates />} />
-              <Route path="/campaigns" element={<Campaigns />} />
-              <Route path="/messages" element={<Messages />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/api-keys" element={<ApiKeys />} />
-              <Route path="/webhooks" element={<Webhooks />} />
-              <Route path="/inbox" element={<AiInbox />} />
-              <Route path="/agent" element={<Agent />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Layout>
-        </AuthGuard>
-      } />
-    </Routes>
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={pageTransition}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export default function App() {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/login" element={<AnimatedPage><Login /></AnimatedPage>} />
+        <Route path="/signup" element={<AnimatedPage><Signup /></AnimatedPage>} />
+        <Route path="/*" element={
+          <AuthGuard>
+            <Layout>
+              <AnimatePresence mode="wait">
+                <Routes>
+                  <Route path="/" element={<AnimatedPage key="dashboard"><Dashboard /></AnimatedPage>} />
+                  <Route path="/leads" element={<AnimatedPage key="leads"><Leads /></AnimatedPage>} />
+                  <Route path="/groups" element={<AnimatedPage key="groups"><Groups /></AnimatedPage>} />
+                  <Route path="/templates" element={<AnimatedPage key="templates"><Templates /></AnimatedPage>} />
+                  <Route path="/campaigns" element={<AnimatedPage key="campaigns"><Campaigns /></AnimatedPage>} />
+                  <Route path="/messages" element={<AnimatedPage key="messages"><Messages /></AnimatedPage>} />
+                  <Route path="/analytics" element={<AnimatedPage key="analytics"><Analytics /></AnimatedPage>} />
+                  <Route path="/settings" element={<AnimatedPage key="settings"><Settings /></AnimatedPage>} />
+                  <Route path="/api-keys" element={<AnimatedPage key="api-keys"><ApiKeys /></AnimatedPage>} />
+                  <Route path="/webhooks" element={<AnimatedPage key="webhooks"><Webhooks /></AnimatedPage>} />
+                  <Route path="/inbox" element={<AnimatedPage key="inbox"><AiInbox /></AnimatedPage>} />
+                  <Route path="/agent" element={<AnimatedPage key="agent"><Agent /></AnimatedPage>} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </AnimatePresence>
+            </Layout>
+          </AuthGuard>
+        } />
+      </Routes>
+    </AnimatePresence>
   );
 }

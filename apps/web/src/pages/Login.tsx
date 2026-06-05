@@ -33,11 +33,11 @@ export default function Login() {
   });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
       <Card className="w-full max-w-md p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">LeadGenius</h1>
-          <p className="text-sm text-gray-500 mt-1">Sign in to your account</p>
+          <h1 className="text-2xl font-bold text-[var(--color-text)]">LeadGenius</h1>
+          <p className="text-sm text-[var(--color-text-secondary)] mt-1">Sign in to your account</p>
         </div>
         <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-4">
           <Input label="Email" type="email" {...register('email')} error={errors.email?.message} placeholder="you@example.com" />
@@ -46,7 +46,7 @@ export default function Login() {
             {mutation.isPending ? 'Signing in...' : 'Sign in'}
           </Button>
         </form>
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-sm text-[var(--color-text-secondary)] mt-6">
           Don't have an account? <Link to="/signup" className="text-[var(--color-primary)] font-medium hover:underline">Sign up</Link>
         </p>
       </Card>

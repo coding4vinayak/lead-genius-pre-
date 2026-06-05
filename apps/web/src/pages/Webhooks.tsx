@@ -59,10 +59,10 @@ export default function Webhooks() {
       <PageHeader title="Webhooks" description="Send real-time events to external systems" action={<Button onClick={() => setShowModal(true)}><Plus size={16} /><span className="ml-1">Add Webhook</span></Button>} />
 
       {newSecret && (
-        <Card className="mb-4 p-4 border-2 border-amber-200 bg-amber-50">
-          <p className="text-sm font-medium text-amber-800 mb-2">Webhook secret shown once. Use it to verify incoming requests.</p>
+        <Card className="mb-4 p-4 border-2 border-[var(--color-warning)]/30 bg-[var(--color-warning-bg)]">
+          <p className="text-sm font-medium text-[var(--color-warning)] mb-2">Webhook secret shown once. Use it to verify incoming requests.</p>
           <div className="flex gap-2">
-            <code className="flex-1 p-2 bg-white border border-amber-300 rounded text-sm font-mono">{newSecret}</code>
+            <code className="flex-1 p-2 bg-[var(--color-surface)] border border-[var(--color-warning)]/30 rounded text-sm font-mono text-[var(--color-text)]">{newSecret}</code>
             <Button size="sm" onClick={() => { navigator.clipboard.writeText(newSecret!); toast.success('Copied!'); setNewSecret(null); }}><Copy size={14} /></Button>
           </div>
         </Card>
@@ -73,20 +73,20 @@ export default function Webhooks() {
           {data.map((ep: any) => (
             <Card key={ep.id} className="p-4">
               <div className="flex items-start justify-between">
-                <div className="flex items-start gap-3">
-                  <Globe size={18} className="text-gray-400 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-sm flex items-center gap-2">
+                <div className="flex items-start gap-3 min-w-0">
+                  <Globe size={18} className="text-[var(--color-text-tertiary)] mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm text-[var(--color-text)] flex items-center gap-2">
                       {ep.name}
                       <Badge variant={ep.active ? 'success' : 'warning'}>{ep.active ? 'Active' : 'Inactive'}</Badge>
                     </p>
-                    <p className="text-xs text-gray-500 font-mono mt-0.5">{ep.url}</p>
+                    <p className="text-xs text-[var(--color-text-secondary)] font-mono mt-0.5 truncate">{ep.url}</p>
                     <div className="flex gap-1 flex-wrap mt-2">
                       {ep.events.map((e: string) => <Badge key={e}>{e}</Badge>)}
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   <Button variant="ghost" size="sm" onClick={() => setShowDeliveries(showDeliveries === ep.id ? null : ep.id)}>
                     <History size={14} />
                   </Button>
@@ -97,24 +97,24 @@ export default function Webhooks() {
                     {ep.active ? <PowerOff size={14} /> : <Power size={14} />}
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => { if (confirm('Delete this webhook?')) deleteEndpoint.mutate(ep.id); }}>
-                    <Trash2 size={14} className="text-red-500" />
+                    <Trash2 size={14} className="text-[var(--color-error)]" />
                   </Button>
                 </div>
               </div>
 
               {showDeliveries === ep.id && (
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Recent Deliveries</h4>
-                  {!deliveries?.length ? <p className="text-xs text-gray-400">No deliveries yet</p> : (
+                <div className="mt-4 pt-4 border-t border-[var(--color-border)] animate-fade-in">
+                  <h4 className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase mb-2">Recent Deliveries</h4>
+                  {!deliveries?.length ? <p className="text-xs text-[var(--color-text-tertiary)]">No deliveries yet</p> : (
                     <div className="space-y-1 max-h-48 overflow-y-auto">
                       {deliveries.map((d: any) => (
-                        <div key={d.id} className="flex items-center justify-between text-xs p-2 bg-gray-50 rounded">
-                          <div className="flex items-center gap-2">
+                        <div key={d.id} className="flex items-center justify-between text-xs p-2 bg-[var(--color-surface-secondary)] rounded">
+                          <div className="flex items-center gap-2 min-w-0">
                             <Badge variant={d.status === 'delivered' ? 'success' : 'danger'}>{d.status}</Badge>
-                            <span className="text-gray-600">{d.event}</span>
-                            {d.responseCode && <span className="text-gray-400">HTTP {d.responseCode}</span>}
+                            <span className="text-[var(--color-text)]">{d.event}</span>
+                            {d.responseCode && <span className="text-[var(--color-text-tertiary)]">HTTP {d.responseCode}</span>}
                           </div>
-                          <span className="text-gray-400">{new Date(d.createdAt).toLocaleString()}</span>
+                          <span className="text-[var(--color-text-tertiary)] shrink-0">{new Date(d.createdAt).toLocaleString()}</span>
                         </div>
                       ))}
                     </div>
@@ -131,11 +131,11 @@ export default function Webhooks() {
           <Input label="Name" name="name" placeholder="e.g. My CRM Integration" required />
           <Input label="URL" name="url" type="url" placeholder="https://example.com/webhook" required />
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-2 block">Events</label>
+            <label className="text-sm font-medium text-[var(--color-text-secondary)] mb-2 block">Events</label>
             <div className="grid grid-cols-2 gap-2">
               {AVAILABLE_EVENTS.map((ev) => (
-                <label key={ev} className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" name="events" value={ev} defaultChecked />
+                <label key={ev} className="flex items-center gap-2 text-sm text-[var(--color-text)]">
+                  <input type="checkbox" name="events" value={ev} defaultChecked className="accent-[var(--color-primary)]" />
                   {ev}
                 </label>
               ))}

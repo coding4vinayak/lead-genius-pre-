@@ -25,10 +25,10 @@ export default function Dashboard() {
 
   const d = overview.data;
   const kpis = [
-    { label: 'Total Leads', value: d.totalLeads, color: 'text-blue-600' },
-    { label: 'Active Campaigns', value: d.activeCampaigns, color: 'text-green-600' },
-    { label: 'Sent Today', value: d.totalSent, color: 'text-indigo-600' },
-    { label: 'Delivery Rate', value: `${d.deliveryRate}%`, color: 'text-emerald-600' },
+    { label: 'Total Leads', value: d.totalLeads, color: 'text-[var(--color-primary)]' },
+    { label: 'Active Campaigns', value: d.activeCampaigns, color: 'text-[var(--color-success)]' },
+    { label: 'Sent Today', value: d.totalSent, color: 'text-[var(--color-info)]' },
+    { label: 'Delivery Rate', value: `${d.deliveryRate}%`, color: 'text-[var(--color-success)]' },
   ];
 
   return (
@@ -37,14 +37,14 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {kpis.map((kpi) => (
           <Card key={kpi.label} className="p-4">
-            <p className="text-sm text-gray-500 mb-1">{kpi.label}</p>
+            <p className="text-sm text-[var(--color-text-secondary)] mb-1">{kpi.label}</p>
             <p className={`text-2xl font-bold ${kpi.color}`}>{kpi.value}</p>
           </Card>
         ))}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="p-4">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Sends (Last 7 Days)</h3>
+          <h3 className="text-sm font-semibold text-[var(--color-text)] mb-4">Sends (Last 7 Days)</h3>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={timeline.data || []}>
               <XAxis dataKey="date" tick={{ fontSize: 12 }} />
@@ -56,7 +56,7 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </Card>
         <Card className="p-4">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Channel Breakdown</h3>
+          <h3 className="text-sm font-semibold text-[var(--color-text)] mb-4">Channel Breakdown</h3>
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie data={[

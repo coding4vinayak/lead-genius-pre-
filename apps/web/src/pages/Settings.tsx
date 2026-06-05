@@ -27,7 +27,7 @@ export default function Settings() {
       <PageHeader title="Settings" description="Configure email, WhatsApp, and global limits" />
       <form onSubmit={(e) => { e.preventDefault(); const fd = new FormData(e.currentTarget); saveSettings.mutate(Object.fromEntries(fd)); }} className="space-y-6">
         <Card className="p-4">
-          <h3 className="font-semibold mb-4">Email (SMTP)</h3>
+          <h3 className="font-semibold text-[var(--color-text)] mb-4">Email (SMTP)</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input label="SMTP Host" name="smtpHost" defaultValue={data?.smtpHost || ''} />
             <Input label="SMTP Port" name="smtpPort" type="number" defaultValue={data?.smtpPort || 587} />
@@ -38,7 +38,7 @@ export default function Settings() {
           </div>
         </Card>
         <Card className="p-4">
-          <h3 className="font-semibold mb-4">WhatsApp (Twilio)</h3>
+          <h3 className="font-semibold text-[var(--color-text)] mb-4">WhatsApp (Twilio)</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input label="Account SID" name="twilioAccountSid" defaultValue={data?.twilioAccountSid || ''} />
             <Input label="Auth Token" name="twilioAuthToken" type="password" defaultValue={data?.twilioAuthToken || ''} />
@@ -46,7 +46,7 @@ export default function Settings() {
           </div>
         </Card>
         <Card className="p-4">
-          <h3 className="font-semibold mb-4">Global Limits</h3>
+          <h3 className="font-semibold text-[var(--color-text)] mb-4">Global Limits</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input label="Daily Global Limit" name="dailyGlobalLimit" type="number" defaultValue={data?.dailyGlobalLimit || 1000} />
             <Input label="Default Min Delay (ms)" name="defaultMinDelayMs" type="number" defaultValue={data?.defaultMinDelayMs || 30000} />

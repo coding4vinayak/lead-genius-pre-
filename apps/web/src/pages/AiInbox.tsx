@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Bot, Send, RefreshCw, Sparkles, User, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Bot, Send, RefreshCw, Sparkles, User } from 'lucide-react';
 import api from '../lib/api';
 import { Card, Button, Badge, Spinner, EmptyState, ErrorBanner, PageHeader } from '../components/ui';
 import toast from 'react-hot-toast';
@@ -82,29 +82,29 @@ export default function AiInbox() {
   return (
     <div>
       <PageHeader title="AI Inbox" description="AI-powered conversation management with intent analysis and smart replies" />
-      <div className="flex gap-4 h-[calc(100vh-12rem)]">
-        <Card className="w-80 shrink-0 overflow-y-auto">
+      <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-12rem)]">
+        <Card className="w-full lg:w-80 shrink-0 overflow-y-auto">
           {convLoading ? <Spinner /> : conversations.length === 0 ? (
             <EmptyState title="No conversations" description="Inbound messages will appear here" />
           ) : (
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-[var(--color-border-light)]">
               {conversations.map((conv: any) => (
                 <button
                   key={conv.leadId}
                   onClick={() => setSelectedLeadId(conv.leadId)}
-                  className={`w-full text-left p-3 hover:bg-gray-50 transition-colors ${selectedLeadId === conv.leadId ? 'bg-blue-50' : ''}`}
+                  className={`w-full text-left p-3 hover:bg-[var(--color-surface-secondary)] transition-colors ${selectedLeadId === conv.leadId ? 'bg-[var(--color-primary)]/10' : ''}`}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="font-medium text-sm truncate">{conv.leadName}</span>
+                    <span className="font-medium text-sm text-[var(--color-text)] truncate">{conv.leadName}</span>
                     {conv.intentCategory && (
                       <Badge variant={INTENT_COLORS[conv.intentCategory] || 'default'}>
                         {conv.intentCategory}
                       </Badge>
                     )}
                   </div>
-                  {conv.leadCompany && <p className="text-xs text-gray-500 mb-1">{conv.leadCompany}</p>}
-                  <p className="text-xs text-gray-400 truncate">{conv.lastMessage}</p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  {conv.leadCompany && <p className="text-xs text-[var(--color-text-secondary)] mb-1">{conv.leadCompany}</p>}
+                  <p className="text-xs text-[var(--color-text-tertiary)] truncate">{conv.lastMessage}</p>
+                  <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
                     {conv.lastMessageAt ? new Date(conv.lastMessageAt).toLocaleString() : ''}
                   </p>
                 </button>
@@ -122,13 +122,13 @@ export default function AiInbox() {
             <Spinner />
           ) : (
             <>
-              <div className="p-4 border-b border-gray-200">
+              <div className="p-4 border-b border-[var(--color-border)]">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="font-semibold">{selectedLead?.name || selectedLead?.email || 'Unknown'}</h2>
-                    {selectedLead?.company && <p className="text-sm text-gray-500">{selectedLead.company}</p>}
+                    <h2 className="font-semibold text-[var(--color-text)]">{selectedLead?.name || selectedLead?.email || 'Unknown'}</h2>
+                    {selectedLead?.company && <p className="text-sm text-[var(--color-text-secondary)]">{selectedLead.company}</p>}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2">
                     {selectedLead?.score && (
                       <Badge variant={selectedLead.score >= 70 ? 'success' : selectedLead.score >= 40 ? 'warning' : 'default'}>
                         Score: {selectedLead.score}
@@ -143,8 +143,8 @@ export default function AiInbox() {
                   const isInbound = msg.direction === 'inbound';
                   const intent = msg.intentAnalysis as Record<string, any> | null;
                   return (
-                    <div key={msg.id} className={`flex ${isInbound ? 'justify-start' : 'justify-end'}`}>
-                      <div className={`max-w-[70%] rounded-lg p-3 ${isInbound ? 'bg-gray-100' : 'bg-blue-500 text-white'}`}>
+                    <div key={msg.id} className={`flex ${isInbound ? 'justify-start' : 'justify-end'} animate-fade-in`}>
+                      <div className={`max-w-[85%] lg:max-w-[70%] rounded-lg p-3 ${isInbound ? 'bg-[var(--color-surface-secondary)] text-[var(--color-text)]' : 'bg-[var(--color-primary)] text-white'}`}>
                         <div className="flex items-center gap-2 mb-1">
                           {isInbound ? <User size={14} /> : <Bot size={14} />}
                           <span className="text-xs font-medium">{isInbound ? 'Lead' : 'You'}</span>
@@ -155,7 +155,7 @@ export default function AiInbox() {
                         {isInbound && !msg.intentAnalysis && (
                           <button
                             onClick={() => analyzeMutation.mutate(msg.id)}
-                            className="mt-2 text-xs flex items-center gap-1 text-blue-500 hover:text-blue-700"
+                            className="mt-2 text-xs flex items-center gap-1 text-[var(--color-primary)] hover:underline"
                           >
                             <Sparkles size={12} /> Analyze intent
                           </button>
@@ -179,21 +179,21 @@ export default function AiInbox() {
                 })}
               </div>
 
-              <div className="border-t border-gray-200 p-4">
+              <div className="border-t border-[var(--color-border)] p-4">
                 {draftText && (
-                  <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="mb-3 p-3 bg-[var(--color-warning-bg)] border border-[var(--color-warning)]/30 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
-                      <Sparkles size={16} className="text-yellow-600" />
-                      <span className="text-sm font-medium text-yellow-800">AI Suggested Reply</span>
+                      <Sparkles size={16} className="text-[var(--color-warning)]" />
+                      <span className="text-sm font-medium text-[var(--color-text)]">AI Suggested Reply</span>
                       <button
                         onClick={() => { setDraftText(''); setReplyText(''); }}
-                        className="ml-auto text-xs text-gray-500 hover:text-gray-700"
+                        className="ml-auto text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
                       >
                         Clear
                       </button>
                     </div>
                     <textarea
-                      className="w-full text-sm p-2 border border-yellow-300 rounded resize-none focus:outline-none focus:ring-1 focus:ring-yellow-400"
+                      className="w-full text-sm p-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded resize-none focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] text-[var(--color-text)]"
                       rows={3}
                       value={replyText}
                       onChange={(e) => setReplyText(e.target.value)}
@@ -213,7 +213,7 @@ export default function AiInbox() {
                 )}
                 <div className="flex gap-2">
                   <textarea
-                    className="flex-1 text-sm p-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                    className="flex-1 text-sm p-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)]"
                     rows={2}
                     placeholder="Type a reply or generate AI draft..."
                     value={draftText ? replyText : ''}
