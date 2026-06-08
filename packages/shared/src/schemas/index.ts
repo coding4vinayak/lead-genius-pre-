@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LEAD_STATUS, LEAD_STAGE, CHANNEL, MESSAGE_STATUS, CAMPAIGN_STATUS, SCHEDULE_TYPE, SEND_STRATEGY, AI_PROVIDER, INTENT_CATEGORY } from '../types/index.js';
+import { LEAD_STATUS, LEAD_STAGE, CHANNEL, MESSAGE_STATUS, CAMPAIGN_STATUS, SCHEDULE_TYPE, SEND_STRATEGY, AI_PROVIDER, INTENT_CATEGORY, WARMUP_STEP } from '../types/index.js';
 
 export const leadSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
@@ -13,6 +13,8 @@ export const leadSchema = z.object({
   tags: z.array(z.string()).default([]),
   notes: z.string().optional(),
   customFields: z.record(z.string()).optional(),
+  linkedinUrl: z.string().url().optional().or(z.literal('')),
+  websiteUrl: z.string().url().optional().or(z.literal('')),
 });
 
 export const groupSchema = z.object({
@@ -108,6 +110,58 @@ export const exportSchema = z.object({
   search: z.string().optional(),
   fields: z.array(z.string()).optional(),
 });
+
+export const warmupSettingsSchema = z.object({
+  enabled: z.boolean().default(false),
+  maxActiveWarmups: z.number().int().positive().default(20),
+  stepsPerDay: z.number().int().positive().max(10).default(2),
+  minDelayHours: z.number().int().positive().default(12),
+  maxDelayHours: z.number().int().positive().default(48),
+  workingHoursStart: z.string().default('09:00'),
+  workingHoursEnd: z.string().default('18:00'),
+  timezone: z.string().default('UTC'),
+  steps: z.array(z.enum(WARMUP_STEP)).default([...WARMUP_STEP]),
+});
+
+export const linkedinImportSchema = z.object({
+  searchUrl: z.string().optional(),
+  keywords: z.string().optional(),
+  location: z.string().optional(),
+  title: z.string().optional(),
+  company: z.string().optional(),
+  maxLeads: z.number().int().positive().max(100).default(25),
+  groupId: z.string().optional(),
+});
+
+export const websiteImportSchema = z.object({
+  url: z.string().url(),
+  selector: z.string().optional(),
+  maxLeads: z.number().int().positive().max(100).default(25),
+  groupId: z.string().optional(),
+});
+
+export const webhookLeadSchema = z.object({
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+  name: z.string().optional(),
+  company: z.string().optional(),
+  title: z.string().optional(),
+  source: z.string().default('webhook'),
+  linkedinUrl: z.string().url().optional(),
+  websiteUrl: z.string().url().optional(),
+  tags: z.array(z.string()).default([]),
+  customFields: z.record(z.string()).optional(),
+});
+
+export const warmupStartSchema = z.object({
+  leadIds: z.array(z.string()).min(1).max(500),
+});
+
+export type WarmupSettingsInput = z.infer<typeof warmupSettingsSchema>;
+export type LinkedinImportInput = z.infer<typeof linkedinImportSchema>;
+export type WebsiteImportInput = z.infer<typeof websiteImportSchema>;
+export type WebhookLeadInput = z.infer<typeof webhookLeadSchema>;
+export type WarmupStartInput = z.infer<typeof warmupStartSchema>;
 
 export type AgentSettingsInput = z.infer<typeof agentSettingsSchema>;
 export type LeadInput = z.infer<typeof leadSchema>;

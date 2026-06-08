@@ -11,12 +11,19 @@ const router = Router();
 router.get('/', validate(paginationSchema, 'query'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { page, pageSize } = req.query as unknown as { page: number; pageSize: number };
-    const { search, status, tag, source, sort } = req.query as Record<string, string | undefined>;
+    const { search, status, tag, source, sort, warmupActive, warmup, scoreSegment } = req.query as Record<string, string | undefined>;
 
     const where: Record<string, unknown> = {};
     if (status) where.status = status;
     if (source) where.source = source;
     if (tag) where.tags = { has: tag };
+    if (warmupActive === 'true') where.warmupActive = true;
+    if (warmupActive === 'false') where.warmupActive = false;
+    if (scoreSegment === 'hot') where.score = { gte: 70 };
+    if (scoreSegment === 'warm') where.score = { gte: 40, lt: 70 };
+    if (scoreSegment === 'cool') where.score = { gte: 20, lt: 40 };
+    if (scoreSegment === 'cold') where.score = { gte: 1, lt: 20 };
+    if (scoreSegment === 'unscored') where.score = null;
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -46,6 +53,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
       include: {
         messages: { orderBy: { createdAt: 'desc' }, take: 50 },
         groupMembers: { include: { group: true } },
+        warmupTasks: { orderBy: { createdAt: 'desc' }, take: 20 },
       },
     });
     if (!data) throw AppError.notFound('Lead');

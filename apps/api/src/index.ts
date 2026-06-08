@@ -7,7 +7,7 @@ import { prisma } from './db.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { requireAuth } from './middleware/auth.js';
 import { logger } from './lib/logger.js';
-import { createCampaignWorker, createSendWorker, createAiWorker, campaignQueue, sendQueue } from './queue/index.js';
+import { createCampaignWorker, createSendWorker, createAiWorker, createWarmupWorker, campaignQueue, sendQueue } from './queue/index.js';
 import { swaggerSpec } from './lib/swagger.js';
 
 import authRoutes from './routes/auth.js';
@@ -24,6 +24,9 @@ import inboxRoutes from './routes/inbox.js';
 import agentRoutes from './routes/agent.js';
 import apiKeyRoutes from './routes/api-keys.js';
 import webhookEndpointRoutes from './routes/webhook-endpoints.js';
+import leadSourcingRoutes from './routes/lead-sourcing.js';
+import warmupRoutes from './routes/warmup.js';
+import scoringRoutes from './routes/scoring.js';
 import { sendEmail } from './services/email.js';
 import { sendWhatsApp } from './services/whatsapp.js';
 import { renderTemplate } from './services/template.js';
@@ -53,6 +56,9 @@ app.use('/api/inbox', requireAuth, inboxRoutes);
 app.use('/api/agent', requireAuth, agentRoutes);
 app.use('/api/api-keys', requireAuth, apiKeyRoutes);
 app.use('/api/webhook-endpoints', requireAuth, webhookEndpointRoutes);
+app.use('/api/leads/source', requireAuth, leadSourcingRoutes);
+app.use('/api/warmup', requireAuth, warmupRoutes);
+app.use('/api/scoring', requireAuth, scoringRoutes);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, { explorer: true }));
 app.get('/api-docs.json', (_req, res) => res.json(swaggerSpec));
@@ -181,6 +187,12 @@ async function start() {
     } else if (name === 'generate-campaign') {
       await generateCampaignSequence(data.name, data.industry, data.product, data.channel, data.targetCount);
     }
+  });
+
+  await createWarmupWorker(async (job) => {
+    const { executeWarmupStep } = await import('./services/warmup.js');
+    const { taskId, leadId, step, channel, subject, body } = job.data;
+    await executeWarmupStep(taskId, leadId, step, channel, subject, body);
   });
 
   app.listen(config.port, () => {

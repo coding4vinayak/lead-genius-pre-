@@ -27,3 +27,9 @@ export type AiProvider = (typeof AI_PROVIDER)[number];
 
 export const INTENT_CATEGORY = ['interested', 'not_interested', 'out_of_office', 'meeting_request', 'pricing_question', 'feature_question', 'competitor_mention', 'spam', 'other'] as const;
 export type IntentCategory = (typeof INTENT_CATEGORY)[number];
+
+export const WARMUP_STEP = ['linkedin_connect', 'linkedin_like', 'linkedin_comment', 'linkedin_share', 'website_visit', 'content_share', 'email_intro', 'email_value', 'email_case_study', 'email_meeting'] as const;
+export type WarmupStep = (typeof WARMUP_STEP)[number];
+
+export const LEAD_SOURCE = ['manual', 'csv', 'linkedin', 'website', 'webhook', 'api', 'referral'] as const;
+export type LeadSource = (typeof LEAD_SOURCE)[number];

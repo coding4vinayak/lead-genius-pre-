@@ -7,6 +7,7 @@ const connection: ConnectionOptions = { host: config.redis.host, port: config.re
 export const campaignQueue = new Queue('campaign-queue', { connection, defaultJobOptions: { attempts: 3, backoff: { type: 'exponential', delay: 5000 } } });
 export const sendQueue = new Queue('send-queue', { connection, defaultJobOptions: { attempts: 3, backoff: { type: 'exponential', delay: 5000 } } });
 export const aiQueue = new Queue('ai-queue', { connection, defaultJobOptions: { attempts: 2, backoff: { type: 'exponential', delay: 3000 }, removeOnComplete: 100, removeOnFail: 50 } });
+export const warmupQueue = new Queue('warmup-queue', { connection, defaultJobOptions: { attempts: 2, backoff: { type: 'exponential', delay: 10000 }, removeOnComplete: 50, removeOnFail: 20 } });
 
 export async function createCampaignWorker(handler: (job: any) => Promise<void>) {
   const worker = new Worker('campaign-queue', handler, { connection, concurrency: 5 });
@@ -26,5 +27,12 @@ export async function createAiWorker(handler: (job: any) => Promise<void>) {
   const worker = new Worker('ai-queue', handler, { connection, concurrency: 5 });
   worker.on('completed', (job) => logger.info(`AI job ${job.id} completed`));
   worker.on('failed', (job, err) => logger.error(`AI job ${job?.id} failed`, { error: err.message }));
+  return worker;
+}
+
+export async function createWarmupWorker(handler: (job: any) => Promise<void>) {
+  const worker = new Worker('warmup-queue', handler, { connection, concurrency: 10 });
+  worker.on('completed', (job) => logger.info(`Warmup job ${job.id} completed`));
+  worker.on('failed', (job, err) => logger.error(`Warmup job ${job?.id} failed`, { error: err.message }));
   return worker;
 }

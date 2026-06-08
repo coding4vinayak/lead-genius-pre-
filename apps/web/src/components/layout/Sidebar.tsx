@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, FolderOpen, FileText, Send, MessageSquare,
-  BarChart3, Settings, Inbox, Bot, Key, Globe, ChevronLeft, ChevronRight,
+  BarChart3, Settings, Inbox, Bot, Key, Globe, GitBranch, ChevronLeft, ChevronRight,
   LogOut, Moon, Sun, Menu, X,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/auth';
@@ -13,6 +13,7 @@ const navItems = [
   { path: '/leads', label: 'Leads', icon: Users },
   { path: '/groups', label: 'Groups', icon: FolderOpen },
   { path: '/templates', label: 'Templates', icon: FileText },
+  { path: '/pipeline', label: 'Pipeline', icon: GitBranch },
   { path: '/campaigns', label: 'Campaigns', icon: Send },
   { path: '/messages', label: 'Messages', icon: MessageSquare },
   { path: '/analytics', label: 'Analytics', icon: BarChart3 },

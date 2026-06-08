@@ -14,6 +14,7 @@ import AiInbox from './pages/AiInbox';
 import Agent from './pages/Agent';
 import ApiKeys from './pages/ApiKeys';
 import Webhooks from './pages/Webhooks';
+import Pipeline from './pages/Pipeline';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 
@@ -67,6 +68,7 @@ export default function App() {
                   <Route path="/settings" element={<AnimatedPage key="settings"><Settings /></AnimatedPage>} />
                   <Route path="/api-keys" element={<AnimatedPage key="api-keys"><ApiKeys /></AnimatedPage>} />
                   <Route path="/webhooks" element={<AnimatedPage key="webhooks"><Webhooks /></AnimatedPage>} />
+                  <Route path="/pipeline" element={<AnimatedPage key="pipeline"><Pipeline /></AnimatedPage>} />
                   <Route path="/inbox" element={<AnimatedPage key="inbox"><AiInbox /></AnimatedPage>} />
                   <Route path="/agent" element={<AnimatedPage key="agent"><Agent /></AnimatedPage>} />
                   <Route path="*" element={<Navigate to="/" replace />} />

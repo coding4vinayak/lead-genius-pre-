@@ -82,6 +82,19 @@ enum IntentCategory {
   other
 }
 
+enum WarmupStep {
+  linkedin_connect
+  linkedin_like
+  linkedin_comment
+  linkedin_share
+  website_visit
+  content_share
+  email_intro
+  email_value
+  email_case_study
+  email_meeting
+}
+
 model Lead {
   id              String     @id @default(cuid())
   email           String?
@@ -101,18 +114,62 @@ model Lead {
   currentStep     String?
   nextActionAt    DateTime?
   lastContactedAt DateTime?
+  linkedinUrl     String?
+  websiteUrl      String?
+  warmupActive    Boolean   @default(false)
+  warmupStep      Int       @default(0)
+  warmupStartedAt DateTime?
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 
   groupMembers GroupMember[]
   messages     Message[]
   timeline     LeadTimeline[]
+  warmupTasks  WarmupTask[]
 
   @@index([status])
   @@index([email])
   @@index([tags])
   @@index([score])
   @@index([stage])
+  @@index([warmupActive])
+}
+
+model WarmupSettings {
+  id              String   @id @default("global")
+  enabled         Boolean  @default(false)
+  maxActiveWarmups Int     @default(20)
+  stepsPerDay     Int      @default(2)
+  minDelayHours   Int      @default(12)
+  maxDelayHours   Int      @default(48)
+  workingHoursStart String @default("09:00")
+  workingHoursEnd String   @default("18:00")
+  timezone        String   @default("UTC")
+  steps           WarmupStep[] @default([linkedin_connect, linkedin_like, linkedin_comment, email_intro, website_visit, content_share, email_value, email_case_study, email_meeting])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model WarmupTask {
+  id          String     @id @default(cuid())
+  leadId      String
+  step        WarmupStep
+  stepIndex   Int
+  channel     Channel
+  subject     String?
+  body        String?
+  status      MessageStatus @default(queued)
+  scheduledAt DateTime?
+  completedAt DateTime?
+  errorMessage String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([status])
+  @@index([scheduledAt])
 }
 
 model LeadTimeline {

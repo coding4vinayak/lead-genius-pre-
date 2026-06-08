@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Plus, Trash2, Tags, ChevronRight, X, Phone, Building2, Briefcase, Target, Calendar, Bot, MessageSquare, Activity, History, FileText } from 'lucide-react';
+import { Search, Plus, Trash2, Tags, ChevronRight, X, Phone, Building2, Briefcase, Target, Calendar, Bot, MessageSquare, Activity, History, FileText, Linkedin, Globe, Zap, Thermometer, Play, Square, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../lib/api';
 import { Card, Button, Input, Select, Badge, Spinner, EmptyState, ErrorBanner, PageHeader, Modal } from '../components/ui';
@@ -18,6 +18,24 @@ function LeadDetailDrawer({ leadId, onClose, onEdit, onDelete }: { leadId: strin
     queryKey: ['lead-timeline', leadId],
     queryFn: () => api.get(`/leads/${leadId}/timeline`).then((r) => r.data),
     enabled: !!leadId,
+  });
+
+  const startWarmup = useMutation({
+    mutationFn: () => api.post('/warmup/start', { leadIds: [leadId] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lead-detail', leadId] });
+      toast.success('Warmup started');
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const stopWarmup = useMutation({
+    mutationFn: () => api.post('/warmup/stop', { leadIds: [leadId] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lead-detail', leadId] });
+      toast.success('Warmup stopped');
+    },
+    onError: (e: any) => toast.error(e.message),
   });
 
   const updateStage = useMutation({
@@ -88,14 +106,88 @@ function LeadDetailDrawer({ leadId, onClose, onEdit, onDelete }: { leadId: strin
                 <div><span className="text-[var(--color-text-secondary)] flex items-center gap-1"><Briefcase size={12} /> Title</span><p className="text-[var(--color-text)]">{lead.title || '—'}</p></div>
                 <div><span className="text-[var(--color-text-secondary)] flex items-center gap-1"><Target size={12} /> Source</span><p className="text-[var(--color-text)]">{lead.source || '—'}</p></div>
                 <div><span className="text-[var(--color-text-secondary)]">Status</span><p><Badge variant={lead.status === 'bounced' ? 'danger' : lead.status === 'active' ? 'success' : 'warning'}>{lead.status}</Badge></p></div>
-                <div><span className="text-[var(--color-text-secondary)]">Score</span><p>{lead.score != null ? <Badge variant={lead.score >= 70 ? 'success' : lead.score >= 40 ? 'warning' : 'default'}>{lead.score}</Badge> : '—'}</p></div>
+                <div><span className="text-[var(--color-text-secondary)]">Score
+                  <button
+                    className="ml-1 align-middle text-[var(--color-text-tertiary)] hover:text-[var(--color-primary)]"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      try {
+                        const res = await api.post(`/scoring/score/${lead.id}`);
+                        queryClient.invalidateQueries({ queryKey: ['leads'] });
+                        queryClient.invalidateQueries({ queryKey: ['lead-detail', lead.id] });
+                        toast.success(`Score: ${res.data.data.score}`);
+                      } catch (err: any) { toast.error(err.message); }
+                    }}
+                    title="Recalculate score"
+                  >
+                    <RefreshCw size={12} />
+                  </button>
+                </span>
+                  <p>
+                    {lead.score != null ? (
+                      <span className="flex items-center gap-2">
+                        <div className="w-16 h-2 bg-[var(--color-surface-secondary)] rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${lead.score >= 70 ? 'bg-[var(--color-success)]' : lead.score >= 40 ? 'bg-[var(--color-warning)]' : 'bg-[var(--color-text-tertiary)]'}`}
+                            style={{ width: `${lead.score}%` }}
+                          />
+                        </div>
+                        <span className={`text-xs font-semibold ${lead.score >= 70 ? 'text-[var(--color-success)]' : lead.score >= 40 ? 'text-[var(--color-warning)]' : 'text-[var(--color-text-secondary)]'}`}>{lead.score}</span>
+                      </span>
+                    ) : (
+                      <button className="text-xs text-[var(--color-primary)] underline" onClick={async (e) => {
+                        e.stopPropagation();
+                        try {
+                          const res = await api.post(`/scoring/score/${lead.id}`);
+                          queryClient.invalidateQueries({ queryKey: ['leads'] });
+                          queryClient.invalidateQueries({ queryKey: ['lead-detail', lead.id] });
+                          toast.success(`Score: ${res.data.data.score}`);
+                        } catch (err: any) { toast.error(err.message); }
+                      }}>Calculate</button>
+                    )}
+                  </p>
+                </div>
                 <div><span className="text-[var(--color-text-secondary)] flex items-center gap-1"><Calendar size={12} /> Created</span><p className="text-[var(--color-text)]">{new Date(lead.createdAt).toLocaleDateString()}</p></div>
                 <div><span className="text-[var(--color-text-secondary)]">Last Contacted</span><p className="text-[var(--color-text)]">{lead.lastContactedAt ? new Date(lead.lastContactedAt).toLocaleDateString() : '—'}</p></div>
               </div>
+              {lead.linkedinUrl && <p className="mt-2 text-xs"><span className="text-[var(--color-text-tertiary)]">LinkedIn: </span><a href={lead.linkedinUrl} target="_blank" className="text-[var(--color-primary)] hover:underline">{lead.linkedinUrl}</a></p>}
+              {lead.websiteUrl && <p className="mt-1 text-xs"><span className="text-[var(--color-text-tertiary)]">Website: </span><a href={lead.websiteUrl} target="_blank" className="text-[var(--color-primary)] hover:underline">{lead.websiteUrl}</a></p>}
               {lead.tags?.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-[var(--color-border-light)]">
                   <span className="text-xs text-[var(--color-text-tertiary)]">Tags</span>
                   <div className="flex gap-1 flex-wrap mt-1">{lead.tags.map((t: string) => <Badge key={t}>{t}</Badge>)}</div>
+                </div>
+              )}
+            </Card>
+
+            <Card className="p-4">
+              <h3 className="font-semibold text-[var(--color-text)] mb-3 flex items-center gap-2"><Thermometer size={16} /> Warming</h3>
+              <div className="flex items-center justify-between">
+                <div>
+                  {lead.warmupActive ? (
+                    <span className="flex items-center gap-2 text-sm text-[var(--color-success)]"><Zap size={16} /> Active (step {lead.warmupStep})</span>
+                  ) : (
+                    <span className="text-sm text-[var(--color-text-secondary)]">Not warming</span>
+                  )}
+                  {lead.warmupStartedAt && <p className="text-xs text-[var(--color-text-tertiary)]">Started {new Date(lead.warmupStartedAt).toLocaleDateString()}</p>}
+                </div>
+                <Button
+                  variant={lead.warmupActive ? 'danger' : 'primary'}
+                  size="sm"
+                  onClick={() => lead.warmupActive ? stopWarmup.mutate() : startWarmup.mutate()}
+                  disabled={startWarmup.isPending || stopWarmup.isPending}
+                >
+                  {lead.warmupActive ? <><Square size={14} /><span className="ml-1">Stop</span></> : <><Play size={14} /><span className="ml-1">Start</span></>}
+                </Button>
+              </div>
+              {lead.warmupTasks?.length > 0 && (
+                <div className="mt-3 space-y-1 max-h-40 overflow-y-auto">
+                  {lead.warmupTasks.map((t: any) => (
+                    <div key={t.id} className="flex items-center justify-between text-xs p-2 bg-[var(--color-surface-secondary)] rounded">
+                      <span className="text-[var(--color-text)]">{t.step.replace(/_/g, ' ')}</span>
+                      <Badge variant={t.status === 'sent' ? 'success' : t.status === 'failed' ? 'danger' : 'warning'}>{t.status}</Badge>
+                    </div>
+                  ))}
                 </div>
               )}
             </Card>
@@ -247,26 +339,161 @@ function LeadDetailDrawer({ leadId, onClose, onEdit, onDelete }: { leadId: strin
   );
 }
 
+function LinkedInImportModal({ isOpen, onClose, onComplete }: { isOpen: boolean; onClose: () => void; onComplete: () => void }) {
+  const [searchUrl, setSearchUrl] = useState('');
+  const [keywords, setKeywords] = useState('');
+  const [title, setTitle] = useState('');
+  const [company, setCompany] = useState('');
+  const [maxLeads, setMaxLeads] = useState(25);
+  const [groupId, setGroupId] = useState('');
+
+  const { data: groupsData } = useQuery({
+    queryKey: ['groups'],
+    queryFn: () => api.get('/groups').then((r) => r.data),
+  });
+
+  const importMut = useMutation({
+    mutationFn: (body: any) => api.post('/leads/source/linkedin', body),
+    onSuccess: (res) => {
+      toast.success(`Imported ${res.data.data.count} leads from LinkedIn`);
+      onComplete();
+      onClose();
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  if (!isOpen) return null;
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Import from LinkedIn">
+      <form onSubmit={(e) => { e.preventDefault(); importMut.mutate({ searchUrl, keywords, title, company, maxLeads, groupId: groupId || undefined }); }} className="space-y-4">
+        <Input label="LinkedIn Profile URL" placeholder="https://linkedin.com/in/username" value={searchUrl} onChange={(e) => setSearchUrl(e.target.value)} />
+        <p className="text-xs text-[var(--color-text-tertiary)]">Or search by criteria:</p>
+        <Input label="Keywords" placeholder="e.g. software engineer" value={keywords} onChange={(e) => setKeywords(e.target.value)} />
+        <Input label="Title" placeholder="e.g. CTO" value={title} onChange={(e) => setTitle(e.target.value)} />
+        <Input label="Company" placeholder="e.g. Google" value={company} onChange={(e) => setCompany(e.target.value)} />
+        <Input label="Max Leads" type="number" value={String(maxLeads)} onChange={(e) => setMaxLeads(Number(e.target.value))} />
+        <Select label="Add to Group (optional)" options={['', ...(groupsData?.data || []).map((g: any) => ({ value: g.id, label: g.name }))]} value={groupId} onChange={(e: any) => setGroupId(e.target.value)} />
+        <div className="flex justify-end gap-2 pt-2">
+          <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button type="submit" disabled={importMut.isPending}>{importMut.isPending ? 'Importing...' : 'Import'}</Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function WebsiteImportModal({ isOpen, onClose, onComplete }: { isOpen: boolean; onClose: () => void; onComplete: () => void }) {
+  const [url, setUrl] = useState('');
+  const [maxLeads, setMaxLeads] = useState(25);
+  const [groupId, setGroupId] = useState('');
+
+  const { data: groupsData } = useQuery({
+    queryKey: ['groups'],
+    queryFn: () => api.get('/groups').then((r) => r.data),
+  });
+
+  const importMut = useMutation({
+    mutationFn: (body: any) => api.post('/leads/source/website', body),
+    onSuccess: (res) => {
+      toast.success(`Imported ${res.data.data.count} leads from website`);
+      onComplete();
+      onClose();
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  if (!isOpen) return null;
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Import from Website">
+      <form onSubmit={(e) => { e.preventDefault(); importMut.mutate({ url, maxLeads, groupId: groupId || undefined }); }} className="space-y-4">
+        <Input label="Website URL" placeholder="https://example.com/team" value={url} onChange={(e) => setUrl(e.target.value)} />
+        <Input label="Max Leads" type="number" value={String(maxLeads)} onChange={(e) => setMaxLeads(Number(e.target.value))} />
+        <Select label="Add to Group (optional)" options={['', ...(groupsData?.data || []).map((g: any) => ({ value: g.id, label: g.name }))]} value={groupId} onChange={(e: any) => setGroupId(e.target.value)} />
+        <div className="flex justify-end gap-2 pt-2">
+          <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button type="submit" disabled={importMut.isPending}>{importMut.isPending ? 'Importing...' : 'Import'}</Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function WarmupSettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const queryClient = useQueryClient();
+
+  const { data } = useQuery({
+    queryKey: ['warmup-settings'],
+    queryFn: () => api.get('/warmup/settings').then((r) => r.data),
+    enabled: isOpen,
+  });
+
+  const saveMut = useMutation({
+    mutationFn: (body: any) => api.put('/warmup/settings', body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['warmup-settings'] });
+      toast.success('Warmup settings saved');
+      onClose();
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const settings = data?.data;
+  if (!isOpen) return null;
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Warmup Settings">
+      <form onSubmit={(e) => { e.preventDefault(); const fd = new FormData(e.currentTarget); saveMut.mutate({ enabled: fd.get('enabled') === 'on', maxActiveWarmups: Number(fd.get('maxActiveWarmups')), stepsPerDay: Number(fd.get('stepsPerDay')), minDelayHours: Number(fd.get('minDelayHours')), maxDelayHours: Number(fd.get('maxDelayHours')), workingHoursStart: fd.get('workingHoursStart'), workingHoursEnd: fd.get('workingHoursEnd'), timezone: fd.get('timezone') }); }} className="space-y-4">
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="enabled" defaultChecked={settings?.enabled} className="accent-[var(--color-primary)]" /> Enable Auto-Warming</label>
+        <Input label="Max Active Warmups" name="maxActiveWarmups" type="number" defaultValue={settings?.maxActiveWarmups || 20} />
+        <Input label="Steps Per Day" name="stepsPerDay" type="number" defaultValue={settings?.stepsPerDay || 2} />
+        <div className="grid grid-cols-2 gap-3">
+          <Input label="Min Delay (hours)" name="minDelayHours" type="number" defaultValue={settings?.minDelayHours || 12} />
+          <Input label="Max Delay (hours)" name="maxDelayHours" type="number" defaultValue={settings?.maxDelayHours || 48} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Input label="Working Hours Start" name="workingHoursStart" defaultValue={settings?.workingHoursStart || '09:00'} />
+          <Input label="Working Hours End" name="workingHoursEnd" defaultValue={settings?.workingHoursEnd || '18:00'} />
+        </div>
+        <Input label="Timezone" name="timezone" defaultValue={settings?.timezone || 'UTC'} />
+        <div className="flex justify-end gap-2 pt-2">
+          <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button type="submit" disabled={saveMut.isPending}>{saveMut.isPending ? 'Saving...' : 'Save'}</Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
 export default function Leads() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
+  const [warmupFilter, setWarmupFilter] = useState('');
+  const [scoreFilter, setScoreFilter] = useState('');
   const [selected, setSelected] = useState<string[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [detailLeadId, setDetailLeadId] = useState<string | null>(null);
+  const [showLinkedinModal, setShowLinkedinModal] = useState(false);
+  const [showWebsiteModal, setShowWebsiteModal] = useState(false);
+  const [showWarmupSettings, setShowWarmupSettings] = useState(false);
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['leads', page, search, statusFilter, sourceFilter],
-    queryFn: () => api.get('/leads', { params: { page, pageSize: 50, search, status: statusFilter || undefined, source: sourceFilter || undefined } }).then((r) => r.data),
+    queryKey: ['leads', page, search, statusFilter, sourceFilter, warmupFilter, scoreFilter],
+    queryFn: () => api.get('/leads', { params: { page, pageSize: 50, search, status: statusFilter || undefined, source: sourceFilter || undefined, warmupActive: warmupFilter || undefined, scoreSegment: scoreFilter || undefined } }).then((r) => r.data),
   });
 
-  const sourcesQuery = useQuery({
-    queryKey: ['lead-sources'],
-    queryFn: () => api.get('/leads', { params: { pageSize: 1 } }).then(() => []),
-    enabled: false,
+  const bulkWarmup = useMutation({
+    mutationFn: () => api.post('/warmup/start', { leadIds: selected }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['leads'] }); toast.success('Warmup started'); setSelected([]); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const bulkStopWarmup = useMutation({
+    mutationFn: () => api.post('/warmup/stop', { leadIds: selected }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['leads'] }); toast.success('Warmup stopped'); setSelected([]); },
+    onError: (e: any) => toast.error(e.message),
   });
 
   const bulkTag = useMutation({
@@ -293,7 +520,26 @@ export default function Leads() {
     <div>
       <div className="flex relative">
         <div className="flex-1 min-w-0">
-          <PageHeader title="Leads" description="All your leads in one place" action={<Button onClick={() => { setEditing(null); setShowModal(true); }}><Plus size={16} /><span className="ml-1">Add Lead</span></Button>} />
+          <PageHeader
+            title="Leads"
+            description="Source, manage and warm up your leads"
+            action={
+              <div className="flex gap-2">
+                <Button variant="secondary" onClick={() => setShowWarmupSettings(true)}>
+                  <Thermometer size={16} /><span className="ml-1">Warmup</span>
+                </Button>
+                <Button variant="secondary" onClick={() => setShowWebsiteModal(true)}>
+                  <Globe size={16} /><span className="ml-1">Website</span>
+                </Button>
+                <Button variant="secondary" onClick={() => setShowLinkedinModal(true)}>
+                  <Linkedin size={16} /><span className="ml-1">LinkedIn</span>
+                </Button>
+                <Button onClick={() => { setEditing(null); setShowModal(true); }}>
+                  <Plus size={16} /><span className="ml-1">Add Lead</span>
+                </Button>
+              </div>
+            }
+          />
 
           <Card className="mb-4 p-3">
             <div className="flex flex-wrap gap-3 items-center">
@@ -301,12 +547,17 @@ export default function Leads() {
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]" />
                 <input className="w-full pl-9 pr-3 py-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)]" placeholder="Search by name, email, company..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
               </div>
-              <Select options={['', 'active', 'unsubscribed', 'bounced', 'invalid']} value={statusFilter} onChange={(e: any) => { setStatusFilter(e.target.value); setPage(1); }} className="w-36" />
-              <Select options={['', 'website', 'referral', 'linkedin', 'conference', 'webinar', 'cold-outreach', 'partner', 'advertisement', 'trial-signup']} value={sourceFilter} onChange={(e: any) => { setSourceFilter(e.target.value); setPage(1); }} className="w-36" />
+              <Select options={['', 'active', 'unsubscribed', 'bounced', 'invalid']} value={statusFilter} onChange={(e: any) => { setStatusFilter(e.target.value); setPage(1); }} className="w-32" />
+              <Select options={['', 'manual', 'csv', 'linkedin', 'website', 'webhook', 'api', 'referral']} value={sourceFilter} onChange={(e: any) => { setSourceFilter(e.target.value); setPage(1); }} className="w-32" />
+              <Select options={[{ value: '', label: 'Warmup: All' }, { value: 'true', label: 'Warming Active' }, { value: 'false', label: 'Not Warming' }]} value={warmupFilter} onChange={(e: any) => { setWarmupFilter(e.target.value); setPage(1); }} className="w-40" />
+              <Select options={[{ value: '', label: 'Score: All' }, { value: 'hot', label: 'Hot (70+)' }, { value: 'warm', label: 'Warm (40-69)' }, { value: 'cool', label: 'Cool (20-39)' }, { value: 'cold', label: 'Cold (1-19)' }, { value: 'unscored', label: 'Unscored' }]} value={scoreFilter} onChange={(e: any) => { setScoreFilter(e.target.value); setPage(1); }} className="w-40" />
               {selected.length > 0 && (
                 <>
                   <Button variant="secondary" size="sm" onClick={() => { const tag = prompt('Enter tags (comma-separated):'); if (tag) bulkTag.mutate({ ids: selected, tags: tag.split(',').map((t) => t.trim()), action: 'add' }); }}>
                     <Tags size={14} /><span className="ml-1">Tag ({selected.length})</span>
+                  </Button>
+                  <Button variant="primary" size="sm" onClick={() => bulkWarmup.mutate()}>
+                    <Zap size={14} /><span className="ml-1">Warm ({selected.length})</span>
                   </Button>
                   <Button variant="danger" size="sm" onClick={() => { if (confirm(`Delete ${selected.length} leads?`)) bulkDelete.mutate(selected); }}>
                     <Trash2 size={14} /><span className="ml-1">Delete</span>
@@ -316,7 +567,7 @@ export default function Leads() {
             </div>
           </Card>
 
-          {isLoading ? <Spinner /> : leads.length === 0 ? <EmptyState title="No leads yet" description="Add your first lead or import a CSV" action={<Button onClick={() => setShowModal(true)}>Add Lead</Button>} /> : (
+          {isLoading ? <Spinner /> : leads.length === 0 ? <EmptyState title="No leads yet" description="Import from LinkedIn, website, or add manually" action={<Button onClick={() => setShowModal(true)}>Add Lead</Button>} /> : (
             <Card>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -325,9 +576,8 @@ export default function Leads() {
                       <th className="p-3 text-left w-10"><input type="checkbox" onChange={(e) => setSelected(e.target.checked ? leads.map((l: any) => l.id) : [])} checked={selected.length === leads.length && leads.length > 0} className="accent-[var(--color-primary)]" /></th>
                       <th className="p-3 text-left font-medium text-[var(--color-text-secondary)] text-xs uppercase tracking-wider">Name / Email</th>
                       <th className="p-3 text-left font-medium text-[var(--color-text-secondary)] text-xs uppercase tracking-wider">Company</th>
-                      <th className="p-3 text-left font-medium text-[var(--color-text-secondary)] text-xs uppercase tracking-wider">Title</th>
-                      <th className="p-3 text-left font-medium text-[var(--color-text-secondary)] text-xs uppercase tracking-wider">Phone</th>
                       <th className="p-3 text-left font-medium text-[var(--color-text-secondary)] text-xs uppercase tracking-wider">Source</th>
+                      <th className="p-3 text-left font-medium text-[var(--color-text-secondary)] text-xs uppercase tracking-wider">Warmup</th>
                       <th className="p-3 text-left font-medium text-[var(--color-text-secondary)] text-xs uppercase tracking-wider">Score</th>
                       <th className="p-3 text-left font-medium text-[var(--color-text-secondary)] text-xs uppercase tracking-wider">Status</th>
                       <th className="p-3 text-left font-medium text-[var(--color-text-secondary)] text-xs uppercase tracking-wider">Tags</th>
@@ -343,9 +593,14 @@ export default function Leads() {
                           <p className="text-xs text-[var(--color-text-tertiary)]">{lead.email || ''}</p>
                         </td>
                         <td className="p-3 text-[var(--color-text-secondary)]">{lead.company || '—'}</td>
-                        <td className="p-3 text-[var(--color-text-secondary)]">{lead.title || '—'}</td>
-                        <td className="p-3 text-[var(--color-text-tertiary)] text-xs">{lead.phone || '—'}</td>
                         <td className="p-3">{lead.source ? <Badge variant="info">{lead.source}</Badge> : '—'}</td>
+                        <td className="p-3">
+                          {lead.warmupActive ? (
+                            <span className="flex items-center gap-1 text-xs text-[var(--color-success)]"><Zap size={12} /> Step {lead.warmupStep}</span>
+                          ) : (
+                            <span className="text-xs text-[var(--color-text-tertiary)]">—</span>
+                          )}
+                        </td>
                         <td className="p-3">{lead.score != null ? <Badge variant={lead.score >= 70 ? 'success' : lead.score >= 40 ? 'warning' : 'default'}>{lead.score}</Badge> : '—'}</td>
                         <td className="p-3"><Badge variant={lead.status === 'bounced' ? 'danger' : lead.status === 'active' ? 'success' : 'warning'}>{lead.status}</Badge></td>
                         <td className="p-3"><div className="flex gap-1 flex-wrap max-w-[120px]">{lead.tags?.slice(0, 2).map((t: string) => <Badge key={t}>{t}</Badge>)}{lead.tags?.length > 2 && <span className="text-xs text-[var(--color-text-tertiary)]">+{lead.tags.length - 2}</span>}</div></td>
@@ -381,6 +636,8 @@ export default function Leads() {
           <Input label="Phone" name="phone" defaultValue={editing?.phone || ''} />
           <Input label="Company" name="company" defaultValue={editing?.company || ''} />
           <Input label="Title" name="title" defaultValue={editing?.title || ''} />
+          <Input label="LinkedIn URL" name="linkedinUrl" defaultValue={editing?.linkedinUrl || ''} />
+          <Input label="Website URL" name="websiteUrl" defaultValue={editing?.websiteUrl || ''} />
           <Select label="Status" name="status" options={['active', 'unsubscribed', 'bounced', 'invalid']} defaultValue={editing?.status || 'active'} />
           <Input label="Tags (comma-separated)" name="tags" defaultValue={editing?.tags?.join(', ') || ''} />
           <div className="flex justify-end gap-2 pt-2">
@@ -389,6 +646,10 @@ export default function Leads() {
           </div>
         </form>
       </Modal>
+
+      <LinkedInImportModal isOpen={showLinkedinModal} onClose={() => setShowLinkedinModal(false)} onComplete={() => { queryClient.invalidateQueries({ queryKey: ['leads'] }); }} />
+      <WebsiteImportModal isOpen={showWebsiteModal} onClose={() => setShowWebsiteModal(false)} onComplete={() => { queryClient.invalidateQueries({ queryKey: ['leads'] }); }} />
+      <WarmupSettingsModal isOpen={showWarmupSettings} onClose={() => setShowWarmupSettings(false)} />
     </div>
   );
 }

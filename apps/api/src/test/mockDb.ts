@@ -41,6 +41,9 @@ export interface MockPrismaClient {
   message: MockModel;
   settings: MockModel;
   agentSettings: MockModel;
+  warmupSettings: MockModel;
+  warmupTask: MockModel;
+  leadTimeline: MockModel;
   $connect: MockFn;
   $disconnect: MockFn;
 }
@@ -55,6 +58,9 @@ export function createMockPrisma(): MockPrismaClient {
     message: mockModel(),
     settings: mockModel(),
     agentSettings: mockModel(),
+    warmupSettings: mockModel(),
+    warmupTask: mockModel(),
+    leadTimeline: mockModel(),
     $connect: vi.fn(),
     $disconnect: vi.fn(),
   };
