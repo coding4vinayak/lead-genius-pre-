@@ -32,6 +32,7 @@ export const config = {
     fromNumber: process.env.TWILIO_FROM_NUMBER || '',
   },
   webhookSecret: process.env.WEBHOOK_SECRET || '',
+  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
   ai: {
     apiKey: process.env.AI_API_KEY || process.env.OPENAI_API_KEY || '',
     baseUrl: process.env.AI_BASE_URL || '',

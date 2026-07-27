@@ -1,0 +1,7 @@
+{
+  "task_id": "task-autonomous-marketing-platform",
+  "task_description": "Build autonomous marketing and sales lead warming system: multi-step campaign sequences that run without AI, proper email/WhatsApp integration with health monitoring, AI-only-on-inbound response handler, and comprehensive UI/UX overhaul with new Sequences and Integrations pages.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004"],
+  "blocked_reason": null
+}

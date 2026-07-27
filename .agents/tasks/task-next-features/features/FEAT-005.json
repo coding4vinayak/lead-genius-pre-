@@ -1,0 +1,39 @@
+{
+  "id": "FEAT-005",
+  "type": "feat",
+  "description": "LinkedIn Automation Channel: Add LinkedIn as a channel with data models for profile/connection tracking, sequence step types (send_connection_request, send_linkedin_message, view_profile), LinkedIn message templates, and connection state management. Actual LinkedIn API is stubbed.",
+  "status": "completed",
+  "steps": [
+    "Update packages/shared/src/types/index.ts: Add 'linkedin' to CHANNEL array. Add LINKEDIN_STEP_TYPE const array ('send_connection_request', 'send_linkedin_message', 'view_profile'). Add LINKEDIN_CONNECTION_STATUS ('not_connected', 'pending', 'connected', 'declined'). Add 'send_connection_request', 'send_linkedin_message', 'view_profile' to SEQUENCE_STEP_TYPE array.",
+    "Add Prisma models: `LinkedInProfile` (id, leadId:String @unique, profileUrl:String, headline?, connectionStatus:String @default('not_connected'), connectionRequestedAt?, connectedAt?, lastMessagedAt?, createdAt, updatedAt). Add `LinkedInMessage` (id, leadId, profileId, direction, body, status:String @default('pending'), sentAt?, createdAt). Add enum LinkedInConnectionStatus to schema.",
+    "Create Prisma migration for LinkedInProfile and LinkedInMessage models.",
+    "Create `apps/api/src/services/linkedin.ts`: LinkedIn service (stub implementation). Functions: `sendConnectionRequest(leadId, note?)` - updates profile status to 'pending', logs activity. `sendLinkedInMessage(leadId, body)` - creates LinkedInMessage record. `viewProfile(leadId)` - logs profile view activity. `getConnectionStatus(leadId)` - returns current status. `updateConnectionStatus(leadId, status)` - for webhook callbacks. All are stubs that work with local DB only.",
+    "Create `apps/api/src/routes/linkedin.ts`: POST /api/linkedin/connect/:leadId - send connection request. POST /api/linkedin/message/:leadId - send message. POST /api/linkedin/view/:leadId - view profile. GET /api/linkedin/profile/:leadId - get LinkedIn profile data. PUT /api/linkedin/profile/:leadId - update profile URL/status. GET /api/linkedin/connections - list all connections with status filter.",
+    "Integrate with sequence engine: Update `apps/api/src/services/sequence-engine.ts` to handle the new step types (send_connection_request, send_linkedin_message, view_profile). When these steps execute, call the linkedin service.",
+    "Add Zod schemas in packages/shared/src/schemas/index.ts: `linkedInConnectSchema`, `linkedInMessageSchema`, `linkedInProfileSchema`.",
+    "Update mockDb.ts: Add `linkedInProfile` and `linkedInMessage` mock models. Add `buildLinkedInProfile()` and `buildLinkedInMessage()` factories.",
+    "Create `apps/api/src/services/linkedin.test.ts`: Test connection request flow, message sending, profile view logging, status updates.",
+    "Create `apps/api/src/routes/linkedin.test.ts`: Test all LinkedIn route endpoints.",
+    "Register LinkedIn routes in apps/api/src/index.ts with requireAuth middleware.",
+    "Frontend: Create `apps/web/src/pages/LinkedIn.tsx`: Page showing LinkedIn connections, pending requests, message history.",
+    "Frontend: Add LinkedIn profile section to lead detail view with connection status badge and action buttons.",
+    "Update Sidebar to include LinkedIn under Channels section."
+  ],
+  "acceptance_criteria": [
+    "LinkedIn channel is available in the CHANNEL type",
+    "LinkedIn sequence step types work in the sequence engine",
+    "POST /api/linkedin/connect/:leadId creates/updates LinkedInProfile with pending status",
+    "POST /api/linkedin/message/:leadId creates a LinkedInMessage record",
+    "GET /api/linkedin/connections returns filtered connection list",
+    "LinkedIn profile data persists per lead",
+    "Sequence engine correctly handles send_connection_request, send_linkedin_message, view_profile steps",
+    "All LinkedIn tests pass",
+    "TypeScript compiles cleanly"
+  ],
+  "verification": [
+    "cd /projects/sandbox/lead-genius-pre- && npx turbo test",
+    "cd /projects/sandbox/lead-genius-pre- && npx turbo build"
+  ],
+  "blocked_reason": null,
+  "findings": "All 29 LinkedIn tests pass. Full API test suite (1174 tests) and web test suite (104 tests) pass. API TypeScript build has pre-existing errors in unrelated files (smtp-server.test.ts, api-keys.ts, demo.pipeline.test.ts, auth.ts, email-sandbox.ts, simulation.test.ts) that were present before this feature. Shared and Web packages build cleanly. Workers package also has pre-existing build errors."
+}

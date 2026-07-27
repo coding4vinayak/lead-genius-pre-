@@ -1,0 +1,43 @@
+{
+  "id": "FEAT-006",
+  "type": "feat",
+  "description": "Phase 5: Intelligence - A/B testing (variants, traffic split, auto-winner selection), Send time optimization (timezone-aware, open-time tracking, predictive scheduling), Advanced analytics (sequence funnels, cohort analysis, revenue attribution, CSV export), and Performance benchmarks (industry comparisons, improvement suggestions).",
+  "status": "in_progress",
+  "steps": [
+    "1. Add Prisma models: AbTest (id, sequenceStepId, name, status: draft/running/completed, winnerVariantId?, startedAt, completedAt, createdAt, updatedAt), AbTestVariant (id, testId, name, subject?, body?, weight: Int default 50, sentCount, openCount, clickCount, replyCount, createdAt), SendTimePreference (id, leadId, timezone, preferredHour, preferredDay, openCount, dataPoints, updatedAt), AnalyticsSnapshot (id, type: funnel/cohort/revenue, entityId, entityType, data Json, periodStart, periodEnd, createdAt), PerformanceBenchmark (id, metric, industryAverage, userValue, percentile, suggestions String[], calculatedAt, createdAt).",
+    "2. Create migration at apps/api/prisma/migrations/20260529050000_add_intelligence/migration.sql.",
+    "3. Add shared types: AB_TEST_STATUS, ANALYTICS_SNAPSHOT_TYPE, BENCHMARK_METRIC in packages/shared/src/types/index.ts.",
+    "4. Add schemas: abTestSchema, abTestVariantSchema, sendTimePreferenceSchema, analyticsSnapshotSchema in packages/shared/src/schemas/index.ts.",
+    "5. Create apps/api/src/services/ab-testing.ts: createTest(sequenceStepId, variants[]), startTest(testId), assignVariant(testId, leadId) - splits traffic by weight, recordResult(variantId, metric), checkSignificance(testId) - basic chi-square or z-test for statistical significance, selectWinner(testId), getTestResults(testId).",
+    "6. Create apps/api/src/services/send-time-optimizer.ts: recordOpenTime(leadId, openedAt), getOptimalSendTime(leadId) - returns best hour/day based on historical opens, getOptimalTimeForTimezone(timezone) - aggregate for timezone, scheduleOptimalSend(messageId, leadId) - delay until optimal time.",
+    "7. Create apps/api/src/services/advanced-analytics.ts: getSequenceFunnel(sequenceId) - enrolled/opened/clicked/replied/converted counts, getCohortAnalysis(sequenceId, period) - compare cohorts by enrollment week, getRevenueAttribution(sequenceId) - sum deal values attributed to sequence, exportAnalyticsCSV(type, filters).",
+    "8. Create apps/api/src/services/benchmarks.ts: calculateBenchmarks(workspaceId) - compare open rate, reply rate, bounce rate against industry averages, generateSuggestions(metrics) - return actionable suggestions based on where user is below average.",
+    "9. Create apps/api/src/routes/ab-tests.ts: GET /api/ab-tests, POST /api/ab-tests, GET /api/ab-tests/:id, POST /api/ab-tests/:id/start, POST /api/ab-tests/:id/complete, GET /api/ab-tests/:id/results.",
+    "10. Create apps/api/src/routes/send-optimization.ts: GET /api/send-optimization/lead/:leadId, GET /api/send-optimization/timezone/:tz, POST /api/send-optimization/schedule.",
+    "11. Create apps/api/src/routes/advanced-analytics.ts: GET /api/analytics/funnel/:sequenceId, GET /api/analytics/cohorts/:sequenceId, GET /api/analytics/revenue/:sequenceId, GET /api/analytics/export.",
+    "12. Create apps/api/src/routes/benchmarks.ts: GET /api/benchmarks, GET /api/benchmarks/suggestions.",
+    "13. Register all routes in apps/api/src/index.ts behind requireAuth.",
+    "14. Update mockDb.ts with abTest, abTestVariant, sendTimePreference, analyticsSnapshot, performanceBenchmark models.",
+    "15. Add factory functions: buildAbTest, buildAbTestVariant, buildSendTimePreference, buildAnalyticsSnapshot, buildPerformanceBenchmark.",
+    "16. Create service tests: ab-testing.test.ts, send-time-optimizer.test.ts, advanced-analytics.test.ts, benchmarks.test.ts.",
+    "17. Create route tests: ab-tests.test.ts, send-optimization.test.ts, advanced-analytics.test.ts, benchmarks.test.ts.",
+    "18. Ensure all tests pass."
+  ],
+  "acceptance_criteria": [
+    "A/B tests can be created with multiple variants and traffic is split by weight",
+    "Statistical significance check determines a winner",
+    "Send time optimization recommends best hour based on historical open data",
+    "Sequence funnel shows enrolled -> opened -> clicked -> replied -> converted",
+    "Cohort analysis compares performance by enrollment period",
+    "Revenue attribution sums deal values attributed to sequences",
+    "Analytics can be exported as CSV",
+    "Benchmarks compare user metrics against industry averages",
+    "All tests pass"
+  ],
+  "verification": [
+    "Run `npm test` from /projects/sandbox/lead-genius-pre- and confirm all tests pass",
+    "Run `npx tsc --noEmit` in apps/api to confirm no TypeScript errors"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

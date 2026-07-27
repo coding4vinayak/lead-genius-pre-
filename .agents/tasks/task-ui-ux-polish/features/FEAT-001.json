@@ -1,0 +1,39 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Visual Sequence Builder - a node/edge graph UI for building automated sequences with drag-to-reorder, zoom/pan canvas, add-step between nodes, side panel editing, branching conditions, color-coded node statuses, and per-step stats overlay. Replaces the basic create-sequence modal with a full visual workflow editor accessible from the Sequences page.",
+  "status": "in_progress",
+  "steps": [
+    "Create apps/web/src/components/sequences/SequenceBuilder.tsx - main canvas component with zoom/pan controls (scroll to zoom, drag to pan). Render nodes vertically with edges/connectors between them. Use Framer Motion for node entrance animations.",
+    "Create apps/web/src/components/sequences/SequenceNode.tsx - individual node component. Props: step data (type, config, stats). Color coding: green border/bg for completed, blue for active, gray for pending, red for failed. Show step type icon (from Lucide: Mail, MessageSquare, Clock, Filter, Users, GitBranch, Linkedin), title, and mini stats (sent count, open rate). Click handler to open side panel.",
+    "Create apps/web/src/components/sequences/SequenceEdge.tsx - SVG edge connecting two nodes. Show flow direction arrow. For condition nodes, render two edges (yes/no) with labels. Use curved bezier paths.",
+    "Create apps/web/src/components/sequences/AddStepButton.tsx - a '+' button rendered between nodes. Clicking opens a dropdown with step type options: send_email, send_whatsapp, send_linkedin, delay, condition, update_lead_stage, update_lead_score.",
+    "Create apps/web/src/components/sequences/StepConfigPanel.tsx - slide-in right panel (like a drawer) for editing a selected step's configuration. Fields depend on step type: for send_email show template picker + delay; for delay show duration input; for condition show field/operator/value selectors with yes/no branch config. Include save/cancel/delete buttons.",
+    "Create apps/web/src/components/sequences/SequenceCanvas.tsx - wrapper providing zoom/pan state (scale + translate), mouse drag handling for canvas movement, zoom controls (+ / - buttons and fit-to-view). Track viewport transform with useState.",
+    "Create apps/web/src/hooks/useSequenceBuilder.ts - Zustand-like local state hook managing: nodes array, edges array, selectedNodeId, addStep(afterIndex, type), removeStep(id), updateStep(id, config), reorderSteps (drag position). Expose methods for the builder UI.",
+    "Create apps/web/src/pages/SequenceBuilder.tsx - full page component. Fetch sequence by ID from URL params (useQuery to GET /sequences/:id). Render SequenceCanvas with nodes/edges. Render StepConfigPanel when a node is selected. Include toolbar with sequence name, status badge, save button, and back navigation.",
+    "Update apps/web/src/App.tsx - add route '/sequences/:id/builder' pointing to the new SequenceBuilder page.",
+    "Update apps/web/src/pages/Sequences.tsx - add an 'Edit' or 'Builder' button on each sequence card that navigates to /sequences/:id/builder.",
+    "Add drag-to-reorder capability in SequenceBuilder using pointer events (onPointerDown/Move/Up) to allow reordering steps by dragging nodes up/down. Update node order in local state on drop.",
+    "Create apps/web/src/components/sequences/SequenceBuilder.test.tsx - test that the builder renders nodes for a sequence, that clicking add-step shows the type dropdown, that clicking a node opens the config panel, and that the zoom controls render."
+  ],
+  "acceptance_criteria": [
+    "A new route /sequences/:id/builder renders the visual sequence builder page",
+    "Sequence cards on the Sequences page have a button to navigate to the builder",
+    "Nodes render vertically with edges between them showing flow direction",
+    "Clicking a node opens a side config panel with step-type-specific fields",
+    "The '+' button between nodes shows step type options and adds a new step",
+    "Condition nodes show two branching edges labeled 'Yes' and 'No'",
+    "Nodes are color-coded by status (green=completed, blue=active, gray=pending, red=failed)",
+    "Canvas supports zoom (buttons) and pan (drag)",
+    "Steps can be reordered by dragging",
+    "TypeScript compiles without errors via `npx turbo build`",
+    "Tests pass via `npx turbo test`"
+  ],
+  "verification": [
+    "Run `npx turbo build` from /projects/sandbox/lead-genius-pre- and confirm no TypeScript errors",
+    "Run `npx turbo test` from /projects/sandbox/lead-genius-pre- and confirm all tests pass"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

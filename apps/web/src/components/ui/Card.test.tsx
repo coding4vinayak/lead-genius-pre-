@@ -11,7 +11,7 @@ describe('Card', () => {
   it('should apply default classes', () => {
     render(<Card>Styled</Card>);
     const card = screen.getByText('Styled');
-    expect(card.className).toContain('bg-white');
+    expect(card.className).toContain('bg-[var(--color-surface)]');
     expect(card.className).toContain('rounded-xl');
   });
 

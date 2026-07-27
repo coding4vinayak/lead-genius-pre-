@@ -1,0 +1,44 @@
+{
+  "id": "FEAT-006",
+  "type": "feat",
+  "description": "Dark Mode + Micro-interactions - dark mode toggle using Tailwind dark class strategy with CSS variables, optimistic updates on mutations with rollback, undo toast on destructive actions, smooth list item enter/exit animations, button loading states, success/error shake animations, number count-up on dashboard KPIs, and hover card lift effects.",
+  "status": "completed",
+  "steps": [
+    "Update apps/web/src/styles/app.css - add dark mode CSS variables under a .dark class or [data-theme='dark'] selector. Define dark variants of all existing CSS variables (--color-surface, --color-text, --color-border, --color-sidebar, etc.). Add dark background/text defaults.",
+    "Create apps/web/src/store/theme.ts - Zustand store for theme: mode ('light'|'dark'|'system'), resolvedTheme ('light'|'dark'), toggle(), setMode(). Persist to localStorage. On init, apply 'dark' class to document.documentElement based on preference. Listen for system prefers-color-scheme changes when mode is 'system'.",
+    "Add dark mode toggle to apps/web/src/components/layout/Layout.tsx header - add a sun/moon icon button in the top bar that calls theme store toggle. Also add to Settings page.",
+    "Update apps/web/src/components/ui/index.tsx - update Card, Button, Input, Select, Modal, Badge, etc. to use dark mode compatible classes. Replace hardcoded bg-white with bg-[var(--color-surface)], text-gray-900 with text-[var(--color-text)], border-gray-200 with border-[var(--color-border)], etc. Use Tailwind dark: prefix where CSS variables are not used.",
+    "Create apps/web/src/hooks/useOptimisticMutation.ts - wrapper around useMutation that implements optimistic updates. Takes: queryKey to update, optimistic updater function, rollback on error. On mutate: immediately update query cache, on error: rollback to previous value and show error toast.",
+    "Create apps/web/src/components/ui/UndoToast.tsx - toast component for destructive actions. Shows 'Item deleted. Undo?' with a 5-second countdown timer bar. On 'Undo' click, calls rollback function. On timeout, confirms the deletion. Use react-hot-toast custom component.",
+    "Add apps/web/src/hooks/useUndoDelete.ts - hook wrapping delete mutations. On delete: remove item from UI optimistically, show UndoToast with 5s timer. If undo clicked, restore item. If timer expires, execute actual DELETE API call.",
+    "Create apps/web/src/components/ui/AnimatedList.tsx - wrapper using Framer Motion AnimatePresence + motion.div for list items. Children animate in (fade + slide from left) and out (fade + slide to right) when added/removed from lists.",
+    "Create apps/web/src/components/ui/LoadingButton.tsx - Button variant that shows a spinner inside the button when loading prop is true. Disable button during loading. Replace text with spinner + 'Loading...' or keep text with spinner prefix.",
+    "Create apps/web/src/components/ui/CountUp.tsx - animated number component that counts from 0 to target value over ~1 second using requestAnimationFrame. Used on Dashboard StatCards for KPI numbers.",
+    "Add hover lift effect to Card component - add transform: translateY(-2px) and enhanced shadow on hover via Tailwind classes (hover:-translate-y-0.5 hover:shadow-lg). Already partially there, enhance it.",
+    "Add success/error shake animation - create CSS keyframes for a subtle horizontal shake (error) and a brief scale pulse (success). Apply via className toggle on form containers after submit result.",
+    "Update apps/web/src/pages/Dashboard.tsx - use CountUp component for stat values. Wrap stat cards and chart cards in AnimatedList for entrance animations.",
+    "Create apps/web/src/components/ui/DarkMode.test.tsx - test that theme store toggles correctly, that dark class is applied to documentElement, and that components render with dark mode classes. Create apps/web/src/hooks/useOptimisticMutation.test.tsx - test optimistic update and rollback behavior."
+  ],
+  "acceptance_criteria": [
+    "Dark mode toggle in header switches between light and dark themes",
+    "All UI components (Card, Button, Input, Modal, etc.) render correctly in dark mode",
+    "CSS variables change between light and dark themes",
+    "Theme preference persists across page reloads",
+    "Optimistic updates instantly reflect mutations in the UI before API response",
+    "Failed mutations roll back the optimistic update and show error toast",
+    "Destructive actions show undo toast with 5-second timer",
+    "Clicking 'Undo' within 5 seconds restores the item",
+    "List items animate in/out smoothly when added or removed",
+    "Buttons show loading spinner during async operations",
+    "Dashboard KPI numbers animate counting up on load",
+    "Cards have subtle hover lift effect",
+    "TypeScript compiles without errors",
+    "Tests pass"
+  ],
+  "verification": [
+    "Run `npx turbo build` from /projects/sandbox/lead-genius-pre- and confirm no TypeScript errors",
+    "Run `npx turbo test` from /projects/sandbox/lead-genius-pre- and confirm all tests pass"
+  ],
+  "blocked_reason": null,
+  "findings": "Card.test.tsx had to be updated to check for bg-[var(--color-surface)] instead of bg-white due to the dark mode CSS variable migration. The workers build has pre-existing TS errors unrelated to this feature. All 159 web tests pass."
+}

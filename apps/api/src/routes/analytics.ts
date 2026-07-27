@@ -73,4 +73,34 @@ router.get('/channel-breakdown', async (_req: Request, res: Response, next: Next
   } catch (err) { next(err); }
 });
 
+router.get('/sequences', async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const sequences = await prisma.sequence.findMany({
+      select: { id: true, name: true, status: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const sequenceStats = await Promise.all(
+      sequences.map(async (seq) => {
+        const [total, completed, active, exited] = await Promise.all([
+          prisma.sequenceEnrollment.count({ where: { sequenceId: seq.id } }),
+          prisma.sequenceEnrollment.count({ where: { sequenceId: seq.id, status: 'completed' } }),
+          prisma.sequenceEnrollment.count({ where: { sequenceId: seq.id, status: 'active' } }),
+          prisma.sequenceEnrollment.count({ where: { sequenceId: seq.id, status: 'exited' } }),
+        ]);
+        return {
+          ...seq,
+          totalEnrollments: total,
+          completedEnrollments: completed,
+          activeEnrollments: active,
+          exitedEnrollments: exited,
+          completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
+        };
+      })
+    );
+
+    res.json({ data: sequenceStats });
+  } catch (err) { next(err); }
+});
+
 export default router;

@@ -1,0 +1,40 @@
+{
+  "id": "FEAT-005",
+  "type": "feat",
+  "description": "Phase 4: Integrations - HubSpot CRM sync (OAuth2, bi-directional contacts, lead stage push), Calendar booking link generation, Slack notifications (OAuth2, configurable alerts), and Zapier/Webhook marketplace (pre-built templates and recipes).",
+  "status": "completed",
+  "steps": [
+    "1. Add Prisma models: CrmSync (id, integrationId, provider: hubspot/salesforce, direction: inbound/outbound/bidirectional, lastSyncAt, syncStatus, fieldMapping Json, createdAt, updatedAt), CalendarBooking (id, leadId, title, startTime, endTime, meetingLink, status: scheduled/completed/cancelled, bookedAt, createdAt), SlackNotification (id, integrationId, channel, eventTypes String[], isActive, createdAt, updatedAt), WebhookTemplate (id, name, description, category, triggerEvents String[], targetUrl, headers Json?, bodyTemplate String?, isPublic, createdAt, updatedAt), Recipe (id, name, description, category, steps Json, isActive, createdAt, updatedAt).",
+    "2. Create migration at apps/api/prisma/migrations/20260529040000_add_integrations/migration.sql.",
+    "3. Add shared types: CRM_SYNC_STATUS, CRM_PROVIDER, BOOKING_STATUS, SLACK_EVENT_TYPE, RECIPE_CATEGORY in packages/shared/src/types/index.ts.",
+    "4. Add schemas: crmSyncSchema, calendarBookingSchema, slackNotificationSchema, webhookTemplateSchema, recipeSchema in packages/shared/src/schemas/index.ts.",
+    "5. Create apps/api/src/services/crm-sync.ts: connectCrm(integrationId, authCode), syncContacts(integrationId, direction), pushLeadStage(leadId, stage), pullNewContacts(integrationId), mapFields(lead, fieldMapping), getOAuthUrl(provider), handleOAuthCallback(provider, code).",
+    "6. Create apps/api/src/services/calendar-booking.ts: generateBookingLink(leadId, config), processBooking(bookingData), getAvailableSlots(date, timezone), trackBooking(leadId, meetingData).",
+    "7. Create apps/api/src/services/slack-notifications.ts: connectSlack(code), sendNotification(integrationId, event, data), configureNotifications(integrationId, config), sendDailyDigest(integrationId).",
+    "8. Create apps/api/src/services/webhook-marketplace.ts: listTemplates(category?), createFromTemplate(templateId, config), listRecipes(), activateRecipe(recipeId, config).",
+    "9. Create apps/api/src/routes/crm.ts: POST /api/crm/connect, POST /api/crm/sync, GET /api/crm/status, POST /api/crm/oauth/callback, GET /api/crm/field-mapping, PUT /api/crm/field-mapping.",
+    "10. Create apps/api/src/routes/calendar.ts: POST /api/calendar/booking-link, GET /api/calendar/bookings, GET /api/calendar/slots, POST /api/calendar/book (public - for leads to book).",
+    "11. Create apps/api/src/routes/slack.ts: POST /api/slack/connect, GET /api/slack/channels, PUT /api/slack/notifications, POST /api/slack/test.",
+    "12. Create apps/api/src/routes/marketplace.ts: GET /api/marketplace/templates, GET /api/marketplace/recipes, POST /api/marketplace/recipes/:id/activate.",
+    "13. Register all routes in apps/api/src/index.ts. Calendar booking endpoint for leads is public (no auth).",
+    "14. Update mockDb.ts with crmSync, calendarBooking, slackNotification, webhookTemplate, recipe models.",
+    "15. Add factory functions: buildCrmSync, buildCalendarBooking, buildSlackNotification, buildWebhookTemplate, buildRecipe.",
+    "16. Create service tests: crm-sync.test.ts, calendar-booking.test.ts, slack-notifications.test.ts, webhook-marketplace.test.ts.",
+    "17. Create route tests: crm.test.ts, calendar.test.ts, slack.test.ts, marketplace.test.ts.",
+    "18. Ensure all tests pass."
+  ],
+  "acceptance_criteria": [
+    "CRM OAuth2 flow generates correct authorization URL and handles callback",
+    "Bi-directional sync maps fields between lead model and CRM contacts",
+    "Calendar booking links can be generated and included in templates via {{booking_link}}",
+    "Slack connection stores OAuth tokens and sends configurable notifications",
+    "Webhook marketplace lists templates and recipes, recipes can be activated",
+    "All tests pass"
+  ],
+  "verification": [
+    "Run `npm test` from /projects/sandbox/lead-genius-pre- and confirm all tests pass",
+    "Run `npx tsc --noEmit` in apps/api to confirm no TypeScript errors"
+  ],
+  "blocked_reason": null,
+  "findings": "All 917 tests passing (105 new tests added). TypeScript compiles cleanly for new code; pre-existing TS errors in demo.pipeline.test.ts, auth.ts, email-sandbox.ts, smtp-server.test.ts remain unchanged. Calendar /book endpoint is registered without requireAuth (public). Used Prisma.InputJsonValue cast for JSON array fields in recipe update."
+}

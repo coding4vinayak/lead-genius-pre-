@@ -1,0 +1,44 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "WebSockets + Real-Time Notifications: Add Socket.IO or ws-based WebSocket server to Express, authenticate via JWT, emit real-time events (lead.replied, campaign.progress, sequence.completed, message.delivered), build frontend useWebSocket hook + notification bell + toast notifications + notification preferences.",
+  "status": "in_progress",
+  "steps": [
+    "Install `ws` package in apps/api (add to package.json dependencies). Add `@types/ws` to devDependencies.",
+    "Create `apps/api/src/services/websocket.ts`: Initialize a WebSocket server that attaches to the HTTP server. Authenticate connections by parsing JWT from the `token` query parameter. Store connected clients mapped by userId. Export functions: `broadcastToUser(userId, event, data)`, `broadcastToAll(event, data)`, `getConnectedCount()`.",
+    "Create `apps/api/src/services/notification.ts`: Notification service that creates notification records in DB, and calls broadcastToUser to push real-time notifications. Functions: `createNotification(userId, type, title, body, metadata)`, `getNotifications(userId, page, pageSize)`, `markAsRead(notificationId)`, `markAllAsRead(userId)`, `getUnreadCount(userId)`.",
+    "Add Prisma models: `Notification` (id, userId, type, title, body, metadata:Json?, isRead:Boolean, readAt:DateTime?, createdAt) and `NotificationPreference` (id, userId, eventType, channel: in_app|email|both|none, createdAt, updatedAt). Add to schema.prisma with proper indexes.",
+    "Create Prisma migration for the new models.",
+    "Create `apps/api/src/routes/notifications.ts`: GET /api/notifications (paginated list for current user), PATCH /api/notifications/:id/read, POST /api/notifications/mark-all-read, GET /api/notifications/unread-count, GET /api/notifications/preferences, PUT /api/notifications/preferences.",
+    "Hook into the event-bus: In `apps/api/src/index.ts` or a new startup file, subscribe to key events (lead.replied -> message.received with reply status, campaign.completed, sequence.completed, message.delivered) via `subscribeToEvent()` and call the notification service to create notifications + broadcast via WebSocket.",
+    "Add shared types: NOTIFICATION_TYPE const array and NotificationPreference types in packages/shared/src/types/index.ts. Add notificationPreferenceSchema in packages/shared/src/schemas/index.ts.",
+    "Update mockDb.ts to add `notification` and `notificationPreference` mock models. Add `buildNotification()` and `buildNotificationPreference()` factories.",
+    "Create `apps/api/src/routes/notifications.test.ts` with tests for all notification endpoints.",
+    "Create `apps/api/src/services/websocket.test.ts` testing the WebSocket service (auth validation, message broadcast).",
+    "Frontend: Create `apps/web/src/hooks/useWebSocket.ts`: Connect to ws://host/ws?token=<jwt>, auto-reconnect with backoff, parse incoming messages, dispatch to a new Zustand notification store.",
+    "Frontend: Create `apps/web/src/store/notifications.ts`: Zustand store for notifications array, unread count, add/markRead/markAllRead actions.",
+    "Frontend: Create `apps/web/src/components/ui/NotificationBell.tsx`: Bell icon with unread badge count in the header. Clicking opens a dropdown with recent notifications. Uses the notification store and React Query for fetching history.",
+    "Frontend: Add toast notifications using react-hot-toast for critical events (hot lead replied, campaign completed). Integrate with the WebSocket message handler.",
+    "Frontend: Create `apps/web/src/pages/NotificationPreferences.tsx`: Page to manage which event types the user wants notifications for (in-app, email, both, none).",
+    "Register the notifications route in apps/api/src/index.ts with requireAuth middleware.",
+    "Attach the WebSocket server to the HTTP server in the `start()` function of apps/api/src/index.ts."
+  ],
+  "acceptance_criteria": [
+    "WebSocket server authenticates connections via JWT and rejects invalid tokens",
+    "Events published via event-bus trigger real-time WebSocket messages to connected users",
+    "GET /api/notifications returns paginated notifications for the authenticated user",
+    "PATCH /api/notifications/:id/read marks a notification as read",
+    "GET /api/notifications/unread-count returns the count of unread notifications",
+    "Notification preferences can be retrieved and updated per event type",
+    "All notification route tests pass",
+    "WebSocket service tests pass",
+    "Frontend notification bell shows unread count",
+    "TypeScript compiles cleanly for both apps/api and apps/web"
+  ],
+  "verification": [
+    "cd /projects/sandbox/lead-genius-pre- && npx turbo test",
+    "cd /projects/sandbox/lead-genius-pre- && npx turbo build"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

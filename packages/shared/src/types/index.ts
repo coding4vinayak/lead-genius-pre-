@@ -1,7 +1,7 @@
 export const LEAD_STATUS = ['active', 'unsubscribed', 'bounced', 'invalid'] as const;
 export type LeadStatus = (typeof LEAD_STATUS)[number];
 
-export const CHANNEL = ['email', 'whatsapp'] as const;
+export const CHANNEL = ['email', 'whatsapp', 'linkedin'] as const;
 export type Channel = (typeof CHANNEL)[number];
 
 export const DIRECTION = ['outbound', 'inbound'] as const;
@@ -24,3 +24,153 @@ export type AiProvider = (typeof AI_PROVIDER)[number];
 
 export const INTENT_CATEGORY = ['interested', 'not_interested', 'out_of_office', 'meeting_request', 'pricing_question', 'feature_question', 'competitor_mention', 'spam', 'other'] as const;
 export type IntentCategory = (typeof INTENT_CATEGORY)[number];
+
+export const AUTOMATION_STATUS = ['active', 'inactive', 'draft'] as const;
+export type AutomationStatus = (typeof AUTOMATION_STATUS)[number];
+
+export const AUTOMATION_TRIGGER_TYPE = ['lead.created', 'lead.updated', 'lead.field_changed', 'lead.tag_added', 'lead.tag_removed', 'lead.score_threshold', 'message.received', 'message.sent', 'message.bounced', 'campaign.activated', 'campaign.paused', 'campaign.completed', 'webhook.received', 'cron', 'manual'] as const;
+export type AutomationTriggerType = (typeof AUTOMATION_TRIGGER_TYPE)[number];
+
+export const AUTOMATION_STEP_TYPE = ['send_message', 'update_lead_field', 'add_tag', 'remove_tag', 'move_to_group', 'remove_from_group', 'pause_campaign', 'send_webhook', 'delay', 'condition', 'create_task'] as const;
+export type AutomationStepType = (typeof AUTOMATION_STEP_TYPE)[number];
+
+export const AUTOMATION_EXECUTION_STATUS = ['running', 'completed', 'failed', 'cancelled'] as const;
+export type AutomationExecutionStatus = (typeof AUTOMATION_EXECUTION_STATUS)[number];
+
+export const WEBHOOK_STATUS = ['active', 'inactive'] as const;
+export type WebhookStatus = (typeof WEBHOOK_STATUS)[number];
+
+export const WEBHOOK_EVENT = ['lead.created', 'lead.updated', 'lead.field_changed', 'lead.tag_added', 'lead.tag_removed', 'lead.score_threshold', 'message.received', 'message.sent', 'message.bounced', 'campaign.activated', 'campaign.paused', 'campaign.completed', 'webhook.received', 'cron', 'manual', 'automation.completed', 'task.created', 'task.completed'] as const;
+export type WebhookEvent = (typeof WEBHOOK_EVENT)[number];
+
+export const INTEGRATION_TYPE = ['slack', 'hubspot', 'salesforce', 'zapier', 'n8n', 'custom'] as const;
+export type IntegrationType = (typeof INTEGRATION_TYPE)[number];
+
+export const TASK_STATUS = ['pending', 'in_progress', 'completed', 'cancelled'] as const;
+export type TaskStatus = (typeof TASK_STATUS)[number];
+
+export const TASK_PRIORITY = ['low', 'medium', 'high', 'urgent'] as const;
+export type TaskPriority = (typeof TASK_PRIORITY)[number];
+
+export const SEQUENCE_STATUS = ['draft', 'active', 'paused', 'completed'] as const;
+export type SequenceStatus = (typeof SEQUENCE_STATUS)[number];
+
+export const SEQUENCE_STEP_TYPE = ['send_email', 'send_whatsapp', 'delay', 'condition', 'update_lead_stage', 'update_lead_score', 'send_connection_request', 'send_linkedin_message', 'view_profile'] as const;
+export type SequenceStepType = (typeof SEQUENCE_STEP_TYPE)[number];
+
+export const LINKEDIN_STEP_TYPE = ['send_connection_request', 'send_linkedin_message', 'view_profile'] as const;
+export type LinkedInStepType = (typeof LINKEDIN_STEP_TYPE)[number];
+
+export const LINKEDIN_CONNECTION_STATUS = ['not_connected', 'pending', 'connected', 'declined'] as const;
+export type LinkedInConnectionStatus = (typeof LINKEDIN_CONNECTION_STATUS)[number];
+
+export const SEQUENCE_ENROLLMENT_STATUS = ['active', 'paused', 'completed', 'exited'] as const;
+export type SequenceEnrollmentStatus = (typeof SEQUENCE_ENROLLMENT_STATUS)[number];
+
+export const LEAD_STAGE = ['new', 'contacted', 'engaged', 'warm', 'hot', 'converted', 'lost'] as const;
+export type LeadStage = (typeof LEAD_STAGE)[number];
+
+export const CHANNEL_HEALTH_STATUS = ['healthy', 'degraded', 'down'] as const;
+export type ChannelHealthStatus = (typeof CHANNEL_HEALTH_STATUS)[number];
+
+export const WHATSAPP_TEMPLATE_STATUS = ['pending', 'approved', 'rejected'] as const;
+export type WhatsAppTemplateStatus = (typeof WHATSAPP_TEMPLATE_STATUS)[number];
+
+export const WHATSAPP_TEMPLATE_CATEGORY = ['marketing', 'utility', 'authentication'] as const;
+export type WhatsAppTemplateCategory = (typeof WHATSAPP_TEMPLATE_CATEGORY)[number];
+
+export const DOMAIN_AUTH_STATUS = ['verified', 'pending', 'failed'] as const;
+export type DomainAuthStatus = (typeof DOMAIN_AUTH_STATUS)[number];
+
+export const REVIEW_STATUS = ['pending_review', 'approved', 'rejected', 'auto_sent'] as const;
+export type ReviewStatus = (typeof REVIEW_STATUS)[number];
+
+export const EMAIL_VERIFICATION_STATUS = ['valid', 'invalid', 'risky', 'unknown'] as const;
+export type EmailVerificationStatus = (typeof EMAIL_VERIFICATION_STATUS)[number];
+
+export const SUPPRESSION_REASON = ['bounce', 'unsubscribe', 'complaint'] as const;
+export type SuppressionReason = (typeof SUPPRESSION_REASON)[number];
+
+export const GDPR_CONSENT_TYPE = ['marketing_email', 'marketing_sms', 'data_processing', 'third_party_sharing'] as const;
+export type GdprConsentType = (typeof GDPR_CONSENT_TYPE)[number];
+
+export const WARMUP_STATUS = ['warming', 'paused', 'completed'] as const;
+export type WarmupStatus = (typeof WARMUP_STATUS)[number];
+
+export const EMAIL_ACCOUNT_STATUS = ['active', 'inactive', 'warming', 'suspended'] as const;
+export type EmailAccountStatus = (typeof EMAIL_ACCOUNT_STATUS)[number];
+
+export const ROTATION_STRATEGY = ['round_robin', 'weighted', 'failover'] as const;
+export type RotationStrategy = (typeof ROTATION_STRATEGY)[number];
+
+export const TRACKING_DOMAIN_STATUS = ['pending', 'verified', 'failed'] as const;
+export type TrackingDomainStatus = (typeof TRACKING_DOMAIN_STATUS)[number];
+
+export const WORKSPACE_ROLE = ['owner', 'admin', 'member', 'viewer'] as const;
+export type WorkspaceRole = (typeof WORKSPACE_ROLE)[number];
+
+export const WORKSPACE_PLAN = ['free', 'pro', 'enterprise'] as const;
+export type WorkspacePlan = (typeof WORKSPACE_PLAN)[number];
+
+export const USAGE_METRIC = ['emails_sent', 'contacts_stored', 'sequences_active', 'team_members'] as const;
+export type UsageMetric = (typeof USAGE_METRIC)[number];
+
+export const BILLING_EVENT_TYPE = ['checkout.session.completed', 'invoice.paid', 'invoice.payment_failed', 'customer.subscription.created', 'customer.subscription.updated', 'customer.subscription.deleted'] as const;
+export type BillingEventType = (typeof BILLING_EVENT_TYPE)[number];
+
+export const CRM_PROVIDER = ['hubspot', 'salesforce'] as const;
+export type CrmProvider = (typeof CRM_PROVIDER)[number];
+
+export const CRM_SYNC_DIRECTION = ['inbound', 'outbound', 'bidirectional'] as const;
+export type CrmSyncDirection = (typeof CRM_SYNC_DIRECTION)[number];
+
+export const CRM_SYNC_STATUS = ['idle', 'syncing', 'completed', 'failed'] as const;
+export type CrmSyncStatus = (typeof CRM_SYNC_STATUS)[number];
+
+export const BOOKING_STATUS = ['scheduled', 'completed', 'cancelled'] as const;
+export type BookingStatus = (typeof BOOKING_STATUS)[number];
+
+export const SLACK_EVENT_TYPE = ['lead.created', 'lead.converted', 'campaign.completed', 'message.replied', 'daily_digest'] as const;
+export type SlackEventType = (typeof SLACK_EVENT_TYPE)[number];
+
+export const RECIPE_CATEGORY = ['lead_management', 'email_campaigns', 'notifications', 'data_sync', 'reporting'] as const;
+export type RecipeCategory = (typeof RECIPE_CATEGORY)[number];
+
+export const AB_TEST_STATUS = ['draft', 'running', 'completed'] as const;
+export type AbTestStatus = (typeof AB_TEST_STATUS)[number];
+
+export const ANALYTICS_SNAPSHOT_TYPE = ['funnel', 'cohort', 'revenue'] as const;
+export type AnalyticsSnapshotType = (typeof ANALYTICS_SNAPSHOT_TYPE)[number];
+
+export const BENCHMARK_METRIC = ['open_rate', 'reply_rate', 'bounce_rate', 'click_rate', 'conversion_rate'] as const;
+export type BenchmarkMetric = (typeof BENCHMARK_METRIC)[number];
+
+export const NOTIFICATION_TYPE = ['lead.replied', 'campaign.completed', 'sequence.completed', 'message.delivered', 'message.bounced', 'lead.score_threshold', 'system'] as const;
+export type NotificationType = (typeof NOTIFICATION_TYPE)[number];
+
+export const NOTIFICATION_CHANNEL = ['in_app', 'email', 'both', 'none'] as const;
+export type NotificationChannel = (typeof NOTIFICATION_CHANNEL)[number];
+
+export const SPAM_SEVERITY = ['high', 'medium', 'low'] as const;
+export type SpamSeverity = (typeof SPAM_SEVERITY)[number];
+
+export const PREVIEW_DEVICE = ['desktop', 'mobile'] as const;
+export type PreviewDevice = (typeof PREVIEW_DEVICE)[number];
+
+export const ENRICHMENT_STATUS = ['pending', 'completed', 'failed'] as const;
+export type EnrichmentStatus = (typeof ENRICHMENT_STATUS)[number];
+
+export const SENIORITY_LEVEL = ['c_suite', 'vp', 'director', 'manager', 'senior', 'mid', 'junior'] as const;
+export type SeniorityLevel = (typeof SENIORITY_LEVEL)[number];
+
+export const DEPARTMENT = ['engineering', 'marketing', 'sales', 'hr', 'finance', 'operations', 'product', 'design', 'other'] as const;
+export type Department = (typeof DEPARTMENT)[number];
+
+export const API_KEY_PERMISSION = ['read:leads', 'write:leads', 'read:campaigns', 'write:campaigns', 'read:templates', 'write:templates', 'read:messages', 'read:analytics'] as const;
+export type ApiKeyPermission = (typeof API_KEY_PERMISSION)[number];
+
+export const ASSIGNMENT_RULE_TYPE = ['round_robin', 'territory', 'load_balanced'] as const;
+export type AssignmentRuleType = (typeof ASSIGNMENT_RULE_TYPE)[number];
+
+export const ACTIVITY_TYPE = ['note_added', 'assigned', 'unassigned', 'stage_changed', 'message_sent', 'message_received', 'enriched', 'tag_added', 'tag_removed', 'created'] as const;
+export type ActivityType = (typeof ACTIVITY_TYPE)[number];
